@@ -21,10 +21,10 @@ as number of seconds passed from 1 January 1970. For example, request
 `GET /latest_photos?from=1615385401&count=20` would return 20 photos starting
 from first photo took after 10.03.2021 15:10:01.
 
-### Server response
+#### Server response
 In response server returns JSON object that consists of smaller objects:
 - `Photo` object, describing photo that can be accessed on the server
-    ```json
+    ```
     {
         "photo_id": Number,  // unqiue id for a photo, used for accessing photos later
         "timestamp": Number,  // date when photo was took (seconds from 1 Jan 1970)
@@ -33,14 +33,14 @@ In response server returns JSON object that consists of smaller objects:
     ```
 
 JSON object that is returned from a server looks like this:
-```json
+```
 {
     "success": Bool,  // if request succeeded
     "photo-plates": Array.of(Photo)  // array of Photo objects described previously
 }
 ```
 
-### Example
+#### Example
 Example server response could look like these:
 ```json
 {
@@ -70,9 +70,9 @@ GET /get_photo?photo_id=X
 ```
 Where X is the same photo id as in latest photos request.
 
-### Server response
+#### Server response
 JSON object that is returned from a server looks like this:
-```json
+```
 {
     "success": Bool,  // if request succeeded
     "?photo_url": String  // if requests suceeded, JSOn object will contain this url
