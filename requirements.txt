@@ -8,3 +8,5 @@ MarkupSafe==1.1.1
 python-engineio==4.0.1
 python-socketio==5.0.4
 Werkzeug==1.0.1
+
+#python3-opencv==4.2.0 
