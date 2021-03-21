@@ -1,6 +1,7 @@
 .vscode/
 venv/
 __pycache__
+.pytest_cache/
 instance/
 *.egg-info/
 .coverage
