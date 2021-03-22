@@ -6,8 +6,8 @@ import cv2 as cv
 import os # do usuniecia
 
 def preprocessing_image(img:np.ndarray):
-    gauss_kernel = (7,7)
-    gauss_sigma = 11
+    gauss_kernel = (3,3)
+    gauss_sigma = 3
     img_size = (700,550)
 
     img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
@@ -21,7 +21,12 @@ def preprocessing_image(img:np.ndarray):
 def edge_detection(img:np.ndarray):
     low_bound = 170
     high_bound = 230
-    img = cv.Canny(img,low_bound,high_bound)
+    #img = cv.Canny(img,low_bound,high_bound)
+    rectKernel = cv.getStructuringElement(cv.MORPH_RECT,(15,8))
+    img = cv.morphologyEx(img,cv.MORPH_TOPHAT,rectKernel)
+    #kernel = np.ones((7,7),np.uint8)
+    #img = cv.morphologyEx(img, cv.MORPH_CLOSE, kernel,iterations=1)
+
     return img
 
 def draw_projection(proj_x,proj_y,img):
@@ -46,7 +51,7 @@ def draw_projection(proj_x,proj_y,img):
 
 
 def edge_projection_with_window_function(img:np.ndarray):
-    average_size=50
+    average_size=30
     
     proj_x = np.sum(img,1)
     proj_y = np.sum(img,0)
@@ -93,7 +98,7 @@ def edge_projection_algorithm(img:np.ndarray):
 
 def photo_to_plate(img:np.ndarray):
     img = edge_projection_algorithm(img)    
-
+    return "LUB8890H"
 
 
 def main():
@@ -104,7 +109,7 @@ def main():
     photo_to_plate(img)
     
 
-    """
+    
     directory = os.fsencode("images")
     
     for file in os.listdir(directory):
@@ -112,7 +117,7 @@ def main():
         img = cv.imread("images/"+filename)
         photo_to_plate(img)
     
-    """
+    
     
 
 
