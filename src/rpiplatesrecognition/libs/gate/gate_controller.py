@@ -55,6 +55,4 @@ class GateController:
                 self.is_closing = True
                 self.init_state_change_time = datetime.datetime.now()
 
-    def stop(self):
-        if self.is_busy():
-            self.__press_button()
+
