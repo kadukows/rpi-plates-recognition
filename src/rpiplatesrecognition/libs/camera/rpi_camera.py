@@ -12,10 +12,10 @@ class RaspberryPiCamera():
     def take_photo(self):
         token = secrets.token_hex(32)
 
-        full_filename = "/tmp/rpi-plates-recognition/" + \
+        full_filename = "/tmp/" + \
                         str(int(hashlib.sha256(token.encode('utf-8')).hexdigest(), 16) %10**8) + \
                         ".jpg"
-        cmd = "raspistill -o " + full_filename
+        cmd = "raspistill -n -o " + full_filename
         subprocess.call(cmd, shell=True)
 
         img = cv2.imread(full_filename)
