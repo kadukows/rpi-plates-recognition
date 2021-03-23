@@ -5,7 +5,7 @@ import cv2 as cv2
 
 def main():
     camera = RaspberryPiCamera()
-    img = camera.take_photo()
+    img = camera.take_photo("photo")
     cv2.imshow('image', img)
     cv2.waitKey(0)
     cv2.destroyAllWindows()

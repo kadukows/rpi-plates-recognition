@@ -1,16 +1,24 @@
-import numpy as np
 import cv2 as cv2
+import subprocess
+import secrets
+from typing import Tuple
+import hashlib
 
 
 class RaspberryPiCamera():
     def __init__(self):
         pass
 
-    def take_photo(self) -> np.ndarray:
-        print("Photo taken in class")
+    def take_photo(self):
+        token = secrets.token_hex(32)
 
-        #mock
-        img = cv2.imread(
-            '/mnt/c/Users/Lukasz-Lap/Desktop/vibingcatttt.jpg', 0)
-        return img
-        
+        full_filename = "/tmp/rpi-plates-recognition/" + \
+                        str(int(hashlib.sha256(token.encode('utf-8')).hexdigest(), 16) %10**8) + \
+                        ".jpg"
+        cmd = "raspistill -o " + full_filename
+        subprocess.call(cmd, shell=True)
+
+        img = cv2.imread(full_filename)
+        return token, img
+
+    
