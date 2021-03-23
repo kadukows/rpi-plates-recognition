@@ -37,9 +37,17 @@ class GateController:
             return False
 
     def is_opened(self):
-        return self.opened
+        if not self.is_busy():
+            return self.opened
+        return False
 
-    # it is safe to call each of the following without checking for is_busy or is_opened response
+    def is_closed(self):
+        if not self.is_busy():
+            return not self.opened
+        return False
+
+    # it is safe to call each of the following without checking for is_busy or is_opened/closed response
+    # the gate is not supposed to stop or moving opposite direction
     def open(self):
         if not self.is_busy():
             if not self.opened:
@@ -54,5 +62,3 @@ class GateController:
                 self.opened = False
                 self.is_closing = True
                 self.init_state_change_time = datetime.datetime.now()
-
-
