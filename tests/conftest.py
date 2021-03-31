@@ -1,6 +1,8 @@
 import os, tempfile
 
 import pytest
+from flask_socketio import SocketIOTestClient
+
 from rpiplatesrecognition import create_app
 from rpiplatesrecognition.db import get_db, init_db
 
@@ -8,26 +10,35 @@ with open(os.path.join(os.path.dirname(__file__), 'data.sql'), 'rb') as f:
     _data_sql = f.read().decode('utf8')
 
 @pytest.fixture
-def app():
+def app_sio():
     db_fd, db_path = tempfile.mkstemp()
 
-    app = create_app({
+    app, sio = create_app({
         'TESTING': True,
-        'DATABSE': db_path
-    })
+        'DATABASE': db_path
+    }, return_socketio=True)
 
     with app.app_context():
         init_db()
         get_db().executescript(_data_sql)
 
-    yield app
+    yield (app, sio)
 
     os.close(db_fd)
     os.unlink(db_path)
 
 @pytest.fixture
+def app(app_sio):
+    return app_sio[0]
+
+@pytest.fixture
 def client(app):
     return app.test_client()
+
+@pytest.fixture
+def socketio_client(app_sio):
+    app, sio = app_sio
+    return SocketIOTestClient(app, sio)
 
 @pytest.fixture
 def runner(app):

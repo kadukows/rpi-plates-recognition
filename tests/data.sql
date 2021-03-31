@@ -1,5 +1,5 @@
-INSERT INTO plates (plate)
+INSERT INTO rpi (unique_id, user_id)
 VALUES
-    ('DW0A000'),
-    ('WW1234L')
+    ('unique_id_1', 1),
+    ('unique_id_2', NULL)
 ;

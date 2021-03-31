@@ -1,8 +1,9 @@
 import os
 
 from flask import Flask
+from flask_socketio import SocketIO
 
-def create_app(test_config=None):
+def create_app(test_config=None, return_socketio=False):
     """This is default factory function for creating app object"""
 
     app = Flask(__name__, instance_relative_config=True)
@@ -21,16 +22,13 @@ def create_app(test_config=None):
     except OSError:
         pass
 
-    @app.route('/hello')
-    def hello():
-        """This is a simple hello world route for testing ut framework"""
-
-        return 'Hello, world!'
-
     from . import db
     db.init_app(app)
 
-    from . import api
-    app.register_blueprint(api.bp)
+    sio = SocketIO(app)
+    from . import rpi_websocket_api
+    rpi_websocket_api.init_app(sio)
 
+    if return_socketio:
+        return (app, sio)
     return app
