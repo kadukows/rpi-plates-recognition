@@ -35,6 +35,9 @@ def create_app(test_config=None, return_socketio=False):
     from . import rest_api
     rest_api.init_app_sio(app, sio)
 
+    from . import routes
+    routes.init_app(app)
+
     if return_socketio:
         return (app, sio)
     return app
