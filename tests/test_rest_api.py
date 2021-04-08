@@ -1,8 +1,9 @@
 import base64
+from os import name
 from typing import Tuple, Any
 import json
 
-from .conftest import RpiTestClient
+from .tests_libs.rpi_test_client import RpiTestClient
 
 from flask import Flask
 from flask.testing import FlaskClient
@@ -69,5 +70,16 @@ def test_rest_api_will_reroute_logs_from_rpi(app_sio_rpi_client: Tuple[Flask, So
     received = test_client_client_sio.get_received(namespace='/api')
     received_json = [json.loads(obj['args'][0]) for obj in received if obj['name'] == 'log']
 
-    assert log1 in (obj['msg'] for obj in received_json)
-    assert log2 in (obj['msg'] for obj in received_json)
+    assert log1, log2 in (obj['msg'] for obj in received_json)
+
+
+    # leave room as to not receive any more logs
+    test_client_client_sio.emit('leave_rpi_room', {'unique_id': unique_id}, namespace='/api')
+
+    log3 = 'log message three'
+    rpi_client.logger.debug(log3)
+
+    received = test_client_client_sio.get_received(namespace='/api')
+    received_json = [json.loads(obj['args'][0]) for obj in received if obj['name'] == 'log']
+
+    assert log3 not in (obj['msg'] for obj in received_json)

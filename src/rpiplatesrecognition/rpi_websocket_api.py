@@ -6,6 +6,7 @@ from .db import get_db
 def init_app(sio: SocketIO):
     @sio.on('login')
     def login(data):
+        print('login call')
         if 'unique_id' in data:
             db = get_db()
             record = db.execute(

@@ -1,8 +1,7 @@
 import base64
 
-from flask import Flask, request
+from flask import Flask, request, session
 from flask import json
-from flask.globals import g
 from flask.json import jsonify
 from flask_socketio import SocketIO, join_room, leave_room, disconnect
 from werkzeug.datastructures import Authorization
@@ -47,11 +46,13 @@ def init_app_sio(app: Flask, sio: SocketIO):
         else:
             return {'active_rpis': []}
 
-
+    # This is not really rest API, as this is using WebSockets to pass through
+    # logs from rpi to users web app
+    # TODO: move to other file
     @sio.event(namespace='/api')
     @auth.login_required
     def connect():
-        g.user = auth.current_user
+        session['user'] = auth.current_user()
 
     @sio.on('join_rpi_room', namespace='/api')
     def join_rpi_room(data):
@@ -82,7 +83,7 @@ def init_app_sio(app: Flask, sio: SocketIO):
                     INNER JOIN rpi ON active_rpi.rpi_id = rpi.id
                     INNER JOIN user_accounts ON rpi.user_id = user_accounts.id
                 WHERE rpi.unique_id = ? AND user_accounts.username = ?
-            """, (data['unique_id'], g.user.username)).fetchone()
+            """, (data['unique_id'], session['user'].username)).fetchone()
 
             if record is not None:
                 leave_room(record['sid'])

@@ -4,4 +4,7 @@ __pycache__
 .pytest_cache/
 instance/
 *.egg-info/
+
+# coverage related dirs and files
 .coverage
+htmlcov/
