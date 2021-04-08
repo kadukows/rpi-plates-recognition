@@ -1,9 +1,9 @@
 from flask import session, request
-import socketio
+from flask_socketio import SocketIO
 
 from .db import get_db
 
-def init_app(sio):
+def init_app(sio: SocketIO):
     @sio.on('login')
     def login(data):
         if 'unique_id' in data:
@@ -46,4 +46,4 @@ def init_app(sio):
             if 'logs' not in session:
                 session['logs'] = []
             session['logs'].append(data)
-            sio.emit('log', to=request.sid)
+            sio.emit('log', data=data, to=request.sid, namespace='/api')

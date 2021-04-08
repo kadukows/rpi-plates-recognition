@@ -25,9 +25,15 @@ def create_app(test_config=None, return_socketio=False):
     from . import db
     db.init_app(app)
 
+    from . import auth
+    auth.init_app(app)
+
     sio = SocketIO(app)
     from . import rpi_websocket_api
     rpi_websocket_api.init_app(sio)
+
+    from . import rest_api
+    rest_api.init_app_sio(app, sio)
 
     if return_socketio:
         return (app, sio)

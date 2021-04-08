@@ -1,6 +1,6 @@
 DROP TABLE IF EXISTS user_accounts;
 DROP TABLE IF EXISTS rpi;
-DROP TABLE IF EXISTS access_attempts;
+DROP TABLE IF EXISTS access_attemps;
 DROP TABLE IF EXISTS whitelists;
 DROP TABLE IF EXISTS plates;
 DROP TABLE IF EXISTS whitelist_assignment;
@@ -18,7 +18,7 @@ CREATE TABLE user_accounts (
 CREATE TABLE rpi (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     unique_id TEXT NOT NULL UNIQUE,
-    user_id INTEGER,
+    user_id INTEGER NULL,
     FOREIGN KEY (user_id) REFERENCES user_accounts (id)
 );
 
