@@ -23,6 +23,7 @@ def create_app(test_config=None, return_socketio=False):
     except OSError:
         pass
 
+    # assure that models are loaded before initializing db with app
     from . import models
 
     from . import db
@@ -40,6 +41,9 @@ def create_app(test_config=None, return_socketio=False):
 
     from . import routes
     routes.init_app(app)
+
+    from flask_bootstrap import Bootstrap
+    bootstrap = Bootstrap(app)
 
     if return_socketio:
         return (app, sio)
