@@ -19,4 +19,4 @@ python-socketio==5.0.4
 toml==0.10.2
 Werkzeug==1.0.1
 
-#python3-opencv==4.2.0 
+python3-opencv==4.2.0
