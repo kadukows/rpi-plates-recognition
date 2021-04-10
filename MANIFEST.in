@@ -1,4 +1,3 @@
-include src/rpiplatesrecognition/schema.sql
 graft src/rpiplatesrecognition/static
 graft src/rpiplatesrecognition/templates
 global-exclude *.pyc

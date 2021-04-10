@@ -1,0 +1,12 @@
+<table>
+    <tr valign="top">
+        <td>{{ module.unique_id }}</td>
+        <td>
+            {% if module.active_module %}
+                <span style="color: green;">Yes</span>
+            {% else %}
+                <span style="color: red;">No</span>
+            {% endif %}
+        </td>
+    </tr>
+</table>
