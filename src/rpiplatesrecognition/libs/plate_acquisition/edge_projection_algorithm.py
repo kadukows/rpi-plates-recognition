@@ -1,8 +1,6 @@
 import numpy as np
 import cv2 as cv
-
-
-import os  # do usuniecia
+from draw_projection import *
 
 img_size = (700, 550)
 
@@ -13,51 +11,30 @@ def preprocessing_image(img: np.ndarray):
 
     img = cv.medianBlur(img, 5)
     img = cv.equalizeHist(img)
-    img = cv.GaussianBlur(img, (gauss_kernel), gauss_sigma)
+    img = cv.GaussianBlur(img, gauss_kernel, gauss_sigma)
 
     return img
 
-def edge_detection(img: np.ndarray):
-    threshold_down = 50
-    morph_kernel_size = (50,12)
 
-    rectKernel = cv.getStructuringElement(cv.MORPH_RECT, morph_kernel_size)
-    img = cv.morphologyEx(img, cv.MORPH_TOPHAT, rectKernel)
-    thresh,img = cv.threshold(img,threshold_down,255,cv.THRESH_TOZERO)
+def morphology_operation(img: np.ndarray):
+    threshold_down = 50  # below this bound image pixels are set to 0
+    morph_kernel_size = (50, 12)  # size of kernel has huge impact on result of morphology operation
+
+    rect_kernel = cv.getStructuringElement(cv.MORPH_RECT, morph_kernel_size)
+    img = cv.morphologyEx(img, cv.MORPH_TOPHAT, rect_kernel)
+    thresh, img = cv.threshold(img, threshold_down, 255, cv.THRESH_TOZERO)
 
     return img
 
-def draw_x_projection(proj_x,img):
-    max_x = np.max(proj_x)
-    width_proj = 500
-
-    result = np.zeros((proj_x.shape[0], width_proj))
-    for row in range(img.shape[0]):
-        cv.line(result, (0, row), (int(proj_x[row] * width_proj / max_x), row), (255, 255, 255), 1)
-
-    cv.imshow("X Projection", result)
-    cv.waitKey()
-
-def draw_y_projection(proj_y,img):
-    height_proj = 500
-    max_y = np.max(proj_y)
-
-    result_y = np.zeros((height_proj, proj_y.shape[0]))
-    for col in range(img.shape[1]):
-        cv.line(result_y, (col, int(height_proj)), (col, int(height_proj - proj_y[col] * height_proj / max_y)),
-                (255, 255, 255), 1)
-
-    cv.imshow("Y Projection", result_y)
-    cv.waitKey()
 
 def find_up_and_down_bound(img):
-    mean_size_x = 15
+    mean_size_x = 15  # to remove noises from projection - count mean of mean_size_x pixels
     possible_bounds = 3
-    min_size_y = 50
+    min_size_y = 50  # min height of possible area
     max_height = 100
-    height_percent = 0.7
+    height_percent = 0.7  # this indicates where is the bound (bound is when height_percent * middle_pixel > pixel)
 
-    lp_y_bounds = [] # (dolna granica, górna granica) ...
+    lp_y_bounds = []  # (down bound, upper bound) ...
 
     proj_x = np.sum(img, 1)
     copy_x = proj_x.copy()
@@ -67,6 +44,7 @@ def find_up_and_down_bound(img):
     for i in range(mean_size_x, len(proj_x) - mean_size_x):
         proj_x[i] = np.mean(copy_x[i - mean_size_x:i + mean_size_x])
 
+    # draw_x_projection(proj_x,img)
     projection_x_edit = proj_x.copy()
     mean_proj = np.mean(proj_x)
 
@@ -97,27 +75,25 @@ def find_up_and_down_bound(img):
 
     return lp_y_bounds
 
-def get_bound_using_edge_projection(img: np.ndarray):
-    mean_size_y = 65
-    width_percent=0.45
-    max_width = 600
 
+def get_bound_using_edge_projection(img: np.ndarray):
+    mean_size_y = 65  # to remove noises from projection - count mean of mean_size_y pixels
+    width_percent = 0.45  # this indicates where is the bound (bound is when width_percent * middle_pixel > pixel)
+    max_width = 600
     min_size_x = 120
 
     lp_y_bounds = find_up_and_down_bound(img)
-    lp_x_bounds = []  # (lewa granica, prawa granica) ...
+    lp_x_bounds = []  # (left bound, right bound) ...
 
-    proj_y = []
     for i in range(0, len(lp_y_bounds)):
         proj_y = np.sum(img[lp_y_bounds[i][0]: lp_y_bounds[i][1]][:], 0)
-        mean_proj = np.mean(proj_y)
+        # mean_proj = np.mean(proj_y)
         projection_y_edit = proj_y.copy()
         projection_y_edit[0:mean_size_y] = 0
         projection_y_edit[len(projection_y_edit) - mean_size_y:len(projection_y_edit)] = 0
 
         for j in range(mean_size_y, len(projection_y_edit) - mean_size_y):
             projection_y_edit[j] = np.mean(proj_y[j - mean_size_y:j + mean_size_y])
-
 
         index = np.unravel_index(projection_y_edit.argmax(), projection_y_edit.shape)[0]
 
@@ -135,23 +111,23 @@ def get_bound_using_edge_projection(img: np.ndarray):
             if k <= 0:
                 break
 
-            if projection_y_edit[k] < width_percent * projection_y_edit[index] :
+            if projection_y_edit[k] < width_percent * projection_y_edit[index]:
                 left_bound = k
                 break
 
         projection_y_edit[left_bound: right_bound] = 0
         lp_x_bounds.append((left_bound, right_bound))
 
+    return lp_x_bounds, lp_y_bounds
 
-    return lp_x_bounds,lp_y_bounds
 
+# TO DO - but how ? :(
+def chose_number_plate(proposed_areas, img):
 
-def chose_number_plate(proposed_areas,img):
+    # lp_x_bounds = proposed_areas[0]
+    # lp_y_bounds = proposed_areas[1]
 
-    lp_x_bounds = proposed_areas[0]
-    lp_y_bounds = proposed_areas[1]
-
-    best_fit = [(0,0),(0,1),(0,2)]
+    best_fit = [(0, 0), (0, 1), (0, 2)]
 
     return best_fit
 
@@ -162,28 +138,32 @@ def edge_projection_algorithm(img: np.ndarray):
     img_copy = img.copy()
 
     img = preprocessing_image(img)
-    img = edge_detection(img)
+    img = morphology_operation(img)
     proposed_areas = get_bound_using_edge_projection(img)
 
     lp_x_bounds = proposed_areas[0]
     lp_y_bounds = proposed_areas[1]
 
-    best_fit = chose_number_plate(proposed_areas,img_copy)
+    best_fit = chose_number_plate(proposed_areas, img_copy)
     possible_plate = []
 
-    for i in range(0,2):
+    """
+    add possible ares to list and show them on image
+    """
+    for i in range(0, 2):
         best = best_fit[i]
-        cv.rectangle(img, (lp_x_bounds[best[0]][0], lp_y_bounds[best[1]][0]), (lp_x_bounds[best[0]][1], lp_y_bounds[best[1]][1]), (120, 120, 120))
-        cv.imshow("test2", img)
+
         left = lp_x_bounds[best[0]][0]
         right = lp_x_bounds[best[0]][1]
-
         down = lp_y_bounds[best[1]][0]
         up = lp_y_bounds[best[1]][1]
 
-        pic = img_copy[down:up,left:right]
+        cv.rectangle(img, (left, down), (right, up), (120, 120, 120), 2)
+        cv.imshow("test2", img)
+
+        pic = img_copy[down:up, left:right]
         possible_plate.append(pic)
-        cv.imshow("tablica",pic)
+        cv.imshow("plate", pic)
         cv.waitKey()
 
-    return  possible_plate
+    return possible_plate
