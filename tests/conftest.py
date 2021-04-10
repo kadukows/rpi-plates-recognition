@@ -4,14 +4,13 @@ import logging, json
 import pytest
 from flask import Flask
 from flask_socketio import SocketIO, SocketIOTestClient
+from werkzeug.security import generate_password_hash
 
 from rpiplatesrecognition import create_app
-from rpiplatesrecognition.db import get_db, init_db
+from rpiplatesrecognition.db import init_db, db, init_db_command
+from rpiplatesrecognition.models import User, Module
 
 from .tests_libs.rpi_test_client import RpiTestClient
-
-with open(os.path.join(os.path.dirname(__file__), 'data.sql'), 'rb') as f:
-    _data_sql = f.read().decode('utf8')
 
 @pytest.fixture
 def app_sio():
@@ -19,12 +18,24 @@ def app_sio():
 
     app, sio = create_app({
         'TESTING': True,
-        'DATABASE': db_path
+        'SQLALCHEMY_DATABASE_URI': 'sqlite:///' + db_path,
+        'SQLALCHEMY_TRACK_MODIFICATIONS': False
     }, return_socketio=True)
 
     with app.app_context():
+        # this ensures clean database
         init_db()
-        get_db().executescript(_data_sql)
+
+        # populate database with basic values
+        # add more if neccessary
+        user = User(username='user1', password_hash=generate_password_hash('user1'))
+        user.modules.append(Module(unique_id='unique_id_1'))
+        db.session.add(user)
+
+        module2 = Module(unique_id='unique_id_2')
+        db.session.add(module2)
+
+        db.session.commit()
 
     yield (app, sio)
 

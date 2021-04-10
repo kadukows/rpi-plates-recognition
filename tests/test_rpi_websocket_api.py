@@ -1,46 +1,32 @@
-from flask_socketio import SocketIOTestClient
+from typing import Tuple
+from flask import Flask
+from flask_socketio import SocketIO, SocketIOTestClient
 
-from rpiplatesrecognition.db import get_db
+from rpiplatesrecognition.models import ActiveModule, Module
+
+from .tests_libs.rpi_test_client import RpiTestClient
 
 
 
-def test_rpi_websocket_api_will_record_login_event_in_database(app_sio):
-    app, sio = app_sio
-    test_client = SocketIOTestClient(app, sio)
-
+def test_rpi_websocket_api_will_record_login_event_in_database(app_sio_rpi_client: Tuple[Flask, SocketIO, RpiTestClient]):
+    app, sio, rpi_client = app_sio_rpi_client
     unique_id = 'unique_id_1'
 
-    test_client.emit('login', {'unique_id': unique_id})
+    rpi_client.emit('login', {'unique_id': unique_id})
 
     with app.app_context():
-        db = get_db()
-        record = db.execute("""
-            SELECT * FROM active_rpi
-                INNER JOIN rpi ON active_rpi.rpi_id = rpi.id
-            WHERE rpi.unique_id = ?
-            """, (unique_id,)).fetchone()
+        query = (ActiveModule.query
+            .join(Module, ActiveModule.module_id == Module.id)
+            .filter(Module.unique_id == unique_id))
 
-    assert record is not None
-    assert 'sid' in record.keys()
+        active_modules = query.all()
 
-    test_client.disconnect()
+    assert len(active_modules) == 1
+    assert active_modules[0] is not None
+
+    rpi_client.disconnect()
+
     with app.app_context():
-        db = get_db()
-        record = db.execute("""
-            SELECT * FROM active_rpi
-                INNER JOIN rpi ON active_rpi.rpi_id = rpi.id
-            WHERE rpi.unique_id = ?
-            """, (unique_id,)).fetchone()
+        active_modules = query.all()
 
-    assert record is None
-
-
-
-def test_rpitest_rpi_websocket_api_will_pass_through_log_event(app_sio):
-    app, sio = app_sio
-    test_client_rpi = SocketIOTestClient(app, sio)
-    test_client_web = SocketIOTestClient(app, sio, namespace='/api', )
-
-    unique_id = 'unique_id_1'
-
-    test_client_rpi.emit('login', {'unique_id': unique_id})
+    assert len(active_modules) == 0

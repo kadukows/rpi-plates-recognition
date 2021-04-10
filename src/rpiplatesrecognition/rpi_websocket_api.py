@@ -1,44 +1,41 @@
 from flask import session, request
 from flask_socketio import SocketIO
 
-from .db import get_db
+from .db import db
+from . import models
 
 def init_app(sio: SocketIO):
     @sio.on('login')
     def login(data):
         print('login call')
         if 'unique_id' in data:
+            '''
             db = get_db()
             record = db.execute(
                 'SELECT * FROM rpi WHERE unique_id = ?',
                 (data['unique_id'],)
             ).fetchone()
-
+            '''
+            module = models.Module.query.filter_by(unique_id=data['unique_id']).first()
             session.clear()
 
-            if record is not None:
-                session['id'] = record['id']
-                session['unique_id'] = record['unique_id']
+            if module is not None:
+                session['module_id'] = module.id
+                module.active_module = models.ActiveModule(sid=request.sid)
+                db.session.commit()
 
-                if db.execute('SELECT * FROM active_rpi WHERE rpi_id = ?', (session['id'], )).fetchone() is None:
-                    db.execute(
-                        'INSERT INTO active_rpi (rpi_id, sid) VALUES (?, ?)',
-                        (session['id'], request.sid)
-                    )
-                    db.commit()
 
     @sio.event
     def disconnect():
-        if 'id' in session:
-            db = get_db()
-
-            # delete rpi from active rpis
-            db.execute('DELETE FROM active_rpi WHERE rpi_id = ?', (session['id'], ))
+        if 'module_id' in session:
+            # beacuse every socketio 'message' has different app_context, you can't store user object in 'session' dict
+            module = models.Module.query.filter_by(id=session['module_id']).one()
+            db.session.delete(module.active_module)
+            db.session.commit()
 
             # insert logs dump
             # TODO
 
-            db.commit()
             session.clear()
 
     @sio.on('log')
