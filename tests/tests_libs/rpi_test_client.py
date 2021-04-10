@@ -9,8 +9,7 @@ class RpiTestClient(SocketIOTestClient):
 
         self.logger = logging.getLogger('test_logger')
         # reset loggers state
-        # this is done because logger handlers
-        # were persisting when running all pytests
+        # this is done because logger handlers persists between tests
         self.logger.handlers.clear()
         self.logger.setLevel(logging.DEBUG)
 

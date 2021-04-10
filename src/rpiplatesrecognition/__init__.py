@@ -9,7 +9,6 @@ def create_app(test_config=None, return_socketio=False):
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
         SECRET_KEY='dev',
-        #DATABASE=os.path.join(app.instance_path, 'rpiplatesrecognition.sqlite')
         SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(app.instance_path, 'rpiplatesrecognition.sqlite'),
         SQLALCHEMY_TRACK_MODIFICATIONS = False
     )

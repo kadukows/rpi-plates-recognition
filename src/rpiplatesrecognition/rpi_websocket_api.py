@@ -9,13 +9,6 @@ def init_app(sio: SocketIO):
     def login(data):
         print('login call')
         if 'unique_id' in data:
-            '''
-            db = get_db()
-            record = db.execute(
-                'SELECT * FROM rpi WHERE unique_id = ?',
-                (data['unique_id'],)
-            ).fetchone()
-            '''
             module = models.Module.query.filter_by(unique_id=data['unique_id']).first()
             session.clear()
 
