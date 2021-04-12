@@ -1,6 +1,8 @@
 import numpy as np
 import cv2 as cv
 from edge_projection_algorithm import *
+from signs_extraction import *
+
 
 import os  # do usuniecia
 
@@ -11,7 +13,9 @@ def photo_to_plate(img:np.ndarray):
     # possible areas where plate can be recognized
     possible_plates = edge_projection_algorithm(img)
 
-    # segments = find_segments(possible_plates)  # Paweł
+
+    segments = find_segments(possible_plates)
+
     # segments need to be 2D list
 
     # recognized_strings = recognize_plate(segments) # Tomek
