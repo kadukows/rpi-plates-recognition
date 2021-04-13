@@ -1,19 +1,24 @@
-from flask import Flask, render_template, session, flash, url_for, redirect
+from flask import Flask, render_template, session, flash, url_for, redirect, jsonify
 from flask.globals import request
 from flask_login import current_user, login_user
 from flask_login.utils import login_required, logout_user
+from flask_socketio import SocketIO, join_room, leave_room
 from werkzeug.urls import url_parse
 
 from .db import db
 from .forms import LoginForm, RegistrationForm
-from .models import User
+from .models import User, Module
+from .auth import admin_required
 
-def init_app(app: Flask):
+def init_app(app: Flask, sio: SocketIO):
     @app.route('/')
     @app.route('/index')
     def index():
-        if 'user' in session:
-            return render_template('index.html', user=session['user'])
+        if current_user.is_authenticated:
+            if current_user.role == 'User':
+                return render_template('index.html', modules=current_user.modules)
+            elif current_user.role == 'Admin':
+                return render_template('index.html', modules=Module.query.all())
         else:
             return render_template('index.html')
 
@@ -59,3 +64,9 @@ def init_app(app: Flask):
             return redirect(url_for('login'))
 
         return render_template('register.html', form=form)
+
+    @app.route('/rpi_connection/<string:unique_id>')
+    @login_required
+    @admin_required
+    def rpi_connection(unique_id):
+        return render_template('rpi_connection.html', unique_id=unique_id)

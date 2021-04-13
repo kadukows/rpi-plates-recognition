@@ -4,11 +4,19 @@
     {% if current_user.is_authenticated %}
         <h1>Hi, {{ current_user.username }}!</h1>
         <hr>
-            {% for module in current_user.modules %}
-                {% include '_module.html' %}
-            {% endfor %}
-
+        <div class="col-md-6">
+            Your modules:
+            <table class="table table-hover">
+                <thead style="font-weight: bold;">
+                    <td> Unique id </td>
+                    <td> Active </td>
+                </thead>
+                {% for module in modules %}
+                    {% include '_module.html' %}
+                {% endfor %}
+            </table>
+        </div>
     {% else %}
-        <h1>Not logged in </h1>
+        <h1>Not logged in</h1>
     {% endif %}
 {% endblock %}
