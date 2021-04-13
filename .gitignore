@@ -1,6 +1,7 @@
 .vscode/
 venv/
 __pycache__
+src/libs/plate_acquisition/images/
 .pytest_cache/
 instance/
 *.egg-info/
