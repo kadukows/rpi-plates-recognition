@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+    {% if current_user.is_authenticated %}
+        <h1>Hi, {{ current_user.username }}!</h1>
+        <hr>
+            {% for module in current_user.modules %}
+                {% include '_module.html' %}
+            {% endfor %}
+
+    {% else %}
+        <h1>Not logged in </h1>
+    {% endif %}
+{% endblock %}

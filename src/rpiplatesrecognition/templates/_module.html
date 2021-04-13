@@ -1,0 +1,14 @@
+<table class="table table-hover">
+    <tr>
+        <td width="70px">
+            {{ module.unique_id }}
+        </td>
+        <td>
+            {% if module.active_module %}
+                <span class="label label-success">Yes</span>
+            {% else %}
+                <span class="label label-default">No</span>
+            {% endif %}
+        </td>
+    </tr>
+</table>

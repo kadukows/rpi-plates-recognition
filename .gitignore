@@ -5,5 +5,7 @@ src/libs/plate_acquisition/images/
 .pytest_cache/
 instance/
 *.egg-info/
-.coverage
 
+# coverage related dirs and files
+.coverage
+htmlcov/
