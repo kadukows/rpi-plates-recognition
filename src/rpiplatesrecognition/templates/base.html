@@ -29,14 +29,20 @@
             <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                 <ul class="nav navbar-nav">
                     <li><a href="{{ url_for('index') }}">Home</a></li>
-                    {# there were 'explore' link here #}
+                    {% if current_user.is_authenticated %}
+                        {% if current_user.role == 'User' %}
+                            <li><a href="{{ url_for('add_module') }}">Add module</a></li>
+                        {% elif current_user.role == 'Admin' %}
+
+                        {% endif %}
+                    {% endif %}
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
                     {% if current_user.is_anonymous %}
                         <li><a href="{{ url_for('login') }}">Login</a> </li>
                         <li><a href="{{ url_for('register') }}">Register</a></li>
                     {% else %}
-                        {# there was user subpage here #}
+                        <li><a href="{{ url_for('user_profile') }}">User</a></li>
                         <li><a href="{{ url_for('logout') }}">Logout</a></li>
                     {% endif %}
                 </ul>

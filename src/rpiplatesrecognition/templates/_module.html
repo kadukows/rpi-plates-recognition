@@ -9,9 +9,11 @@
             <span class="label label-default">No</span>
         {% endif %}
     </td>
-    <td>
-        <a href="{{ url_for('rpi_connection', unique_id=module.unique_id)}}">
-            <button type="button" class="btn btn-primary" data-unique_id="{{ module.unique_id }}">More</button>
-        </a>
-    </td>
+    {% if current_user.role == 'Admin' %}
+        <td>
+            <a href="{{ url_for('rpi_connection', unique_id=module.unique_id)}}">
+                <button type="button" class="btn btn-primary" data-unique_id="{{ module.unique_id }}">More</button>
+            </a>
+        </td>
+    {% endif %}
 </tr>

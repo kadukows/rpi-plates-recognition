@@ -6,7 +6,7 @@ from flask_socketio import SocketIO, join_room, leave_room
 from werkzeug.urls import url_parse
 
 from .db import db
-from .forms import LoginForm, RegistrationForm
+from .forms import ChangePasswordForm, LoginForm, RegistrationForm, AddModuleForm
 from .models import User, Module
 from .auth import admin_required
 
@@ -64,6 +64,31 @@ def init_app(app: Flask, sio: SocketIO):
             return redirect(url_for('login'))
 
         return render_template('register.html', form=form)
+
+    @app.route('/add_module', methods=['GET', 'POST'])
+    @login_required
+    def add_module():
+        form = AddModuleForm()
+        if form.validate_on_submit():
+            module = Module.query.filter_by(unique_id=form.unique_id.data).first()
+            module.user = current_user
+            db.session.commit()
+            flash(f'Module {module.unique_id} is now registered to you')
+            return redirect(url_for('index'))
+
+        return render_template('add_module.html', form=form)
+
+    @app.route('/user_profile', methods=['GET', 'POST'])
+    @login_required
+    def user_profile():
+        form = ChangePasswordForm()
+        if form.validate_on_submit():
+            current_user.set_password(form.new_password.data)
+            db.session.commit()
+            flash(f'Password change was successful!')
+            return redirect(url_for('index'))
+
+        return render_template('user_profile.html', form=form)
 
     @app.route('/rpi_connection/<string:unique_id>')
     @login_required
