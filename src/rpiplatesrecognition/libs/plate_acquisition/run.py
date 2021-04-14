@@ -1,7 +1,7 @@
 import numpy as np
 import cv2 as cv
-from edge_projection_algorithm import *
-from signs_extraction import *
+from .edge_projection_algorithm import *
+from .signs_extraction import *
 
 
 import os  # do usuniecia
@@ -26,7 +26,7 @@ def photo_to_plate(img:np.ndarray):
 def main():
 
     directory = os.fsencode("images")
-    
+
     for file in os.listdir(directory):
         filename = os.fsdecode(file)
         img = cv.imread("images/"+filename)
@@ -35,4 +35,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
