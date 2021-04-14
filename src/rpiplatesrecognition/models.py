@@ -3,6 +3,7 @@ import click
 from flask import current_app
 from flask.cli import with_appcontext
 from flask_login import UserMixin
+from sqlalchemy.orm import subqueryload
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from .db import db
@@ -25,6 +26,7 @@ class User(UserMixin, db.Model):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
+
 class Module(db.Model):
     __tablename__ = 'modules'
 
@@ -37,3 +39,38 @@ class Module(db.Model):
 
     def __repr__(self):
         return f'<Module {self.unique_id}>'
+
+
+whitelist_assignment = db.Table('whitelist_assignments',
+    db.Column('whitelist_id', db.Integer, db.ForeignKey('whitelists.id'), primary_key=True),
+    db.Column('plate_id', db.Integer, db.ForeignKey('plates.id'), primary_key=True)
+)
+
+class Whitelist(db.Model):
+    __tablename__ = 'whitelists'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(32))
+
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    user = db.relationship('User', backref=db.backref('whitelists', lazy=True))
+
+    plates = db.relationship('Plate', secondary=whitelist_assignment, lazy='subquery',
+        backref=db.backref('whitelists', lazy=True))
+
+
+class Plate(db.Model):
+    __tablename__ = 'plates'
+
+    id = db.Column(db.Integer, primary_key=True)
+    plate = db.Column(db.String(10))
+
+'''
+class WhitelistAssignment(db.Model):
+    __tablename__ = 'whitelist_assignments'
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    whitelist_id = db.Column(db.Integer, db.ForeignKey('whitelists.id'), nullable=False)
+    whitelist = db.relationship('Whitelist', backref=db.backref('assignments'))
+    '''
