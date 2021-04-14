@@ -5,13 +5,12 @@ from .libs.plate_acquisition import edge_projection_algorithm, find_segments, ph
 
 @click.command('possible_plates')
 @click.argument('directory')
-@click.argument('output_directory')
 def possible_plates(directory):
     for file in os.listdir(directory):
         filename = os.fsdecode(file)
-        img = cv.imread("images/"+filename)
+        img = cv.imread(os.path.join(directory, filename))
 
-        edge_projection_algorithm(img)
+        photo_to_plate(img)
 
 
 

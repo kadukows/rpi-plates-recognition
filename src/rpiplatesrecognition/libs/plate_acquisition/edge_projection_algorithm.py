@@ -1,6 +1,6 @@
 import numpy as np
 import cv2 as cv
-from draw_projection import *
+from .draw_projection import *
 
 img_size = (700, 550)
 
