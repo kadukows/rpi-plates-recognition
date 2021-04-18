@@ -63,14 +63,24 @@ class Plate(db.Model):
     __tablename__ = 'plates'
 
     id = db.Column(db.Integer, primary_key=True)
-    plate = db.Column(db.String(10))
+    text = db.Column(db.String(10), unique=True, index=True, nullable=False)
+
+
 
 '''
-class WhitelistAssignment(db.Model):
-    __tablename__ = 'whitelist_assignments'
+
+
+class Student(db.Model):
+    __tablename__ = 'students'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(128))
+
+
+class User(db.Model):
+    __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True)
 
-    whitelist_id = db.Column(db.Integer, db.ForeignKey('whitelists.id'), nullable=False)
-    whitelist = db.relationship('Whitelist', backref=db.backref('assignments'))
+    student_id = db.Column(db.Integer, db.ForeignKey('students.id'), nullable=True)
     '''

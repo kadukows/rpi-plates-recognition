@@ -23,7 +23,7 @@ def init_db_command():
 def init_db_debug_command():
     """Helper command for aiding development process, populates databse with default values"""
 
-    from .models import User, Module
+    from .models import User, Module, Whitelist, Plate
 
     init_db()
 
@@ -35,6 +35,13 @@ def init_db_debug_command():
 
     db.session.add(user)
     db.session.add(admin)
+
+    whitelist = Whitelist(name='example whitelist name')
+    user.whitelists.append(whitelist)
+
+    for plate_text in ['WA6642E', 'WI027HJ', 'ERA75TM', 'ERA81TL']:
+        whitelist.plates.append(Plate(text=plate_text))
+
     db.session.commit()
 
     click.echo('Initialized db with default values')
@@ -46,6 +53,7 @@ def init_app(app: Flask):
 
     # workaround for quick development (ie quick app resets)
     with app.app_context():
+        db.create_all()
         from .models import Module
         Module.query.update({Module.is_active: False})
         db.session.commit()

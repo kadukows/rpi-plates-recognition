@@ -32,6 +32,7 @@
                     {% if current_user.is_authenticated %}
                         {% if current_user.role == 'User' %}
                             <li><a href="{{ url_for('add_module') }}">Add module</a></li>
+                            <li><a href="{{ url_for('whitelists') }}">Whitelists</a></li>
                         {% elif current_user.role == 'Admin' %}
 
                         {% endif %}
