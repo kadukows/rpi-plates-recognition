@@ -45,6 +45,9 @@ def create_app(test_config=None, return_socketio=False):
     from flask_bootstrap import Bootstrap
     bootstrap = Bootstrap(app)
 
+    from . import manual_image
+    manual_image.init_app(app)
+
     if return_socketio:
         return (app, sio)
     return app
