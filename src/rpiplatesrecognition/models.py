@@ -64,23 +64,3 @@ class Plate(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     text = db.Column(db.String(10), unique=True, index=True, nullable=False)
-
-
-
-'''
-
-
-class Student(db.Model):
-    __tablename__ = 'students'
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(128))
-
-
-class User(db.Model):
-    __tablename__ = 'users'
-
-    id = db.Column(db.Integer, primary_key=True)
-
-    student_id = db.Column(db.Integer, db.ForeignKey('students.id'), nullable=True)
-    '''

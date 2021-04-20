@@ -31,7 +31,7 @@ def init_app(sio: SocketIO):
         if 'module_id' in session:
             # beacuse every socketio 'message' has different app_context, you can't store user object in 'session' dict
             module = Module.query.get(session['module_id'])
-            db.session.delete(module.active_module)
+            module.is_active = False
             db.session.commit()
 
             session.clear()

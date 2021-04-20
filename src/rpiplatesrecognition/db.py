@@ -36,6 +36,9 @@ def init_db_debug_command():
     db.session.add(user)
     db.session.add(admin)
 
+    module_wo_user = Module(unique_id='unique_id_2')
+    db.session.add(module_wo_user)
+
     whitelist = Whitelist(name='example whitelist name')
     user.whitelists.append(whitelist)
 
