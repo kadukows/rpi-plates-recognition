@@ -1,14 +1,24 @@
 {% extends "bootstrap/base.html" %}
 
+{% block styles %}
+    {{super()}}
+    <link hrel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script src="https://cdn.socket.io/3.1.1/socket.io.min.js"></script>
+{% endblock %}
+
 {% block title %}
     {% if title %}{{ title }} -- {% endif %}rpi-plates-recognition
 {% endblock %}
 
 {% block navbar %}
-    <nav class="navbar navbar-default">
+    <nav class="navbar navbar-inverse">
         <div class="container">
             <div class="navbar-header">
-                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-taget="#bs-example-navbar-collapse-1" aria-expanded="false">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
                     <span class="sr-only">Toggle navigation</span>
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
@@ -19,13 +29,21 @@
             <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                 <ul class="nav navbar-nav">
                     <li><a href="{{ url_for('index') }}">Home</a></li>
-                    {# there were 'explore' link here #}
+                    {% if current_user.is_authenticated %}
+                        {% if current_user.role == 'User' %}
+                            <li><a href="{{ url_for('add_module') }}">Add module</a></li>
+                            <li><a href="{{ url_for('whitelists') }}">Whitelists</a></li>
+                        {% elif current_user.role == 'Admin' %}
+
+                        {% endif %}
+                    {% endif %}
                 </ul>
-                <ul class="nav navbar-nav naybar-right">
+                <ul class="nav navbar-nav navbar-right">
                     {% if current_user.is_anonymous %}
                         <li><a href="{{ url_for('login') }}">Login</a> </li>
+                        <li><a href="{{ url_for('register') }}">Register</a></li>
                     {% else %}
-                        {# there was user subpage here #}
+                        <li><a href="{{ url_for('user_profile') }}">User</a></li>
                         <li><a href="{{ url_for('logout') }}">Logout</a></li>
                     {% endif %}
                 </ul>

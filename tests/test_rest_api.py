@@ -31,7 +31,7 @@ def test_rest_api_will_return_list_of_connected_rpis(app_sio_rpi_client: Tuple[F
     unique_id = 'unique_id_1'
 
     # login with rpi
-    rpi_client.emit('login', {'unique_id': unique_id})
+    rpi_client.emit('login_from_rpi', {'unique_id': unique_id}, namespace='/rpi')
 
     # make request as rest api user
     response = test_client_flask.get('/api/get_active/', headers=make_auth_header('user1', 'user1'))
@@ -41,13 +41,14 @@ def test_rest_api_will_return_list_of_connected_rpis(app_sio_rpi_client: Tuple[F
     assert [unique_id] == response.json['active_rpis']
 
     # disconnect as rpi
-    rpi_client.disconnect()
+    rpi_client.disconnect(namespace='/rpi')
 
     response = test_client_flask.get('/api/get_active/', headers=make_auth_header('user1', 'user1'))
 
     assert response.status_code == 200
     assert 'active_rpis' in response.json
     assert response.json['active_rpis'] == []
+
 
 def test_rest_api_will_reroute_logs_from_rpi(app_sio_rpi_client: Tuple[Flask, SocketIO, RpiTestClient]):
     app, sio, rpi_client = app_sio_rpi_client
@@ -83,3 +84,8 @@ def test_rest_api_will_reroute_logs_from_rpi(app_sio_rpi_client: Tuple[Flask, So
     received_json = [json.loads(obj['args'][0]) for obj in received if obj['name'] == 'log']
 
     assert log3 not in (obj['msg'] for obj in received_json)
+
+
+def test_rest_api_get_username_should_return_username(client):
+    response = client.get('/get_username', headers=make_auth_header('user1', 'user1'))
+    print(response.json)

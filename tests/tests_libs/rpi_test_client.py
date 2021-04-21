@@ -5,7 +5,7 @@ from flask_socketio import SocketIO, SocketIOTestClient
 
 class RpiTestClient(SocketIOTestClient):
     def __init__(self, app: Flask, sio_server: SocketIO):
-        SocketIOTestClient.__init__(self, app, sio_server)
+        SocketIOTestClient.__init__(self, app, sio_server, namespace='/rpi')
 
         self.logger = logging.getLogger('test_logger')
         # reset loggers state

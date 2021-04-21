@@ -40,10 +40,13 @@ def create_app(test_config=None, return_socketio=False):
     rest_api.init_app_sio(app, sio)
 
     from . import routes
-    routes.init_app(app)
+    routes.init_app(app, sio)
+
+    from . import client_websocket_routes
+    client_websocket_routes.init_app_sio(app, sio)
 
     from flask_bootstrap import Bootstrap
-    bootstrap = Bootstrap(app)
+    Bootstrap(app)
 
     from . import manual_image
     manual_image.init_app(app)
