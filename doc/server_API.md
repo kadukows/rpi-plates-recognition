@@ -19,11 +19,13 @@ User is logged in.
 | get_all_whitelists | GET | Get list of all whitelists |
 | get_module_all_whitelists | GET | Get list of all whitelists for a module |
 | get_whitelisted_plates | GET | Get list of authored plates for given whitelist  |
-| add_to_whitelist | POST | Add plate to whitelist |
-| remove_from_whitelist| DELETE | Remove given plate from whitelist |
+| add_plate_to_whitelist | POST | Add plate to whitelist |
+| remove_plate_from_whitelist| DELETE | Remove given plate from whitelist |
 | remove_whitelist| DELETE | Remove given whitelist |
 | bind_whitelist_to_module| POST | Add whitelist to a given module |
 | unbind_whitelist_from_module| DELETE | Removes whitelist from given module |
+| add_plate_to_all_whitelists| POST | Add plate to all whitelists |
+| remove_plate_from_all_whitelists| DELETE | Removes plate from all whitelists |
 
 
 ## get_modules
@@ -34,12 +36,10 @@ User is logged in.
 {
   "modules":[
     {
-      "name": "ModuleA",
-      "id":5
+      "unique_id": "ModuleA",
     },
     {
-      "name": "ModuleB",
-      "id":125
+      "unique_id": "ModuleB",
     }
   ]
 }   
@@ -59,16 +59,10 @@ User is logged in.
 
 ```json
 {
-  "name":"ModuleName"
+  "unique_id":"ModuleName"
 }   
 ```
-On success: 
-### Example result
-```json
-{
-  "id":125
-}   
-```
+
 ### Error Codes
 | Code | Message | 
 | :-------- | :-------- |
@@ -78,7 +72,7 @@ On success:
 
 ## remove_module
 ### Call
-``` DELETE /remove_module?id=<ID>/ ```
+``` DELETE /remove_module?id=<UNIQUE_ID>/ ```
 
 ### Error Codes
 | Code | Message | 
@@ -94,14 +88,7 @@ On success:
 
 ```json
 {
-  "name":"WhitelistName"
-}   
-```
-On success: 
-### Example result
-```json
-{
-  "id":125
+  "unique_id":"WhitelistName"
 }   
 ```
 ### Error Codes
@@ -110,6 +97,7 @@ On success:
 | 200(OK) | Success |
 | 500 (Internal Server Error) | Server error|
 | 201 (Created) | Created whitelist |
+| 303 (See Other) | Whitelist with such name already exists |
 
 ## get_all_whitelists
 ### Call
@@ -120,8 +108,7 @@ On success:
 {
     "whitelists": [
         {
-            "id": 54,
-            "name": "A",
+            "unique_id": "A",
             "plates": [
                 "TKI12345",
                 "DW123456"
@@ -138,15 +125,14 @@ On success:
 
 ## get_module_all_whitelists
 ### Call
-``` GET /get_module_all_whitelists?id=<MODULE_ID>/ ```
+``` GET /get_module_all_whitelists?id=<MODULE_UNIQUE_ID>/ ```
 
 ### Example result
 ```json
 {
     "whitelists": [
         {
-            "id": 54,
-            "name": "A",
+            "unique_id": "A",
             "plates": [
                 "TKI12345",
                 "DW123456"
@@ -166,7 +152,7 @@ On success:
 
 ## get_whitelisted_plates
 ### Call
-``` GET /get_whitelisted_plates?id=<WHITELIST_ID>/ ```
+``` GET /get_whitelisted_plates?id=<WHITELIST_UNIQUE_ID>/ ```
 ### Example result
 
 ```json
@@ -188,14 +174,14 @@ On success:
 
 
 
-## add_to_whitelist
+## add_plate_to_whitelist
 ### Call
-``` POST /add_to_whitelist/ ```
+``` POST /add_plate_to_whitelist/ ```
 ### Body
 
 ```json
 {
-  "whitelist_id":12345,
+  "whitelist_unique_name":12345,
   "plate":"DWR12345"
 }   
 ```
@@ -210,9 +196,9 @@ On success:
 
 
 
-## remove_from_whitelist
+## remove_plate_from_whitelist
 ### Call
-``` DELETE /remove_from_whitelist?id=<WHITELIST_ID>&plate=asgasg/ ```
+``` DELETE /remove_plate_from_whitelist?id=<WHITELIST_UNIQUE_ID>&plate=asgasg/ ```
 
 ### Error Codes
 | Code | Message | 
@@ -230,8 +216,8 @@ On success:
 
 ```json
 {
-  "whitelist_id":12345,
-  "module_id":"125116623"
+  "whitelist_unique_id":12345,
+  "module_unique_id":"125116623"
 }   
 ```
 
@@ -251,8 +237,8 @@ On success:
 
 ```json
 {
-  "whitelist_id":12345,
-  "module_id":"125116623"
+  "whitelist_unique_id":12345,
+  "module_unique_id":"125116623"
 }   
 ```
 
@@ -263,6 +249,36 @@ On success:
 | 500 (Internal Server Error) | Server error|
 | 404 (Not Found) | Whitelist with such id or module does not exists |
 
+
+##add_plate_to_all_whitelists
+### Call
+``` POST /add_plate_to_whitelist/ ```
+### Body
+
+```json
+{
+  "plate":"DWR12345"
+}   
+```
+
+### Error Codes
+| Code | Message | 
+| :-------- | :-------- |
+| 200(OK) | Success |
+| 500 (Internal Server Error) | Server error|
+| 404 (Not Found) | No whitelist exists |
+
+
+#remove_plate_from_all_whitelists
+### Call
+``` DELETE /remove_plate_from_all_whitelists?plate=asgasg/ ```
+
+### Error Codes
+| Code | Message | 
+| :-------- | :-------- |
+| 200(OK) | Success |
+| 500 (Internal Server Error) | Server error|
+| 404 (Not Found) | No whitelist exists |
 
 
 
