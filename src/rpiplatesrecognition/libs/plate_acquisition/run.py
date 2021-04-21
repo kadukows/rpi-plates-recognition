@@ -2,6 +2,9 @@ import numpy as np
 import cv2 as cv
 from edge_projection_algorithm import *
 from signs_extraction import *
+from another_algorithm import *
+from config_file import *
+import time
 
 
 import os  # do usuniecia
@@ -9,17 +12,22 @@ import os  # do usuniecia
 
 # this function convert image to recognized number plates string ( can be more than one )
 def photo_to_plate(img:np.ndarray):
+    parameters = ExtractionConfigParameters()
 
     # possible areas where plate can be recognized
-    possible_plates = edge_projection_algorithm(img)
-
+    if parameters.algorithm_choice == 1:
+        possible_plates = edge_projection_algorithm(img, parameters)
+    elif parameters.algorithm_choice == 2:
+        possible_plates = edge_projection_algorithm_v2(img,parameters)
+    else:
+        raise ValueError()
 
     segments = find_segments(possible_plates)
 
     # segments need to be 2D list
 
     # recognized_strings = recognize_plate(segments) # Tomek
-    recognized_strings = ["abc12345","cba54321"]
+    recognized_strings = ["abc12345", "cba54321"]
 
     return recognized_strings
 
