@@ -1,7 +1,6 @@
 import numpy as np
 import cv2 as cv
-from draw_projection import *
-from config_file import *
+from .draw_projection import *
 
 
 def preprocessing_image(img: np.ndarray,parameters):

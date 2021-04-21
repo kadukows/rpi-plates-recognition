@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+    {% if current_user.is_authenticated %}
+        <h1>Hi, {{ current_user.username }}!</h1>
+        <hr>
+        <div class="col-md-6">
+            <h2>Your modules:</h2>
+            <table class="table table-hover">
+                <thead style="font-weight: bold;">
+                    <td> Unique id </td>
+                    <td> Active </td>
+                </thead>
+                {% for module in modules %}
+                    {% include '_module.html' %}
+                {% endfor %}
+            </table>
+        </div>
+    {% else %}
+        <h1>Not logged in</h1>
+    {% endif %}
+{% endblock %}
