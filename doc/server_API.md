@@ -263,10 +263,96 @@ On success:
 | 500 (Internal Server Error) | Server error|
 | 404 (Not Found) | Whitelist with such id or module does not exists |
 
+# Account management
+## Prerequsites
+User has no account. 
+## Possible requests
+| Name | Request | Description |
+| :-------- | :-------- | :-------- |
+| create_user | POST | Create new user with privided data |
+| remove_user | DELETE| Removes user's account |
+| change_email | POST | Changes user's email |
+| change_password | POST | Changes user's password |
 
 
 
+## create_user
+### Call
+``` POST /create_user/```
+### Body
+```json
+{
+  "user_data":[
+    {
+      "name": "John",
+      "password":"John2137!",
+	  "email":"john.doe@email.com"
+    }
+  ]
+}   
+```
+### Example result
+```json
+{
+  "Error": "email not valid"
+}   
+```
 
+
+## Prerequsites
+User is logged in. 
+## remove_user
+### Call
+``` DELETE /remove_user?id=<ID>/ ```
+
+### Example result
+```json
+{
+  "Error": "ID is not valid"
+}   
+```
+
+## change_email
+### Call
+``` POST /change_email/ ```
+### Body
+
+```json
+{
+  "user_id":12345,
+  "new_email":"john12@example.com",
+  "password":"X89bdhjk"
+}   
+```
+
+### Example result
+```json
+{
+  "Error": "0"
+}   
+```
+
+
+## change_password
+
+### Call
+``` POST /change_password/ ```
+### Body
+
+```json
+{
+  "user_id":12345,
+  "old_password":"X89bdhjk",
+  "new_password":"8913nhoJ"
+}   
+```
+
+### Example result
+```json
+{
+  "Error": "old password is not valid"
+}   
+```
 
 
 
