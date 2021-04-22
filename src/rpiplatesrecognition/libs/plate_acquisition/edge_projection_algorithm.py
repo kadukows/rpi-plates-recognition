@@ -1,6 +1,10 @@
 import numpy as np
 import cv2 as cv
 from .draw_projection import *
+from .config_file import *
+
+#from draw_projection import *
+#from config_file import *
 
 
 def preprocessing_image(img: np.ndarray,parameters):
@@ -31,7 +35,8 @@ def find_up_and_down_bound(img,parameters):
     for i in range(parameters.mean_size_x, len(proj_x) - parameters.mean_size_x):
         proj_x[i] = np.mean(copy_x[i - parameters.mean_size_x:i + parameters.mean_size_x])
 
-    draw_x_projection(proj_x,img)
+    #draw_x_projection(proj_x,img)
+
     projection_x_edit = proj_x.copy()
     mean_proj = np.mean(proj_x)
 
@@ -139,14 +144,15 @@ def edge_projection_algorithm(img: np.ndarray, parameters:ExtractionConfigParame
         right = lp_x_bounds[best[0]][1]
         down = lp_y_bounds[best[1]][0]
         up = lp_y_bounds[best[1]][1]
-
-        cv.rectangle(img, (left, down), (right, up), (120, 120, 120), 2)
-        cv.imshow("test2", img)
-
         pic = img_copy[down:up, left:right]
         possible_plate.append(pic)
+
+        """
+        cv.rectangle(img, (left, down), (right, up), (120, 120, 120), 2)
+        cv.imshow("test2", img)
         cv.imshow("plate", pic)
         cv.waitKey()
+        """
 
 
     return possible_plate
