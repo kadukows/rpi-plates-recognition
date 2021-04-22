@@ -12,21 +12,21 @@ User is logged in.
 ## Possible requests
 | Name | Request | Description |
 | :-------- | :-------- | :-------- |
-| get_modules | GET | Get list of modules managed by the user |
-| add_module | POST | Adds new module to user account |
-| remove_module | DELETE | Removes given module from the account |
-| create_whitelist | POST | Create empty whitelist |
-| get_all_whitelists | GET | Get list of all whitelists created by user |
-| get_module_all_whitelists | GET | Get list of all whitelists for a module |
-| get_whitelisted_plates | GET | Get list of authored plates for given whitelist owned by user  |
-| get_whitelists_for_plate | GET | Get list of whitelists owned by current user which contain given plate  | 
-| add_plate_to_whitelist | POST | Add plate to whitelist owned by current user |
-| remove_plate_from_whitelist| DELETE | Remove given plate from whitelist owned by current user|
-| remove_whitelist| DELETE | Remove given whitelist owned by current user|
-| bind_whitelist_to_module| POST | Add whitelist to a given module which is owned by current user|
-| unbind_whitelist_from_module| DELETE | Removes whitelist from given module owned by current user|
-| add_plate_to_all_whitelists| POST | Add plate to all whitelists owned by current user|
-| remove_plate_from_all_whitelists| DELETE | Removes plate from all whitelists owned by current user|
+| [get_modules](#get_modules) | GET | Get list of modules managed by the user |
+| [add_module](#add_module) | POST | Adds new module to user account |
+| [remove_module](#remove_module) | DELETE | Removes given module from the account |
+| [create_whitelist](#create_whitelist) | POST | Create empty whitelist |
+| [get_all_whitelists](#get_all_whitelists) | GET | Get list of all whitelists created by user |
+| [get_module_all_whitelists](get_module_all_whitelists) | GET | Get list of all whitelists for a module |
+| [get_whitelisted_plates](#get_whitelisted_plates) | GET | Get list of authored plates for given whitelist owned by user  |
+| [get_whitelists_for_plate](#get_whitelists_for_plate) | GET | Get list of whitelists owned by current user which contain given plate  |
+| [add_plate_to_whitelist](#add_plate_to_whitelist) | POST | Add plate to whitelist owned by current user |
+| [remove_plate_from_whitelist](#remove_plate_from_whitelist) | DELETE | Remove given plate from whitelist owned by current user|
+| [remove_whitelist](#remove_whitelist) | DELETE | Remove given whitelist owned by current user|
+| [bind_whitelist_to_module](#bind_whitelist_to_module) | POST | Add whitelist to a given module which is owned by current user|
+| [unbind_whitelist_from_module](#unbind_whitelist_from_module) | DELETE | Removes whitelist from given module owned by current user|
+| [add_plate_to_all_whitelists](#add_plate_to_all_whitelists) | POST | Add plate to all whitelists owned by current user|
+| [remove_plate_from_all_whitelists](#remove_plate_from_all_whitelists) | DELETE | Removes plate from all whitelists owned by current user|
 
 
 ## get_modules
@@ -43,10 +43,10 @@ User is logged in.
       "unique_id": "ModuleB",
     }
   ]
-}   
+}
 ```
 ### Error Codes
-| Code | Message | 
+| Code | Message |
 | :-------- | :-------- |
 | 200(OK) | List prepared correctly |
 | 500 (Internal Server Error) | Unable to prepare modules list|
@@ -61,11 +61,11 @@ User is logged in.
 ```json
 {
   "unique_id":"ModuleName"
-}   
+}
 ```
 
 ### Error Codes
-| Code | Message | 
+| Code | Message |
 | :-------- | :-------- |
 | 200(OK) | Success |
 | 500 (Internal Server Error) | Server error|
@@ -76,7 +76,7 @@ User is logged in.
 ``` DELETE /remove_module?id=<UNIQUE_ID> ```
 
 ### Error Codes
-| Code | Message | 
+| Code | Message |
 | :-------- | :-------- |
 | 204(No Content) | Successfully delted |
 | 500 (Internal Server Error) | Server error|
@@ -92,10 +92,10 @@ User is logged in.
 ```json
 {
   "whitelist_name":"WhitelistName"
-}   
+}
 ```
 ### Error Codes
-| Code | Message | 
+| Code | Message |
 | :-------- | :-------- |
 | 200(OK) | Success |
 | 500 (Internal Server Error) | Server error|
@@ -120,7 +120,7 @@ User is logged in.
 }
 ```
 ### Error Codes
-| Code | Message | 
+| Code | Message |
 | :-------- | :-------- |
 | 200(OK) | Success |
 | 500 (Internal Server Error) | Server error|
@@ -143,7 +143,7 @@ User is logged in.
 }
 ```
 ### Error Codes
-| Code | Message | 
+| Code | Message |
 | :-------- | :-------- |
 | 200(OK) | Success |
 | 500 (Internal Server Error) | Server error|
@@ -165,7 +165,7 @@ User is logged in.
 }
 ```
 ### Error Codes
-| Code | Message | 
+| Code | Message |
 | :-------- | :-------- |
 | 200(OK) | Success |
 | 500 (Internal Server Error) | Server error|
@@ -190,7 +190,7 @@ User is logged in.
 }
 ```
 ### Error Codes
-| Code | Message | 
+| Code | Message |
 | :-------- | :-------- |
 | 200(OK) | Success |
 | 500 (Internal Server Error) | Server error|
@@ -210,11 +210,11 @@ User is logged in.
 {
   "whitelist_name":12345,
   "plate":"DWR12345"
-}   
+}
 ```
 
 ### Error Codes
-| Code | Message | 
+| Code | Message |
 | :-------- | :-------- |
 | 200(OK) | Success |
 | 500 (Internal Server Error) | Server error|
@@ -230,7 +230,7 @@ User is logged in.
 ``` DELETE /remove_plate_from_whitelist?id=<WHITELIST_NAME>&plate=<PLATE> ```
 
 ### Error Codes
-| Code | Message | 
+| Code | Message |
 | :-------- | :-------- |
 | 204(No Content) | Success |
 | 500 (Internal Server Error) | Server error|
@@ -248,11 +248,11 @@ User is logged in.
 {
   "whitelist_name":12345,
   "module_unique_id":"125116623"
-}   
+}
 ```
 
 ### Error Codes
-| Code | Message | 
+| Code | Message |
 | :-------- | :-------- |
 | 201(Created) | Success |
 | 500 (Internal Server Error) | Server error|
@@ -269,18 +269,18 @@ User is logged in.
 {
   "whitelist_name":12345,
   "module_unique_id":"125116623"
-}   
+}
 ```
 
 ### Error Codes
-| Code | Message | 
+| Code | Message |
 | :-------- | :-------- |
 | 201(Created) | Success |
 | 500 (Internal Server Error) | Server error|
 | 404 (Not Found) | Whitelist with such id or module does not exists |
 
 
-##add_plate_to_all_whitelists
+## add_plate_to_all_whitelists
 ### Call
 ``` POST /add_plate_to_whitelist ```
 ### Body
@@ -288,11 +288,11 @@ User is logged in.
 ```json
 {
   "plate":"DWR12345"
-}   
+}
 ```
 
 ### Error Codes
-| Code | Message | 
+| Code | Message |
 | :-------- | :-------- |
 | 200(OK) | Success |
 | 500 (Internal Server Error) | Server error|
@@ -301,30 +301,14 @@ User is logged in.
 
 
 
-#remove_plate_from_all_whitelists
+## remove_plate_from_all_whitelists
 ### Call
 ``` DELETE /remove_plate_from_all_whitelists?plate=asgasg ```
 
 ### Error Codes
-| Code | Message | 
+| Code | Message |
 | :-------- | :-------- |
 | 200(OK) | Success |
 | 500 (Internal Server Error) | Server error|
 | 404 (Not Found) | No whitelist exists |
 | 400 (Bad request) | Plate is not properly formatted |
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
