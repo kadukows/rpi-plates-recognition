@@ -26,7 +26,7 @@ def photo_to_plate(img: np.ndarray,parameters: ExtractionConfigParameters = Extr
     else:
         raise ValueError()
 
-    segments = find_segments(possible_plates)
+    segments = find_segments(possible_plates,parameters)
 
     # recognized_strings = recognize_plate(segments) # Tomek
     recognized_strings = ["abc12345", "cba54321"]
