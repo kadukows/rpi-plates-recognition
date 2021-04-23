@@ -27,6 +27,12 @@ class User(UserMixin, db.Model):
         return check_password_hash(self.password_hash, password)
 
 
+whitelist_to_module_assignment = db.Table("whitelist_to_module_assignment",
+    db.Column('whitelist_id', db.Integer, db.ForeignKey('whitelists.id'), primary_key=True),
+    db.Column('module_id', db.Integer, db.ForeignKey('modules.id'), primary_key=True)
+)
+
+
 class Module(db.Model):
     __tablename__ = 'modules'
 
@@ -36,6 +42,9 @@ class Module(db.Model):
 
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     user = db.relationship('User', backref=db.backref('modules', lazy=True))
+
+    whitelists = db.relationship('Whitelist', secondary=whitelist_to_module_assignment, lazy='subquery',
+        backref=db.backref('modules', lazy=True))
 
     def __repr__(self):
         return f'<Module {self.unique_id}>'
