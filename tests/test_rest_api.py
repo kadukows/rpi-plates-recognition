@@ -94,7 +94,15 @@ def test_returning_all_modules_assigned_to_user(client):
     response = client.get('/api/get_modules', headers=make_auth_header('user1', 'user1'))
     assert response.status_code == 200
     assert 'modules' in response.json
-    print(response.json)
 
     assert response.json['modules'] == ['unique_id_1','unique_id_3']
+
+
+def test_adding_module(client):
+    data = { "unique_id": "test",  }
+    response = client.post('/api/add_module', headers=make_auth_header('user1', 'user1'), data = json.dumps(data))
+    assert response.status_code == 200
+
+
+
     

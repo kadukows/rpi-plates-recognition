@@ -42,7 +42,17 @@ def init_app_sio(app: Flask, sio: SocketIO):
     @app.route('/api/add_module', methods=['POST'])
     @rest_auth.login_required
     def post_module():
-        pass
+        user = rest_auth.current_user()
+        data = request.get_json() or {}
+        if "unique_id" not in data:
+            return "error"
+        
+        module = Module(unique_id=data['unique_id'],is_active=0,user_id=user.user_id)
+        db.session.add(module)
+        db.session.commit()
+    
+        return {'OK'}
+
 
     @app.route('/api/remove_module?id=<UNIQUE_ID>', methods=['DELETE'])
     @rest_auth.login_required
