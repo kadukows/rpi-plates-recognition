@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html'as wtf %}
+
+{% block app_content %}
+    <h1>{{ current_user.username }}'s Profile</h1>
+    <hr>
+    <div class="row">
+        <div class="col-md-4">
+            <h1>Change password</h1>
+            {{ wtf.quick_form(form) }}
+        </div>
+        <div class="col-md-4">
+            <h1>Change email</h1>
+            <h2 class="bg-info">TODO</h2>
+        </div>
+    </div>
+{% endblock %}

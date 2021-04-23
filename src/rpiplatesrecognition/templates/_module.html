@@ -1,0 +1,26 @@
+<tr>
+    <td>
+        {{ module.unique_id }}
+    </td>
+    <td>
+        {% if module.is_active %}
+            <span class="label label-success">Yes</span>
+        {% else %}
+            <span class="label label-default">No</span>
+        {% endif %}
+    </td>
+    {% if current_user.role == 'Admin' %}
+        <td>
+            {% if module.user %}
+                <strong>{{ module.user.username }}</strong>
+            {% else %}
+                <u>No user bound</u>
+            {% endif %}
+        </td>
+        <td>
+            <a href="{{ url_for('rpi_connection', unique_id=module.unique_id)}}">
+                <button type="button" class="btn btn-primary" data-unique_id="{{ module.unique_id }}">More</button>
+            </a>
+        </td>
+    {% endif %}
+</tr>
