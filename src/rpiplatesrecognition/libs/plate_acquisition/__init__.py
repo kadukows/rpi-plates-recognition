@@ -16,8 +16,7 @@ import cv2 as cv
 """
 
 # this function convert image to recognized number plates string ( can be more than one )
-def photo_to_plate(img: np.ndarray):
-    parameters = ExtractionConfigParameters()
+def photo_to_plate(img: np.ndarray,parameters: ExtractionConfigParameters = ExtractionConfigParameters()):
 
     # possible areas where plate can be recognized
     if parameters.algorithm_choice == 1:
