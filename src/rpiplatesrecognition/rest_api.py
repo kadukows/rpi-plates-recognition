@@ -29,18 +29,17 @@ def init_app_sio(app: Flask, sio: SocketIO):
 
         return {'active_rpis': [active_module.unique_id for active_module in active_modules]}
     
-    @app.route('/api/get_modules/', methods=['GET'])
+    @app.route('/api/get_modules', methods=['GET'])
     @rest_auth.login_required
     def get_modules():
         """Route returning modules asigned to user"""
 
         user = rest_auth.current_user()
         modules = Module.query.filter_by(user_id=user.id).all()
-        
-        print(modules)
-        return {'modules': [{'unique_id': module.unique_id for module in modules }]}
+
+        return {'modules': [module.unique_id for module in modules]}
     
-    @app.route('/api/add_module/', methods=['POST'])
+    @app.route('/api/add_module', methods=['POST'])
     @rest_auth.login_required
     def post_module():
         pass

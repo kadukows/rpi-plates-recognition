@@ -89,3 +89,12 @@ def test_rest_api_will_reroute_logs_from_rpi(app_sio_rpi_client: Tuple[Flask, So
 def test_rest_api_get_username_should_return_username(client):
     response = client.get('/get_username', headers=make_auth_header('user1', 'user1'))
     print(response.json)
+
+def test_returning_all_modules_assigned_to_user(client):
+    response = client.get('/api/get_modules', headers=make_auth_header('user1', 'user1'))
+    assert response.status_code == 200
+    assert 'modules' in response.json
+    print(response.json)
+
+    assert response.json['modules'] == ['unique_id_1','unique_id_3']
+    
