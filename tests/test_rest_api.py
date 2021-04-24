@@ -101,6 +101,7 @@ def test_returning_all_modules_assigned_to_user(client):
     assert response.json['modules'] == ['unique_id_1','unique_id_3']
 
 
+#  tu jest cos nie tak z testem, problemem jest przeslanie zarowno headera z authentykacja jak i jsona w poscie
 def test_adding_module(app):
     client = app.test_client()
     data = { "unique_id": "unique_id_2", }

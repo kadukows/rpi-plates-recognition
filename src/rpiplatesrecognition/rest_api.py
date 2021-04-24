@@ -91,14 +91,37 @@ def init_app_sio(app: Flask, sio: SocketIO):
 
         return "Created whitelist",201
     
+
     @app.route('/api/get_all_whitelists', methods=['GET'])
     @rest_auth.login_required
     def get_all_whitelist():
+        # http -a user1:user1 GET http://127.0.0.1:5000/api/get_all_whitelists
 
-        #user = rest_auth.current_user()
-        #modules = Module.query.filter_by(user_id=user.id).all()
+        user = rest_auth.current_user()
+        whitelists = Whitelist.query.filter_by(user_id=user.id).all()
 
-        r#eturn {'modules': [module.unique_id for module in modules]}
+        return {'whitelists': [whitelist.name for whitelist in whitelists]}
+
+    @app.route('/api/get_whitelisted_plates', methods=['GET'])
+    @rest_auth.login_required
+    def get_whitelisted_plates():
+        #http -a user1:user1 GET http://127.0.0.1:5000/api/get_whitelisted_plates?id=id1
+        #http -a user1:user1 GET http://127.0.0.1:5000/api/get_whitelisted_plates?id='example whitelist name'
+
+        user = rest_auth.current_user()
+        data = request.args
+        if "id" not in data or user is None:
+            return "Lack of args", 401
+
+        whitelist = Whitelist.query.filter_by(name=data['id']).first()
+
+        if whitelist is None:
+            return "Whitelist with such id does not exists", 404       
+        
+        whitelist_assignments
+
+        return {'plates':'a'}
+
     
     
 
