@@ -121,6 +121,9 @@ def init_app_sio(app: Flask, sio: SocketIO):
         user = rest_auth.current_user()
         whitelists = Whitelist.query.filter_by(user_id=user.id).all()
 
+        if whitelists is None:
+            return 'No whitelists', 500
+
         return {'whitelists': [whitelist.name for whitelist in whitelists]}
 
     @app.route('/api/get_whitelisted_plates', methods=['GET'])
