@@ -5,7 +5,7 @@ from flask import session, request, jsonify
 from flask_socketio import SocketIO, join_room
 
 from .db import db
-from .models import Module
+from .models import Module, AccessAttempt
 
 def init_app(sio: SocketIO):
     @sio.on('login_from_rpi', namespace='/rpi')
@@ -39,10 +39,19 @@ def init_app(sio: SocketIO):
     @sio.on('log_from_rpi', namespace='/rpi')
     def log(data):
         if 'module_id' in session:
-
             module = Module.query.get(session['module_id'])
             sio.emit(
                 'message_from_server_to_client',
                 data,
                 namespace='/rpi',
                 to=module.unique_id)
+
+    @sio.on('image_from_rpi', namespace='/rpi')
+    def image(data):
+        if 'module_id' in session:
+            module = Module.query.get(session['module_id'])
+            if module and module.user:
+                access_attempt = AccessAttempt(module=module)
+                db.session.commit()  # inits access_attempt.id
+
+                #access_attempt.save_src_image(data)

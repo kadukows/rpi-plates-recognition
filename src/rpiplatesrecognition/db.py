@@ -1,15 +1,21 @@
-import click
+import base64
+import click, os
 from flask import current_app, Flask
 from flask.app import Flask
 from flask.cli import with_appcontext
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash
+import shutil
 
 db = SQLAlchemy()
 
 def init_db():
     db.drop_all()
     db.create_all()
+    try:
+        shutil.rmtree(os.path.join(current_app.static_folder, 'photos'))
+    except OSError:
+        pass
     db.session.commit()
 
 @click.command('init-db')
@@ -23,7 +29,7 @@ def init_db_command():
 def init_db_debug_command():
     """Helper command for aiding development process, populates databse with default values"""
 
-    from .models import User, Module, Whitelist, Plate
+    from .models import User, Module, Whitelist, Plate, AccessAttempt
 
     init_db()
 
@@ -45,7 +51,16 @@ def init_db_debug_command():
     for plate_text in ['WA6642E', 'WI027HJ', 'ERA75TM', 'ERA81TL']:
         whitelist.plates.append(Plate(text=plate_text))
 
-    db.session.commit()
+    for _ in range(15):
+        access_attempt = AccessAttempt(module)
+        # this commit neds to be here
+        # AccessAtempt.init_files needs AccessAttempt to have 'id'
+        db.session.commit()
+
+        with open(os.path.join(current_app.static_folder, 'debug.jpg'), 'rb') as file:
+            encoded_image = base64.encodebytes(file.read())
+
+        access_attempt.init_files(encoded_image)
 
     click.echo('Initialized db with default values')
 

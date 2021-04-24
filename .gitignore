@@ -9,3 +9,7 @@ instance/
 # coverage related dirs and files
 .coverage
 htmlcov/
+
+
+# runtime photos dir
+src/rpiplatesrecognition/static/photos
