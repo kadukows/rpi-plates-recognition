@@ -8,7 +8,7 @@ from werkzeug.datastructures import Authorization
 
 from .auth import rest_auth, PasswordVerifier
 from .db import db
-from .models import User, Module, Whitelist
+from .models import User, Module, Whitelist, whitelist_assignment
 
 def init_app_sio(app: Flask, sio: SocketIO):
     @app.route('/api/rpis', methods=['GET'])
@@ -33,9 +33,14 @@ def init_app_sio(app: Flask, sio: SocketIO):
     @rest_auth.login_required
     def get_modules():
         """Route returning modules asigned to user"""
+        
+        #http -a user1:user1 GET http://127.0.0.1:5000/api/get_modules
 
         user = rest_auth.current_user()
         modules = Module.query.filter_by(user_id=user.id).all()
+
+        if modules is None:
+            return 'No module on list', 500
 
         return {'modules': [module.unique_id for module in modules]}
     
@@ -43,12 +48,16 @@ def init_app_sio(app: Flask, sio: SocketIO):
     @rest_auth.login_required
     def post_module():
         # http -a user1:user1 POST http://127.0.0.1:5000/api/add_module unique_id=unique_id_5
+        
         user = rest_auth.current_user()
         data = request.get_json() or {}
         if "unique_id" not in data or user is None:
             return "Wrong json", 401
 
         module = Module.query.filter_by(unique_id = data['unique_id']).first()
+        if module.user is not None:
+            return "Module already assigned", 500
+
         with db.session():
             module.user = user
             db.session.commit()
@@ -59,6 +68,7 @@ def init_app_sio(app: Flask, sio: SocketIO):
     @app.route('/api/remove_module', methods=['DELETE'])
     @rest_auth.login_required
     def remove_module():
+        #http -a user1:user1 DELETE http://127.0.0.1:5000/api/remove_module unique_id=unique_id_5
         
         user = rest_auth.current_user()
         data = request.get_json() or {}
@@ -66,11 +76,19 @@ def init_app_sio(app: Flask, sio: SocketIO):
             return "Wrong json", 401
 
         module = Module.query.filter_by(unique_id = data['unique_id']).first()
+
+        if module is None:
+            return 'No resource', 404
+        
+        if module.user is not user:
+            return 'Module with such ID is bound to another user or is not bound to anyone', 412
+
         with db.session():
             module.user = None
             db.session.commit()
 
-        return "Succesfuly removed from user",204
+        return "Succesfuly removed from user", 201
+
     
     @app.route('/api/create_whitelist', methods=['POST'])
     @rest_auth.login_required
@@ -81,6 +99,9 @@ def init_app_sio(app: Flask, sio: SocketIO):
         data = request.get_json() or {}
         if "whitelist_name" not in data or user is None:
             return "Wrong json", 401
+        
+        if Whitelist.query.filter_by(name=data['whitelist_name']).first() is not None:
+            return 'Whitelist with such name already exists',418
 
         with db.session():
             whitelist = Whitelist(name=data['whitelist_name'])
@@ -89,7 +110,7 @@ def init_app_sio(app: Flask, sio: SocketIO):
             db.session.add(whitelist)
             db.session.commit()
 
-        return "Created whitelist",201
+        return "Created whitelist", 201
     
 
     @app.route('/api/get_all_whitelists', methods=['GET'])
@@ -118,8 +139,8 @@ def init_app_sio(app: Flask, sio: SocketIO):
         if whitelist is None:
             return "Whitelist with such id does not exists", 404       
         
-        whitelist_assignments
 
+        # not done yet
         return {'plates':'a'}
 
     
