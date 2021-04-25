@@ -6,6 +6,8 @@ from flask_socketio import SocketIO, join_room
 
 from .db import db
 from .models import Module, AccessAttempt
+import json
+
 
 def init_app(sio: SocketIO):
     @sio.on('login_from_rpi', namespace='/rpi')
@@ -51,8 +53,9 @@ def init_app(sio: SocketIO):
         if 'module_id' in session:
             module = Module.query.get(session['module_id'])
             if module and module.user:
-                pass
-                # uncomment when done
-                #access_attempt = AccessAttempt(module=module)
-                #db.session.commit()  # inits access_attempt.id
-                # access_attempt.init_files(data)
+                print(data['img'])
+                
+                access_attempt = AccessAttempt(module=module)
+                db.session.commit()  # inits access_attempt.id
+                access_attempt.init_files(data['img'])
+                return {'success': True}

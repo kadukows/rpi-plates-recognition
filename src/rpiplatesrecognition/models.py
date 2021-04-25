@@ -17,6 +17,7 @@ from .db import db
 from .helpers import files_in_dir
 from .libs.plate_acquisition.config_file import ExtractionConfigParameters
 
+
 DEFAULT_EXTRACTION_PARAMS = ExtractionConfigParameters()
 
 class User(UserMixin, db.Model):
@@ -167,7 +168,7 @@ class AccessAttempt(db.Model):
         image_abs_directory = os.path.join(current_app.static_folder, self.get_src_image_relative_directory())
         self._try_create_dir(image_abs_directory)
         with open(os.path.join(image_abs_directory, AccessAttempt.SRC_IMAGE_NAME), 'wb') as file:
-            file.write(base64.decodebytes(base64_encoded_image))
+            file.write(base64.b64decode(base64_encoded_image))
 
     def save_edge_projection(self, plates_regions: List[np.ndarray]):
         """ Saves all regions from edge_projection to ralative_directory/edge_projection """
