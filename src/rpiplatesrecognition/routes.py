@@ -107,9 +107,3 @@ def init_app(app: Flask, sio: SocketIO):
             return redirect(url_for('index'))
 
         return render_template('edit_whitelist.html', whitelist=whitelist)
-
-    @app.route('/rpi_connection/<string:unique_id>')
-    @login_required
-    @admin_required
-    def rpi_connection(unique_id):
-        return render_template('rpi_connection.html', unique_id=unique_id)

@@ -18,7 +18,7 @@
             {% endif %}
         </td>
         <td>
-            <a href="{{ url_for('rpi_connection', unique_id=module.unique_id)}}">
+            <a href="{{ url_for('rpi_connection.index', unique_id=module.unique_id)}}">
                 <button type="button" class="btn btn-primary" data-unique_id="{{ module.unique_id }}">More</button>
             </a>
         </td>
