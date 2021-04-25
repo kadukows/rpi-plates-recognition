@@ -87,63 +87,6 @@ class Plate(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     text = db.Column(db.String(10), unique=True, index=True, nullable=False)
 
-'''
-class ExtractionConfigParameters(db.Model):
-    __tablename__ = 'extraction_config_parameters'
-
-    id = db.Column(db.Integer, primary_key=True)
-
-    # algorithm specific values
-    algorithm_choice = db.Column(db.Integer, nullable=False, default=2)
-
-    img_size_x = db.Column(db.Integer, nullable=False, default=800)
-    img_size_y = db.Column(db.Integer, nullable=False, default=600)
-    max_areas = db.Column(db.Integer, nullable=False, default=2)
-
-    @property
-    def img_size(self) -> Tuple[int, int]:
-        return (self.img_size_x, self.img_size_y)
-
-    gauss_kernel_x = db.Column(db.Integer, nullable=False, default=3)
-    gauss_kernel_y = db.Column(db.Integer, nullable=False, default=3)
-    gauss_sigma = db.Column(db.Integer, nullable=False, default=7)
-
-    @property
-    def gauss_kernel(self) -> Tuple[int, int]:
-        return (self.gauss_kernel_x, self.gauss_kernel_y)
-
-    threshold_down = db.Column(db.Integer, nullable=False, default=50)  # below this bound image pixels are set to 0
-    morph_kernel_size_x = db.Column(db.Integer, nullable=False, default=50)
-    morph_kernel_size_y = db.Column(db.Integer, nullable=False, default=12)
-
-    @property
-    def morph_kernel_size(self) -> Tuple[int, int]:
-        # size of kernel has huge impact on result of morphology operation
-        return (self.morph_kernel_size_x, self.morph_kernel_size_y)
-
-    mean_size_x = db.Column(db.Integer, nullable=False, default=15)  # to remove noises from projection - count mean of mean_size_x pixels
-    possible_bounds = db.Column(db.Integer, nullable=False, default=3)
-    min_size_y = db.Column(db.Integer, nullable=False, default=30)  # min height of possible area
-    max_height = db.Column(db.Integer, nullable=False, default=100)
-    height_percent = db.Column(db.Float, nullable=False, default=0.5)  # this indicates where is the bound (bound is when height_percent * middle_pixel > pixel)
-
-    mean_size_y = db.Column(db.Integer, nullable=False, default=65) # to remove noises from projection - count mean of mean_size_y pixels
-    width_percent = db.Column(db.Integer, nullable=False, default=0.45)  # this indicates where is the bound (bound is when width_percent * middle_pixel > pixel)
-    max_width = db.Column(db.Integer, nullable=False, default=600)
-    min_size_x = db.Column(db.Integer, nullable=False, default=100)
-
-    ###########################################
-    # second algorithm
-
-    mean_size_x_v2 = db.Column(db.Integer, nullable=False, default=8)  # to remove noises from projection - count mean of mean_size_x pixels
-    min_size_y_v2 = db.Column(db.Integer, nullable=False, default=20)  # min height of possible area
-    height_percent_v2 = db.Column(db.Float, nullable=False, default=0.45) # this indicates where is the bound (bound is when height_percent * middle_pixel > pixel)
-    mean_size_y_v2 = db.Column(db.Integer, nullable=False, default=65)  # to remove noises from projection - count mean of mean_size_y pixels
-    width_percent_v2 = db.Column(db.Float, nullable=False, default=0.50) # this indicates where is the bound (bound is when width_percent * middle_pixel > pixel)
-    max_width_v2 = db.Column(db.Integer, nullable=False, default=600)
-    min_size_x_v2 = db.Column(db.Integer, nullable=False, default=150)
-'''
-
 
 class AccessAttempt(db.Model):
     __tablename__ = 'access_attempts'

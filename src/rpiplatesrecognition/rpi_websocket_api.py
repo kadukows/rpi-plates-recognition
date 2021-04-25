@@ -51,7 +51,8 @@ def init_app(sio: SocketIO):
         if 'module_id' in session:
             module = Module.query.get(session['module_id'])
             if module and module.user:
-                access_attempt = AccessAttempt(module=module)
-                db.session.commit()  # inits access_attempt.id
-
-                #access_attempt.save_src_image(data)
+                pass
+                # uncomment when done
+                #access_attempt = AccessAttempt(module=module)
+                #db.session.commit()  # inits access_attempt.id
+                # access_attempt.init_files(data)
