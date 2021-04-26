@@ -77,6 +77,12 @@ def sign_morphology(sign, threshold_value):
     return result_sign
 
 
+def combine_to_one(img_list):
+    h_max=max(img.shape[0] for img in img_list)
+    img_list=[cv.resize(img,(int(img.shape[1]*h_max/img.shape[0]),h_max),interpolation=cv.INTER_CUBIC) for img in img_list]
+    img_list=[cv.copyMakeBorder(img,5,5,5,5,cv.BORDER_CONSTANT,value=255) for img in img_list]
+    return cv.hconcat(img_list)
+
 
 def find_segments(possible_plates,parameters:ExtractionConfigParameters) -> List[np.ndarray] :
 
