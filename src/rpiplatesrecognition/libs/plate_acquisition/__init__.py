@@ -1,4 +1,5 @@
 import numpy as np
+from pytesseract import image_to_string
 
 from .edge_projection_algorithm import edge_projection_algorithm
 from .signs_extraction import find_segments, combine_to_one
@@ -39,7 +40,8 @@ def photo_to_plate(img: np.ndarray,parameters: ExtractionConfigParameters = Extr
     segments = find_segments(possible_plates,parameters)
     segment = combine_to_one(segments)
     # recognized_strings = recognize_plate(segments) # Tomek
-    recognized_strings = ["abc12345", "cba54321"]
+    # recognized_strings = ["abc12345", "cba54321"]
+    recognized_strings = image_to_string(segment,lang='eng',config='--psm 6')
 
     return recognized_strings
 
