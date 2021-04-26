@@ -100,6 +100,7 @@ def find_segments(possible_plates,parameters:ExtractionConfigParameters) -> List
             break
     for i in range (0,len(found_signs)):
         found_signs[i]=sign_morphology(found_signs[i],parameters.threshold_morphology)
+        found_signs[i]=cv.bitwise_not(found_signs[i])
         #cv.imshow("test2",i)
         #cv.waitKey()
 
