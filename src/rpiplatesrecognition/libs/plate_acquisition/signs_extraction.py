@@ -92,8 +92,8 @@ def find_segments(possible_plates,parameters:ExtractionConfigParameters) -> List
         if len(signs)>=parameters.min_number_of_ch and len(signs)<=parameters.max_number_of_ch:
             found_signs=signs #There is one license plate assumed
             break
-    for i in found_signs:
-        i=sign_morphology(i,parameters.threshold_morphology)
+    for i in range (0,len(found_signs)):
+        found_signs[i]=sign_morphology(found_signs[i],parameters.threshold_morphology)
         #cv.imshow("test2",i)
         #cv.waitKey()
 
