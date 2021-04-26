@@ -77,6 +77,12 @@ def sign_morphology(sign, threshold_value):
     return result_sign
 
 
+def combine_to_one(img_list):
+    h_max=max(img.shape[0] for img in img_list)
+    img_list=[cv.resize(img,(int(img.shape[1]*h_max/img.shape[0]),h_max),interpolation=cv.INTER_CUBIC) for img in img_list]
+    img_list=[cv.copyMakeBorder(img,5,5,5,5,cv.BORDER_CONSTANT,value=255) for img in img_list]
+    return cv.hconcat(img_list)
+
 
 def find_segments(possible_plates,parameters:ExtractionConfigParameters) -> List[np.ndarray] :
 
@@ -92,8 +98,9 @@ def find_segments(possible_plates,parameters:ExtractionConfigParameters) -> List
         if len(signs)>=parameters.min_number_of_ch and len(signs)<=parameters.max_number_of_ch:
             found_signs=signs #There is one license plate assumed
             break
-    for i in found_signs:
-        i=sign_morphology(i,parameters.threshold_morphology)
+    for i in range (0,len(found_signs)):
+        found_signs[i]=sign_morphology(found_signs[i],parameters.threshold_morphology)
+        found_signs[i]=cv.bitwise_not(found_signs[i])
         #cv.imshow("test2",i)
         #cv.waitKey()
 
