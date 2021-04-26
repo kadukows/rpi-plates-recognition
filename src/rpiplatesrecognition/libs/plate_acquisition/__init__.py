@@ -15,6 +15,16 @@ import os
 import cv2 as cv
 """
 
+def global_edge_projection(img: np.ndarray, parameters: ExtractionConfigParameters):
+    if parameters.algorithm_choice == 1:
+        result = edge_projection_algorithm(img, parameters)
+    elif parameters.algorithm_choice == 2:
+        result = edge_projection_algorithm_v2(img, parameters)
+    else:
+        raise ValueError()
+
+    return result
+
 # this function convert image to recognized number plates string ( can be more than one )
 def photo_to_plate(img: np.ndarray,parameters: ExtractionConfigParameters = ExtractionConfigParameters()):
 
@@ -38,7 +48,7 @@ def photo_to_plate(img: np.ndarray,parameters: ExtractionConfigParameters = Extr
 def main():
 
     directory = os.fsencode("images")
-    
+
     for file in os.listdir(directory):
         filename = os.fsdecode(file)
         img = cv.imread("images/"+filename)
@@ -47,6 +57,5 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
-"""
 
+"""

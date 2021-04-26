@@ -1,5 +1,6 @@
 import numpy as np
 import cv2 as cv
+from typing import List
 
 from .draw_projection import *
 from .config_file import *
@@ -35,8 +36,8 @@ def  cca(img:np.ndarray,parameters):
             x=stats[i][0]
             y=stats[i][1]
             img2=img[y:y+stats[i][3],x:x+stats[i][2]+1]
-            signs.append((x,y,img2))               
-    
+            signs.append((x,y,img2))
+
     signs.sort(key=lambda x:x[0])
     j=0
     while(j<len(signs)-1):
@@ -76,7 +77,8 @@ def sign_morphology(sign, threshold_value):
     return result_sign
 
 
-def find_segments(possible_plates,parameters:ExtractionConfigParameters):
+
+def find_segments(possible_plates,parameters:ExtractionConfigParameters) -> List[np.ndarray] :
 
     found_signs=[]
 
@@ -92,7 +94,8 @@ def find_segments(possible_plates,parameters:ExtractionConfigParameters):
             break
     for i in found_signs:
         i=sign_morphology(i,parameters.threshold_morphology)
-        cv.imshow("test2",i)
-        cv.waitKey()
+        #cv.imshow("test2",i)
+        #cv.waitKey()
+
 
     return found_signs
