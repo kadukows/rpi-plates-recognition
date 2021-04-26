@@ -75,3 +75,11 @@ def init_app(app: Flask):
         from .models import Module
         Module.query.update({Module.is_active: False})
         db.session.commit()
+
+    # this check for integrity of 'static/photos' folder with dataabse state
+    @app.before_first_request
+    def access_attempts_integrity_check():
+            from .models import AccessAttempt
+            access_attempts = AccessAttempt.query.all()
+            assert all(access_attempt.photos_exist() for access_attempt in access_attempts), \
+                "There are access attempts without photos existing, please reinit db with 'flask init-db' or 'flask init-db-debug'"

@@ -105,7 +105,7 @@ class AccessAttempt(db.Model):
         possible_plates = global_edge_projection(img, self.extraction_params)
         self.save_edge_projection(possible_plates)
 
-        segments = find_segments(possible_plates)
+        segments = find_segments(possible_plates, self.extraction_params)
         self.save_segments(segments)
 
 
@@ -203,3 +203,14 @@ class AccessAttempt(db.Model):
 
         segments_dir = self.get_segments_relative_directory()
         return [os.path.join(segments_dir, filename) for filename in files_in_dir(os.path.join(current_app.static_folder, segments_dir))]
+
+
+
+    def photos_exist(self) -> bool:
+        """ Checks if photos for given access attemps exists """
+
+        dir = os.path.join(current_app.root_path, 'static', self.get_src_image_relative_directory())
+
+        result = os.path.exists(dir)
+
+        return result
