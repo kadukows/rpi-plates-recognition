@@ -1,14 +1,14 @@
 import numpy as np
 
 from .edge_projection_algorithm import edge_projection_algorithm
-from .signs_extraction import find_segments
+from .signs_extraction import find_segments, combine_to_one
 from .edge_projection_second import edge_projection_algorithm_v2
 from .config_file import *
 
 """
 imports to work on windows
 from edge_projection_algorithm import edge_projection_algorithm
-from signs_extraction import find_segments
+from signs_extraction import find_segments, combine_to_one
 from edge_projection_second import edge_projection_algorithm_v2
 from config_file import *
 import os
