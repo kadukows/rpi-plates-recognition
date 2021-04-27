@@ -1,6 +1,5 @@
-import base64
-from os import access
-from flask import Blueprint, render_template, jsonify, flash, url_for, send_from_directory
+import base64, os
+from flask import Blueprint, render_template, jsonify, flash, url_for, send_from_directory, current_app
 from flask_login.utils import login_required
 from werkzeug.utils import redirect
 
@@ -28,17 +27,18 @@ def index(unique_id):
 @admin_required
 def get_images_for_access_attempt(access_attempt_id: int):
     access_attempt = AccessAttempt.query.get(access_attempt_id)
+    access_attempt: AccessAttempt
 
     if access_attempt is None:
         return {}
 
     return {
-        'img_src': url_for('access_attempt_src_image', access_attempt_id=access_attempt_id),
+        'img_src': url_for('rpi_connection.access_attempt_src_image', access_attempt_id=access_attempt_id),
         'edge_proj': [
-            #url_for('static', filename=filename) for filename in access_attempt.get_edge_proj_static_filepaths()
+            url_for('rpi_connection.access_attempt_edge_proj_image', access_attempt_id=access_attempt_id, edge_proj_id=edge_proj_id) for edge_proj_id in range(access_attempt.plate_region_num)
         ],
         'segments': [
-            #url_for('static', filename=filename) for filename in access_attempt.get_segments_static_filepaths()
+            url_for('rpi_connection.access_attempt_seg_image', access_attempt_id=access_attempt_id, seg_id=seg_idx) for seg_idx in range(access_attempt.segments_num)
         ]
     }
 
@@ -77,6 +77,32 @@ def access_attempt_src_image(access_attempt_id: int):
     access_attempt: AccessAttempt
 
     if access_attempt is None:
-        return b''
+        return b'Not found', 404
 
-    return send_from_directory('', access_attempt.get_src_image_filepath(Dirs.Relative))
+    dirname, filename = os.path.split(access_attempt.get_src_image_filepath(Dirs.Absolute))
+    return send_from_directory(dirname, filename)
+
+
+@bp.route('/access_attempt/seg_result_image/<int:access_attempt_id>/<int:seg_id>')
+@login_required
+@admin_required
+def access_attempt_seg_image(access_attempt_id: int, seg_id: int):
+    access_attempt = AccessAttempt.query.get(access_attempt_id)
+    access_attempt: AccessAttempt
+
+    if access_attempt is None:
+        return b'Not found', 404
+
+    return send_from_directory(access_attempt.get_segments_dirpath(Dirs.Absolute), str(seg_id) + '.png')
+
+@bp.route('/access_attempt/edge_proj_image/<int:access_attempt_id>/<int:edge_proj_id>')
+@login_required
+@admin_required
+def access_attempt_edge_proj_image(access_attempt_id: int, edge_proj_id: int):
+    access_attempt = AccessAttempt.query.get(access_attempt_id)
+    access_attempt: AccessAttempt
+
+    if access_attempt is None:
+        return b'Not found', 404
+
+    return send_from_directory(access_attempt.get_edge_proj_dirpath(Dirs.Absolute), str(edge_proj_id) +'.png')

@@ -6,8 +6,7 @@ import numpy as np
 import cv2 as cv
 
 import click
-from flask import current_app
-from flask.cli import with_appcontext
+from flask import current_app, Flask
 from flask_login import UserMixin
 from sqlalchemy.orm import subqueryload
 import sqlalchemy
@@ -97,7 +96,8 @@ class AccessAttempt(db.Model):
             extraction_params: ExtractionConfigParameters = None):
         self.module = module
         self.user = self.module.user
-        self.extraction_params = extraction_params or module.extraction_params
+        extraction_params_ = extraction_params or module.extraction_params
+        self.extraction_params = extraction_params_
         self.photos_dir = create_new_directory_for_photo(encoded_image)
         self.init_directories() # inits dirs for segments and edge porjection results
 
@@ -105,20 +105,22 @@ class AccessAttempt(db.Model):
         from pytesseract import image_to_string
 
         # save original photo
-        with open(self.get_src_image_abs_filepath(), 'wb') as file:
+        with open(self.get_src_image_filepath(Dirs.Absolute), 'wb') as file:
             file.write(base64.decodebytes(encoded_image))
 
-        img = cv.imread(self.get_src_image_abs_filepath())
+        img = cv.imread(self.get_src_image_filepath(Dirs.Absolute))
 
         # save plate regions
-        plates_regions = global_edge_projection(img, self.extraction_params)
+        plates_regions = global_edge_projection(img, extraction_params_)
+        self.plate_region_num = len(plates_regions)
         for idx, plate_region in enumerate(plates_regions):
             assert cv.imwrite(
                 os.path.join(self.get_edge_proj_dirpath(Dirs.Absolute), str(idx) + '.png'),
                 plate_region)
 
         # save segments
-        segments = find_segments(plates_regions, self.extraction_params)
+        segments = find_segments(plates_regions, extraction_params_)
+        self.segments_num = len(segments)
         for idx, segment in enumerate(segments):
             assert cv.imwrite(
                 os.path.join(self.get_segments_dirpath(Dirs.Absolute), str(idx) + '.png'),
@@ -137,6 +139,8 @@ class AccessAttempt(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     user = db.relationship('User', backref=db.backref('access_attempts', lazy=True))
 
+    plate_region_num = db.Column(db.Integer, nullable=False)
+    segments_num = db.Column(db.Integer, nullable=False)
     recognized_plate = db.Column(db.String(20), nullable=False)
     extraction_params = db.Column(db.PickleType, nullable=False, default=DEFAULT_EXTRACTION_PARAMS)
     photos_dir = db.Column(db.String(120), nullable=False)
@@ -149,7 +153,7 @@ class AccessAttempt(db.Model):
 
 
     def photos_exist(self) -> bool:
-        """ Checks if photos for given access attemps exists """
+        return True
 
         dir = os.path.join(current_app.root_path, 'static', self.get_src_image_relative_directory())
         result = os.path.exists(dir)
