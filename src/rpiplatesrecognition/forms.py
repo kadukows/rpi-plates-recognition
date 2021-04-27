@@ -54,3 +54,17 @@ class AddWhitelistForm(FlaskForm):
 class UploadImageForm(FlaskForm):
     file = FileField('Image', validators=[FileRequired(), FileAllowed(['jpg'], 'Only jpg images!')])
     submit = SubmitField('Add an access attempt')
+
+class AddWhitelistForm(FlaskForm):
+    whitelist_name = StringField('Whitelist name', validators=[DataRequired()])
+    submit = SubmitField('Add whitelist')
+
+    def validate_whitelist_name(self, whitelist_name):
+        whitelist = Whitelist.query.filter_by(name=whitelist_name.data).first()
+
+        if whitelist is not None:
+            raise ValidationError('This name is already taken')
+        
+        if len(whitelist_name.data) < 2:
+            raise ValidationError('Too short name')
+

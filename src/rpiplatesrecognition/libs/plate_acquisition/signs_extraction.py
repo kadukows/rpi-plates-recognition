@@ -78,6 +78,8 @@ def sign_morphology(sign, threshold_value):
 
 
 def combine_to_one(img_list):
+    if len(img_list) == 0:
+        return
     h_max=max(img.shape[0] for img in img_list)
     img_list=[cv.resize(img,(int(img.shape[1]*h_max/img.shape[0]),h_max),interpolation=cv.INTER_CUBIC) for img in img_list]
     img_list=[cv.copyMakeBorder(img,5,5,5,5,cv.BORDER_CONSTANT,value=255) for img in img_list]
@@ -104,5 +106,6 @@ def find_segments(possible_plates,parameters:ExtractionConfigParameters) -> List
         #cv.imshow("test2",i)
         #cv.waitKey()
 
-
+    if len(found_signs)==0:
+        return None
     return found_signs
