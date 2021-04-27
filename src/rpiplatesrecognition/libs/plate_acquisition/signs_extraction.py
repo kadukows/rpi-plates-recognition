@@ -106,5 +106,6 @@ def find_segments(possible_plates,parameters:ExtractionConfigParameters) -> List
         #cv.imshow("test2",i)
         #cv.waitKey()
 
-
+    if len(found_signs)==0:
+        return None
     return found_signs
