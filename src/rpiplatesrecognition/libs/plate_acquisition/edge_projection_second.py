@@ -47,6 +47,8 @@ def find_up_and_down_bound_v2(img, parameters):
         index = np.unravel_index(projection_x_edit.argmax(), projection_x_edit.shape)[0]
 
         up_bound = index + int(parameters.min_size_y_v2 / 2)  # default up bound
+        if up_bound < 0:
+            down_bound = 0
 
         for j in range(index + int(parameters.min_size_y_v2 / 2), index + int(parameters.max_height / 2)):
             if j >= parameters.img_size[1]:
@@ -57,6 +59,8 @@ def find_up_and_down_bound_v2(img, parameters):
                 break
 
         down_bound = index - int(parameters.min_size_y_v2 / 2)
+        if down_bound < 0:
+            down_bound = 0
         for j in range(index - int(parameters.min_size_y_v2 / 2), index - int(parameters.max_height / 2), -1):
             if j <= 0:
                 break
@@ -98,6 +102,9 @@ def get_bound_using_edge_projection_v2(img: np.ndarray, parameters):
                 break
 
         left_bound = index - int(parameters.min_size_x_v2/2)
+        if left_bound < 0:
+            left_bound = 0
+
         for k in range(index - int(parameters.min_size_x_v2/2), index - int(parameters.max_width_v2 / 2), -1):
             if k <= 0:
                 break
