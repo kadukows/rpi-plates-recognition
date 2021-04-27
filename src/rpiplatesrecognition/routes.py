@@ -109,7 +109,7 @@ def init_app(app: Flask, sio: SocketIO):
         return render_template('edit_whitelist.html', whitelist=whitelist)
     
 
-    @app.route('/add_whitelist', methods=['GET'])
+    @app.route('/add_whitelist', methods=['GET','POST'])
     @login_required
     def add_whitelist():
         form = AddWhitelistForm()

@@ -65,6 +65,6 @@ class AddWhitelistForm(FlaskForm):
         if whitelist is not None:
             raise ValidationError('This name is already taken')
         
-        if whitelist_name.data.length < 2:
+        if len(whitelist_name.data) < 2:
             raise ValidationError('Too short name')
 
