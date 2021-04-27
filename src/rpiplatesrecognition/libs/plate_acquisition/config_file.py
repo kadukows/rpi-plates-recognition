@@ -7,7 +7,7 @@ Parameters responsible for plates extraction
 @dataclass
 class ExtractionConfigParameters:
 
-    algorithm_choice: int = 2  # 1 or 2
+    algorithm_choice: int = 1  # 1 or 2
 
     img_size: Tuple[int, int] = (800, 600)
     max_areas: int = 2

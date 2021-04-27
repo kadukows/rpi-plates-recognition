@@ -1,21 +1,29 @@
 import numpy as np
 import cv2 as cv
+from typing import List
+
+"""
+from .draw_projection import *
+from .config_file import *
+
+"""
+from draw_projection import *
+from config_file import *
 
 
 
-def adaptive_threshhold(img:np.ndarray):
+def adaptive_threshhold(img:np.ndarray, parameters):
     #img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     #ret,img=cv.threshold(img,100,255,cv.THRESH_BINARY)
     #ret,img=cv.threshold(img,65,255,cv.THRESH_BINARY)
-    img=cv.adaptiveThreshold(img,255,cv.ADAPTIVE_THRESH_MEAN_C,cv.THRESH_BINARY,11,2)
+    img=cv.adaptiveThreshold(img,255,cv.ADAPTIVE_THRESH_MEAN_C,cv.THRESH_BINARY,parameters.adaptive_threshhold_size,parameters.adaptive_threshhold_C)
     #img= cv.adaptiveThreshold(img,255,cv.ADAPTIVE_THRESH_GAUSSIAN_C,cv.THRESH_BINARY,11,2)
     img=cv.bitwise_not(img)
     return img
 
 
-def  cca(img:np.ndarray):
-    connectivity=4
-    out=cv.connectedComponentsWithStats(img, connectivity, cv.CV_32S)
+def  cca(img:np.ndarray,parameters):
+    out=cv.connectedComponentsWithStats(img, parameters.connectivity, cv.CV_32S)
     stats=out[2]
     signs=[]
 
@@ -25,16 +33,16 @@ def  cca(img:np.ndarray):
     #The ratio of the height to the width of the character is greater than 1.2
 
     for i in range(0,out[0]):
-        if stats[i][3]>(0.4*len(img)) and (stats[i][3]/stats[i][2])>1.20 and stats[i][3]<(0.9*len(img)):
+        if stats[i][3]>(parameters.min_len_per*len(img)) and (stats[i][3]/stats[i][2])>parameters.htw_ratio and stats[i][3]<(parameters.max_len_per*len(img)):
             x=stats[i][0]
             y=stats[i][1]
             img2=img[y:y+stats[i][3],x:x+stats[i][2]+1]
-            signs.append((x,y,img2))               
-    
+            signs.append((x,y,img2))
+
     signs.sort(key=lambda x:x[0])
     j=0
     while(j<len(signs)-1):
-        if (signs[j][1]-10>signs[j+1][1] or signs[j][1]+10<signs[j+1][1] or len(signs[j+1][2])<len(signs[j][2])-10):
+        if (signs[j][1]-parameters.max_diff_height>signs[j+1][1] or signs[j][1]+parameters.max_diff_height<signs[j+1][1] or len(signs[j+1][2])<len(signs[j][2])-parameters.max_diff_height):
             del signs[j+1]
         else:
             j+=1
@@ -59,34 +67,43 @@ def flood_fill(sign):
     return floodfilled_sign
 
 
-def sign_morphology(sign):
+def sign_morphology(sign, threshold_value):
     sign=cv.resize(sign,(int(len(sign[0])*2),int(len(sign)*2)))
     kernel=np.ones((5,5),np.uint8)
     opened_sign=cv.morphologyEx(sign,cv.MORPH_OPEN,kernel)
     opened_sign=cv.morphologyEx(opened_sign,cv.MORPH_OPEN,kernel)
     closed_sign=cv.morphologyEx(opened_sign,cv.MORPH_CLOSE,kernel)
     #closed_sign=cv.morphologyEx(closed_sign,cv.MORPH_CLOSE,kernel)
-    ret,result_sign=cv.threshold(closed_sign,100,255,cv.THRESH_BINARY)
+    ret,result_sign=cv.threshold(closed_sign,threshold_value,255,cv.THRESH_BINARY)
     return result_sign
 
 
-def find_segments(possible_plates):
+def combine_to_one(img_list):
+    h_max=max(img.shape[0] for img in img_list)
+    img_list=[cv.resize(img,(int(img.shape[1]*h_max/img.shape[0]),h_max),interpolation=cv.INTER_CUBIC) for img in img_list]
+    img_list=[cv.copyMakeBorder(img,5,5,5,5,cv.BORDER_CONSTANT,value=255) for img in img_list]
+    return cv.hconcat(img_list)
+
+
+def find_segments(possible_plates,parameters:ExtractionConfigParameters) -> List[np.ndarray] :
 
     found_signs=[]
 
 
     for img in possible_plates:
-        img=adaptive_threshhold(img)
-        cv.imshow("test2",img)
-        cv.waitKey()
-        signs=cca(img)
-        cv.waitKey()
-        if len(signs)>=4 and len(signs)<=9:
+        img=adaptive_threshhold(img,parameters)
+        #cv.imshow("test",img)
+        #cv.waitKey()
+        signs=cca(img,parameters)
+        #cv.waitKey()
+        if len(signs)>=parameters.min_number_of_ch and len(signs)<=parameters.max_number_of_ch:
             found_signs=signs #There is one license plate assumed
             break
-    for i in found_signs:
-        i=sign_morphology(i)
-        cv.imshow("test2",i)
-        cv.waitKey()
+    for i in range (0,len(found_signs)):
+        found_signs[i]=sign_morphology(found_signs[i],parameters.threshold_morphology)
+        found_signs[i]=cv.bitwise_not(found_signs[i])
+        #cv.imshow("test2",i)
+        #cv.waitKey()
+
 
     return found_signs
