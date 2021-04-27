@@ -108,7 +108,7 @@ def test_adding_module(app):
     response = client.post('/api/add_module', headers={'Authorization': 'Basic ' + base64.b64encode(('user1:user1'.encode('utf8'))).decode('utf8'),"Content-Type": "application/json"}
     , data = json.dumps(data))
     
-    assert response.status_code == 200
+    assert response.status_code == 201
     
     with app.app_context():
         user = User.query.filter_by(username="user1").first()
