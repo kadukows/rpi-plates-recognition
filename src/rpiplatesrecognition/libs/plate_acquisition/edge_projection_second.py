@@ -1,8 +1,8 @@
 import cv2 as cv
 import numpy as np
-#from .draw_projection import *
+from .draw_projection import *
 
-from draw_projection import *
+#from draw_projection import *
 
 
 def preprocessing_image_v2(img: np.ndarray, parameters):
@@ -175,18 +175,16 @@ def edge_projection_algorithm_v2(img: np.ndarray, parameters):
         down = lp_y_bounds[best[1]][0]
         up = lp_y_bounds[best[1]][1]
         pic = img_copy[down:up, left:right]
-        cv.imshow("test4", pic)
+        #cv.imshow("test4", pic)
         pic = crop_plate(pic)
         possible_plate.append(pic)
 
-
+        """
         cv.rectangle(img, (left, down), (right, up), (120, 120, 120), 2)
         cv.imshow("test2", img)
 
         cv.imshow("plate", pic)
-        #cv.waitKey()
-
-
-
+        cv.waitKey()
+        """
 
     return possible_plate

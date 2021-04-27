@@ -1,6 +1,6 @@
 import numpy as np
 from pytesseract import image_to_string
-"""
+
 from .edge_projection_algorithm import edge_projection_algorithm
 from .signs_extraction import find_segments, combine_to_one
 from .edge_projection_second import edge_projection_algorithm_v2
@@ -13,7 +13,7 @@ from edge_projection_second import edge_projection_algorithm_v2
 from config_file import *
 import os
 import cv2 as cv
-
+"""
 
 def global_edge_projection(img: np.ndarray, parameters: ExtractionConfigParameters):
     if parameters.algorithm_choice == 1:
