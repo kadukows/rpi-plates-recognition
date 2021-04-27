@@ -121,6 +121,31 @@ def chose_number_plate_v2(proposed_areas, img, parameters):
 
     return best_fit
 
+def crop_plate(img):
+    ret, thresh = cv.threshold(img,140,255,cv.THRESH_OTSU)
+    contours,stuff = cv.findContours(thresh,cv.RETR_TREE,cv.CHAIN_APPROX_SIMPLE)
+
+    area = [cv.contourArea(contour) for contour in contours]
+    if(len(area)!=0):
+        max_index = np.argmax(area)
+        cnt=contours[max_index]
+
+        """ mozliwosc obroconych kwadratow
+        rect = cv.minAreaRect(cnt)
+        box = cv.boxPoints(rect)
+        box = np.int0(box)
+        cv.drawContours(img, [box], 0, (0, 0, 255), 2)
+        cv.imshow("test4", img)
+        """
+
+        x,y,w,h = cv.boundingRect(cnt)
+        if w < 40 or h < 15:
+            return img
+        crop = img[y:y+h,x:x+w]
+    else:
+        crop = img
+    return crop
+
 
 def edge_projection_algorithm_v2(img: np.ndarray, parameters):
     img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
@@ -150,6 +175,8 @@ def edge_projection_algorithm_v2(img: np.ndarray, parameters):
         down = lp_y_bounds[best[1]][0]
         up = lp_y_bounds[best[1]][1]
         pic = img_copy[down:up, left:right]
+        #cv.imshow("test4", pic)
+        pic = crop_plate(pic)
         possible_plate.append(pic)
 
         """
@@ -159,7 +186,5 @@ def edge_projection_algorithm_v2(img: np.ndarray, parameters):
         cv.imshow("plate", pic)
         cv.waitKey()
         """
-
-
 
     return possible_plate

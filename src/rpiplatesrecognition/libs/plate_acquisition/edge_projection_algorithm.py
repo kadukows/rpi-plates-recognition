@@ -2,10 +2,10 @@ import numpy as np
 import cv2 as cv
 from .draw_projection import *
 from .config_file import *
-
-#from draw_projection import *
-#from config_file import *
-
+"""
+from draw_projection import *
+from config_file import *
+"""
 
 def preprocessing_image(img: np.ndarray,parameters):
 
@@ -147,12 +147,12 @@ def edge_projection_algorithm(img: np.ndarray, parameters:ExtractionConfigParame
         pic = img_copy[down:up, left:right]
         possible_plate.append(pic)
 
-        """
+
         cv.rectangle(img, (left, down), (right, up), (120, 120, 120), 2)
         cv.imshow("test2", img)
         cv.imshow("plate", pic)
         cv.waitKey()
-        """
+
 
 
     return possible_plate
