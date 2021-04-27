@@ -1,6 +1,6 @@
 import base64
 from os import access
-from flask import Blueprint, render_template, jsonify, flash, url_for
+from flask import Blueprint, render_template, jsonify, flash, url_for, send_from_directory
 from flask_login.utils import login_required
 from werkzeug.utils import redirect
 
@@ -8,6 +8,7 @@ from .auth import admin_required
 from .models import Module, AccessAttempt
 from .forms import UploadImageForm
 from .db import db
+from .helpers import Dirs
 
 bp = Blueprint('rpi_connection', __name__, url_prefix='/rpi_connection')
 
@@ -32,9 +33,13 @@ def get_images_for_access_attempt(access_attempt_id: int):
         return {}
 
     return {
-        'img_src': url_for('static', filename=access_attempt.get_src_image_static_filepath()),
-        'edge_proj': [url_for('static', filename=filename) for filename in access_attempt.get_edge_proj_static_filepaths()],
-        'segments': [url_for('static', filename=filename) for filename in access_attempt.get_segments_static_filepaths()]
+        'img_src': url_for('access_attempt_src_image', access_attempt_id=access_attempt_id),
+        'edge_proj': [
+            #url_for('static', filename=filename) for filename in access_attempt.get_edge_proj_static_filepaths()
+        ],
+        'segments': [
+            #url_for('static', filename=filename) for filename in access_attempt.get_segments_static_filepaths()
+        ]
     }
 
 @bp.route('/upload_access_attempt/<string:unique_id>/', methods=['GET', 'POST'])
@@ -55,10 +60,23 @@ def upload_access_attempt(unique_id):
     if form.validate_on_submit():
         img_data = form.file.data.stream.read()
 
-        access_attempt = AccessAttempt(module)
+        access_attempt = AccessAttempt(module, base64.encodebytes(img_data))
+        db.session.add(access_attempt)
         db.session.commit()
-        access_attempt.init_files(base64.encodebytes(img_data))
 
         return redirect(url_for('rpi_connection.index', unique_id=unique_id))
 
     return render_template('rpi_connection_file_upload.html', form=form, module=module)
+
+
+@bp.route('/access_attempt/src_image/<int:access_attempt_id>')
+@login_required
+@admin_required
+def access_attempt_src_image(access_attempt_id: int):
+    access_attempt = AccessAttempt.query.get(access_attempt_id)
+    access_attempt: AccessAttempt
+
+    if access_attempt is None:
+        return b''
+
+    return send_from_directory('', access_attempt.get_src_image_filepath(Dirs.Relative))

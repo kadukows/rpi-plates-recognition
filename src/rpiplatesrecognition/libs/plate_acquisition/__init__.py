@@ -6,15 +6,6 @@ from .signs_extraction import find_segments, combine_to_one
 from .edge_projection_second import edge_projection_algorithm_v2
 from .config_file import *
 
-"""
-imports to work on windows
-from edge_projection_algorithm import edge_projection_algorithm
-from signs_extraction import find_segments, combine_to_one
-from edge_projection_second import edge_projection_algorithm_v2
-from config_file import *
-import os
-import cv2 as cv
-"""
 
 def global_edge_projection(img: np.ndarray, parameters: ExtractionConfigParameters):
     if parameters.algorithm_choice == 1:
@@ -39,25 +30,6 @@ def photo_to_plate(img: np.ndarray,parameters: ExtractionConfigParameters = Extr
 
     segments = find_segments(possible_plates,parameters)
     segment = combine_to_one(segments)
-    # recognized_strings = recognize_plate(segments) # Tomek
-    # recognized_strings = ["abc12345", "cba54321"]
     recognized_strings = image_to_string(segment,lang='eng',config='--psm 6')
 
     return recognized_strings
-
-
-"""
-def main():
-
-    directory = os.fsencode("images")
-
-    for file in os.listdir(directory):
-        filename = os.fsdecode(file)
-        img = cv.imread("images/"+filename)
-        photo_to_plate(img)
-
-
-if __name__ == "__main__":
-    main()
-
-"""

@@ -51,7 +51,7 @@ def init_db_debug_command():
     for plate_text in ['WA6642E', 'WI027HJ', 'ERA75TM', 'ERA81TL']:
         whitelist.plates.append(Plate(text=plate_text))
 
-    for _ in range(15):
+    for _ in range(1):
         access_attempt = AccessAttempt(module)
         # this commit neds to be here
         # AccessAtempt.init_files needs AccessAttempt to have 'id'
@@ -61,6 +61,8 @@ def init_db_debug_command():
             encoded_image = base64.encodebytes(file.read())
 
         access_attempt.init_files(encoded_image)
+
+    db.session.commit()
 
     click.echo('Initialized db with default values')
 
