@@ -6,7 +6,7 @@ from flask_socketio import SocketIO, join_room, leave_room
 from werkzeug.urls import url_parse
 
 from .db import db
-from .forms import ChangePasswordForm, LoginForm, RegistrationForm, AddModuleForm
+from .forms import ChangePasswordForm, LoginForm, RegistrationForm, AddModuleForm, AddWhitelistForm
 from .models import User, Module, Whitelist, Plate
 from .auth import admin_required
 
@@ -107,3 +107,15 @@ def init_app(app: Flask, sio: SocketIO):
             return redirect(url_for('index'))
 
         return render_template('edit_whitelist.html', whitelist=whitelist)
+    
+
+    @app.route('/add_whitelist', methods=['GET'])
+    @login_required
+    def add_whitelist():
+        form = AddWhitelistForm()
+        
+        if form.validate_on_submit():     
+            flash('Added whitelist')       
+            return redirect(url_for('whitelists'))
+
+        return render_template('add_whitelist.html', form=form)
