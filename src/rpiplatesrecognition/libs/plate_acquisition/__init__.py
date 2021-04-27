@@ -25,6 +25,16 @@ def global_edge_projection(img: np.ndarray, parameters: ExtractionConfigParamete
 
     return result
 
+def global_edge_projection(img: np.ndarray, parameters: ExtractionConfigParameters):
+    if parameters.algorithm_choice == 1:
+        result = edge_projection_algorithm(img, parameters)
+    elif parameters.algorithm_choice == 2:
+        result = edge_projection_algorithm_v2(img, parameters)
+    else:
+        raise ValueError()
+
+    return result
+
 # this function convert image to recognized number plates string ( can be more than one )
 def photo_to_plate(img: np.ndarray,parameters: ExtractionConfigParameters = ExtractionConfigParameters()):
 

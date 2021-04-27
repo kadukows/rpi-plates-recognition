@@ -42,6 +42,9 @@ def create_app(test_config=None, return_socketio=False):
     from . import routes
     routes.init_app(app, sio)
 
+    from . import rpi_connection
+    app.register_blueprint(rpi_connection.bp)
+
     from . import client_websocket_routes
     client_websocket_routes.init_app_sio(app, sio)
 
