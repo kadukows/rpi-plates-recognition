@@ -31,7 +31,7 @@ User is logged in.
 
 ## get_modules
 ### Call
-``` GET /get_modules```
+``` GET /api/get_modules```
 ### Exmaple result
 ```json
 {
@@ -55,7 +55,7 @@ User is logged in.
 
 ## add_module
 ### Call
-``` POST /add_module ```
+``` POST /api/add_module ```
 ### Body
 
 ```json
@@ -73,7 +73,7 @@ User is logged in.
 
 ## remove_module
 ### Call
-``` DELETE /remove_module?id=<UNIQUE_ID> ```
+``` DELETE /api/remove_module?id=<UNIQUE_ID> ```
 
 ### Error Codes
 | Code | Message |
@@ -86,7 +86,7 @@ User is logged in.
 
 ## create_whitelist
 ### Call
-``` POST /create_whitelist ```
+``` POST /api/create_whitelist ```
 ### Body
 
 ```json
@@ -104,7 +104,7 @@ User is logged in.
 
 ## get_all_whitelists
 ### Call
-``` GET /get_all_whitelists ```
+``` GET /api/get_all_whitelists ```
 
 ### Example result
 ```json
@@ -127,7 +127,7 @@ User is logged in.
 
 ## get_module_all_whitelists
 ### Call
-``` GET /get_module_all_whitelists?id=<MODULE_UNIQUE_ID> ```
+``` GET /api/get_module_all_whitelists?id=<MODULE_UNIQUE_ID> ```
 
 ### Example result
 ```json
@@ -153,7 +153,7 @@ User is logged in.
 
 ## get_whitelisted_plates
 ### Call
-``` GET /get_whitelisted_plates?id=<WHITELIST_NAME> ```
+``` GET /api/get_whitelisted_plates?id=<WHITELIST_NAME> ```
 ### Example result
 
 ```json
@@ -175,7 +175,7 @@ User is logged in.
 
 ## get_whitelists_for_plate
 ### Call
-``` GET /get_whitelists_for_plate?plate=<PLATE> ```
+``` GET /api/get_whitelists_for_plate?plate=<PLATE> ```
 ### Example result
 ```json
 {
@@ -203,7 +203,7 @@ User is logged in.
 
 ## add_plate_to_whitelist
 ### Call
-``` POST /add_plate_to_whitelist ```
+``` POST /api/add_plate_to_whitelist ```
 ### Body
 
 ```json
@@ -227,7 +227,7 @@ User is logged in.
 
 ## remove_plate_from_whitelist
 ### Call
-``` DELETE /remove_plate_from_whitelist?id=<WHITELIST_NAME>&plate=<PLATE> ```
+``` DELETE /api/remove_plate_from_whitelist?id=<WHITELIST_NAME>&plate=<PLATE> ```
 
 ### Error Codes
 | Code | Message |
@@ -240,7 +240,7 @@ User is logged in.
 
 ## bind_whitelist_to_module
 ### Call
-``` POST /bind_whitelist_to_module ```
+``` POST /api/bind_whitelist_to_module ```
 
 ### Body
 
@@ -261,7 +261,7 @@ User is logged in.
 
 ## unbind_whitelist_from_module
 ### Call
-``` POST /unbind_whitelist_from_module ```
+``` POST /api/unbind_whitelist_from_module ```
 
 ### Body
 
@@ -282,7 +282,7 @@ User is logged in.
 
 ## add_plate_to_all_whitelists
 ### Call
-``` POST /add_plate_to_whitelist ```
+``` POST /api/add_plate_to_whitelist ```
 ### Body
 
 ```json
@@ -303,7 +303,7 @@ User is logged in.
 
 ## remove_plate_from_all_whitelists
 ### Call
-``` DELETE /remove_plate_from_all_whitelists?plate=asgasg ```
+``` DELETE /api/remove_plate_from_all_whitelists?plate=asgasg ```
 
 ### Error Codes
 | Code | Message |
