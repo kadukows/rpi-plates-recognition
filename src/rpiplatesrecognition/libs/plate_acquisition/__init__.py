@@ -46,16 +46,17 @@ def photo_to_plate(img: np.ndarray,parameters: ExtractionConfigParameters = Extr
     else:
         raise ValueError()
 
-    segments = find_segments(possible_plates,parameters)
-    segment = combine_to_one(segments)
+    #segments = find_segments(possible_plates,parameters)
+    #segment = combine_to_one(segments)
     # recognized_strings = recognize_plate(segments) # Tomek
-    # recognized_strings = ["abc12345", "cba54321"]
-    recognized_strings = image_to_string(segment,lang='eng',config='--psm 6')
-
-    return recognized_strings
+    recognized_strings = ["abc12345", "cba54321"]
+    #recognized_strings = image_to_string(segment,lang='eng',config='--psm 6')
 
 
-"""
+    return possible_plates
+
+
+
 def main():
 
     directory = os.fsencode("images")
@@ -63,10 +64,11 @@ def main():
     for file in os.listdir(directory):
         filename = os.fsdecode(file)
         img = cv.imread("images/"+filename)
-        photo_to_plate(img)
+        plate=photo_to_plate(img)
+        name = "after/"+filename+"After.png"
+        cv.imwrite(name, plate[0])
 
 
 if __name__ == "__main__":
     main()
 
-"""
