@@ -3,11 +3,19 @@
 {% block app_content %}
     <h1>Whitelists</h1>
     <hr>
+
     <div class="col-md-6">
         <table class="table table-hover">
             {% for whitelist in whitelists %}
                 {% include '_whitelist.html' %}
             {% endfor %}
         </table>
+        <td>
+            <a href="{{ url_for('add_whitelist') }}">
+                <button type="button" class="btn btn-primary">Add new whitelist</button>
+            </a>
+        </td>
     </div>
+    
+
 {% endblock %}

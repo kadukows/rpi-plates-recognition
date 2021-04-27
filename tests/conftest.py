@@ -30,6 +30,7 @@ def app_sio():
         # add more if neccessary
         user = User(username='user1', password_hash=generate_password_hash('user1'))
         user.modules.append(Module(unique_id='unique_id_1'))
+        user.modules.append(Module(unique_id='unique_id_3'))
         db.session.add(user)
 
         module2 = Module(unique_id='unique_id_2')
