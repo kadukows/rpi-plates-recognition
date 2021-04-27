@@ -1,4 +1,5 @@
 import base64, os
+from dataclasses import asdict
 from flask import Blueprint, render_template, jsonify, flash, url_for, send_from_directory, current_app
 from flask_login.utils import login_required
 from werkzeug.utils import redirect
@@ -39,7 +40,8 @@ def get_images_for_access_attempt(access_attempt_id: int):
         ],
         'segments': [
             url_for('rpi_connection.access_attempt_seg_image', access_attempt_id=access_attempt_id, seg_id=seg_idx) for seg_idx in range(access_attempt.segments_num)
-        ]
+        ],
+        'extraction_params': asdict(access_attempt.extraction_params)
     }
 
 @bp.route('/upload_access_attempt/<string:unique_id>/', methods=['GET', 'POST'])

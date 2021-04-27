@@ -112,22 +112,34 @@ class AccessAttempt(db.Model):
 
         # save plate regions
         plates_regions = global_edge_projection(img, extraction_params_)
-        self.plate_region_num = len(plates_regions)
-        for idx, plate_region in enumerate(plates_regions):
-            assert cv.imwrite(
-                os.path.join(self.get_edge_proj_dirpath(Dirs.Absolute), str(idx) + '.png'),
-                plate_region)
+        if all(all(shape != 0 for shape in region.shape) for region in plates_regions):
+            self.plate_region_num = len(plates_regions)
+            for idx, plate_region in enumerate(plates_regions):
+                assert cv.imwrite(
+                    os.path.join(self.get_edge_proj_dirpath(Dirs.Absolute), str(idx) + '.png'),
+                    plate_region)
 
-        # save segments
-        segments = find_segments(plates_regions, extraction_params_)
-        self.segments_num = len(segments)
-        for idx, segment in enumerate(segments):
-            assert cv.imwrite(
-                os.path.join(self.get_segments_dirpath(Dirs.Absolute), str(idx) + '.png'),
-                segment)
+            # save segments
+            segments = find_segments(plates_regions, extraction_params_)
+            if len(segments) != 0:
+                segments_one = combine_to_one(segments)
+                self.segments_num = 1
+                # quick hack for better table in html
+                for idx, segment in enumerate([segments_one]):
+                    assert cv.imwrite(
+                        os.path.join(self.get_segments_dirpath(Dirs.Absolute), str(idx) + '.png'),
+                        segment)
 
-        segments_one = combine_to_one(segments)
-        self.recognized_plate = image_to_string(segments_one, lang='eng', config='--psm 6')
+                self.recognized_plate = image_to_string(segments_one, lang='eng', config='--psm 6')
+
+            else:
+                self.segments_num = 0
+                self.recognized_plate = "Segments empty"
+        else:
+            self.plate_region_num = 0
+            self.segments_num = 0
+            self.recognized_plate = "Plate region empty"
+
 
 
     id = db.Column(db.Integer, primary_key=True)

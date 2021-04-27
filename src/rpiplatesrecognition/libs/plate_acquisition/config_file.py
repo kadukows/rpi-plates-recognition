@@ -4,7 +4,7 @@ from dataclasses import dataclass
 """
 Parameters responsible for plates extraction
 """
-@dataclass
+@dataclass(frozen=True)
 class ExtractionConfigParameters:
 
     algorithm_choice: int = 2  # 1 or 2

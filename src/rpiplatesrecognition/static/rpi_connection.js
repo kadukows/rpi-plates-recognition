@@ -36,6 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const img_src_output = document.querySelector("#src-image-output");
     const edge_projection_table_ouput = document.querySelector("#edge-projection-output");
     const segmentation_table_output = document.querySelector("#segmentation-output");
+    const params_table_output = document.querySelector("#params-output")
 
     var buttons = document.querySelectorAll(".show-access-attempt-button");
     buttons.forEach(button => {
@@ -52,9 +53,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     const edge_projection_images = data['edge_proj'];
                     const segmentation_images = data['segments'];
+                    const extraction_params = data['extraction_params'];
 
-                    replace_old_tbody(edge_projection_images, edge_projection_table_ouput);
-                    replace_old_tbody(segmentation_images, segmentation_table_output);
+                    replace_old_tbody_img(edge_projection_images, edge_projection_table_ouput);
+                    replace_old_tbody_img(segmentation_images, segmentation_table_output);
+                    replace_old_tbody_params(extraction_params, params_table_output);
                 }
             }
 
@@ -63,7 +66,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-function replace_old_tbody(img_links, table) {
+function replace_old_tbody_img(img_links, table) {
     const old_tbody = table.getElementsByTagName('tbody')[0];
     const tbody = document.createElement('tbody');
     old_tbody.replaceWith(tbody);
@@ -80,10 +83,35 @@ function replace_old_tbody(img_links, table) {
         var cell_img = document.createElement("td");
         var cell_img_img = document.createElement("img");
         cell_img_img.src = img_link;
+        cell_img_img.classList.add('img-responsive')
         cell_img.appendChild(cell_img_img);
         row.appendChild(cell_img);
 
         tbody.append(row);
         i += 1;
     });
+}
+
+function replace_old_tbody_params(params, table) {
+    const old_tbody = table.getElementsByTagName('tbody')[0];
+    const tbody = document.createElement('tbody');
+    old_tbody.replaceWith(tbody);
+
+    for (var key in params) {
+        if (params.hasOwnProperty(key)){
+            var row = document.createElement("tr");
+
+            var cell_no = document.createElement("td");
+            var cell_no_text = document.createTextNode(`${key}`);
+            cell_no.appendChild(cell_no_text);
+            row.appendChild(cell_no);
+
+            var cell_val = document.createElement("td");
+            var cell_val_text = document.createTextNode(`${params[key]}`);
+            cell_val.appendChild(cell_val_text);
+            row.appendChild(cell_val);
+
+            tbody.append(row);
+        }
+    }
 }
