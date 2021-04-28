@@ -83,7 +83,7 @@ def init_app(app: Flask):
         Module.query.update({Module.is_active: False})
         db.session.commit()
 
-    # this check for integrity of 'static/photos' folder with dataabse state
+    # this check for integrity of 'instance/photos' folder with dataabse state
     @app.before_first_request
     def access_attempts_integrity_check():
             from .models import AccessAttempt

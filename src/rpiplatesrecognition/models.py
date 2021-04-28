@@ -153,7 +153,7 @@ class AccessAttempt(db.Model):
 
     plate_region_num = db.Column(db.Integer, nullable=False)
     segments_num = db.Column(db.Integer, nullable=False)
-    recognized_plate = db.Column(db.String(20), nullable=False)
+    recognized_plate = db.Column(db.String(30), nullable=False)
     extraction_params = db.Column(db.PickleType, nullable=False, default=DEFAULT_EXTRACTION_PARAMS)
     photos_dir = db.Column(db.String(120), nullable=False)
 
@@ -165,11 +165,7 @@ class AccessAttempt(db.Model):
 
 
     def photos_exist(self) -> bool:
-        return True
-
-        dir = os.path.join(current_app.root_path, 'static', self.get_src_image_relative_directory())
-        result = os.path.exists(dir)
-        return result
+        return os.path.exists(self.get_absolute_dir())
 
     def get_absolute_dir(self):
         return os.path.join(current_app.instance_path, self.get_relative_dir())
