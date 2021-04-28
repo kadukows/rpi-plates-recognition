@@ -25,7 +25,8 @@
         </div><!-- /.modal-dialog -->
     </div><!-- /.modal -->
 
-    <div class="modal fade" id="removeModal" tabindex="-1" role="dialog">
+    {% for plate in whitelist.plates %}
+    <div class="modal fade" id="removeModal{{plate.id}}" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -37,7 +38,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">No, go back</button>
-            <a href="{{ url_for('delete_plate_from_whitelist', whitelist_id=whitelist.id )}}"></a>
+            <a href="{{ url_for('delete_plate_from_whitelist', whitelist_id=whitelist.id,plate_id=plate.id)}}">
                 <button type="button" class="btn btn-danger">Yes, remove licence plate</button>
             </a>
 
@@ -45,7 +46,7 @@
         </div>
         </div>
     </div>
-
+    {% endfor %}
 
     <h1>Editing whitelist: <strong>{{ whitelist.name }}</strong></h1>
     <hr>

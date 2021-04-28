@@ -144,8 +144,15 @@ def init_app(app: Flask, sio: SocketIO):
         
         return render_template('add_plate_to_whitelist.html',whitelist=whitelist,form=form)
 
-    @app.route('/delete_plate_from_whitelist/<int:whitelist_id>', methods=['POST'])
+    @app.route('/delete_plate_from_whitelist/<int:whitelist_id>&<int:plate_id>', methods=['GET'])
     @login_required
-    def delete_plate_from_whitelist():
+    def delete_plate_from_whitelist(whitelist_id,plate_id):
+        whitelist = Whitelist.query.filter_by(id = whitelist_id).first()
+        plate = Plate.query.filter_by(id = plate_id).first()
+
+        if plate in whitelist.plates:
+            whitelist.plates.remove(plate)
+        db.session.commit()
+
         flash('Licence plate removed from whitelist')  
-        return redirect(url_for('index'))
+        return redirect(url_for('edit_whitelist',whitelist_id=whitelist.id))
