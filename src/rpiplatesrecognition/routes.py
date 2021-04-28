@@ -114,7 +114,12 @@ def init_app(app: Flask, sio: SocketIO):
     def add_whitelist():
         form = AddWhitelistForm()
         
-        if form.validate_on_submit():     
+        if form.validate_on_submit(): 
+            whitelist = Whitelist(name=form.whitelist_name.data)
+            whitelist.user = current_user
+            db.session.add(whitelist)
+            db.session.commit()
+
             flash('Added whitelist')       
             return redirect(url_for('whitelists'))
 
