@@ -143,3 +143,9 @@ def init_app(app: Flask, sio: SocketIO):
             return redirect(url_for('whitelists'))
         
         return render_template('add_plate_to_whitelist.html',whitelist=whitelist,form=form)
+
+    @app.route('/delete_plate_from_whitelist/<int:whitelist_id>', methods=['POST'])
+    @login_required
+    def delete_plate_from_whitelist():
+        flash('Licence plate removed from whitelist')  
+        return redirect(url_for('index'))
