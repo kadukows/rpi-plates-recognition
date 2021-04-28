@@ -12,13 +12,13 @@ User is logged in.
 ## Possible requests
 | Name | Request | Description |
 | :-------- | :-------- | :-------- |
-| [get_modules](#get_modules) | GET | Get list of modules managed by the user |
-| [add_module](#add_module) | POST | Adds new module to user account |
-| [remove_module](#remove_module) | DELETE | Removes given module from the account |
-| [create_whitelist](#create_whitelist) | POST | Create empty whitelist |
-| [get_all_whitelists](#get_all_whitelists) | GET | Get list of all whitelists created by user |
+| [get_modules :white_check_mark:](#get_modules) | GET | Get list of modules managed by the user |
+| [add_module :white_check_mark:](#add_module) | POST | Adds new module to user account |
+| [remove_module :white_check_mark:](#remove_module) | DELETE | Removes given module from the account |
+| [create_whitelist :white_check_mark:](#create_whitelist) | POST | Create empty whitelist |
+| [get_all_whitelists :white_check_mark:](#get_all_whitelists) | GET | Get list of all whitelists created by user |
 | [get_module_all_whitelists](get_module_all_whitelists) | GET | Get list of all whitelists for a module |
-| [get_whitelisted_plates](#get_whitelisted_plates) | GET | Get list of authored plates for given whitelist owned by user  |
+| [get_whitelisted_plates :white_check_mark:](#get_whitelisted_plates) | GET | Get list of authored plates for given whitelist owned by user  |
 | [get_whitelists_for_plate](#get_whitelists_for_plate) | GET | Get list of whitelists owned by current user which contain given plate  |
 | [add_plate_to_whitelist](#add_plate_to_whitelist) | POST | Add plate to whitelist owned by current user |
 | [remove_plate_from_whitelist](#remove_plate_from_whitelist) | DELETE | Remove given plate from whitelist owned by current user|
