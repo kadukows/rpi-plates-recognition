@@ -9,7 +9,7 @@ class EditableParamManager {
 
     on_input() {
         if (this.regex.test(this.td.innerText)) {
-            if (this.td.innerText.replace(/^\s+|\s+$/g, '') === this.original_param_value) {
+            if (this.td.innerText.replace(/^\s+|\s+$/g, '') == this.original_param_value) {
                 this.reset();
             }
             else {
@@ -22,7 +22,7 @@ class EditableParamManager {
     }
 
     reset() {
-        this.td.classList = this.td.classList.remove('table-danger', 'table-warning')
+        this.td.classList.remove('table-danger', 'table-warning')
     }
 
     different() {
@@ -41,6 +41,10 @@ class EditableParamManager {
 
     is_valid() {
         return !this.td.classList.contains('table-danger');
+    }
+
+    is_different() {
+        return this.td.classList.contains('table-warning');
     }
 
     to_data() {
@@ -68,29 +72,64 @@ class EditableParamManagerTupleInts extends EditableParamManager {
         const result = [];
 
         match_arr.forEach(match => {
-            result.add(parseInt(match[0]));
+            result.push(parseInt(match[0]));
         });
 
         return result;
     }
 }
 
+class EditableParamManagerSingleFloat extends EditableParamManager {
+    constructor (td, original_param_value) {
+        super(td, /^\d*[.]\d+\s*$/, original_param_value);
+    }
+
+    to_data() {
+        return parseFloat(this.td.innerText);
+    }
+}
+
 class ParamsTableManager {
-    constructor (module_params, table_node) {
+    constructor (module_params, table_node, unique_id) {
         this.module_params = module_params;
         this.table_node = table_node;
 
-        this.fill_table_with_original_params();
-        //this.hook_up_table_with_diff_viewer();
+        this.rebuild_table_with_params(this.module_params);
+
+        const submit_button = document.querySelector('#submit-params');
+        submit_button.onclick = () => {
+            if (!this.is_valid()) {
+                submit_button.classList.remove('anim-jigger');
+                void submit_button.offsetWidth;
+                submit_button.classList.add('anim-jigger');
+            }
+            else {
+                submit_button.setAttribute('disabled', '');
+
+                const data = JSON.stringify(this.to_data());
+
+                const req = new XMLHttpRequest();
+                req.open('POST', `/rpi_connection/upload_new_params/${unique_id}`);
+                req.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+
+                req.onload = () => {
+                    const new_params = JSON.parse(req.responseText);
+                    this.rebuild_table_with_params(new_params);
+                    submit_button.removeAttribute('disabled', '');
+                }
+
+                req.send(data);
+            }
+        };
     }
 
-    fill_table_with_original_params() {
+    rebuild_table_with_params(params) {
         const old_tbody = this.table_node.querySelector('tbody');
         const tbody = document.createElement('tbody');
         old_tbody.replaceWith(tbody);
 
-        for (var key in this.module_params) {
-            if (this.module_params.hasOwnProperty(key)) {
+        for (var key in params) {
+            if (params.hasOwnProperty(key)) {
                 const tr = document.createElement('tr');
 
                 const td_param_name = document.createElement('td');
@@ -101,10 +140,21 @@ class ParamsTableManager {
 
                 const td_module_value = document.createElement('td');
                 td_module_value.dataset.paramKey = key;
-                td_module_value.innerHTML = this.module_params[key];
+                td_module_value.innerHTML = params[key];
                 td_module_value.classList.add('td-module-value')
                 td_module_value.contentEditable = "true";
-                td_module_value.editableParamManager = new EditableParamManager(td_module_value, /^\d+\s?$/, this.module_params[key]);
+                if (Number.isInteger(params[key])) {
+                    td_module_value.editableParamManager = new EditableParamManagerSingleInt(td_module_value, params[key]);
+                }
+                else if (typeof(params[key]) === "number") {
+                    td_module_value.editableParamManager = new EditableParamManagerSingleFloat(td_module_value, params[key]);
+                }
+                else if (Array.isArray(params[key])) {
+                    td_module_value.editableParamManager = new EditableParamManagerTupleInts(td_module_value, params[key]);
+                }
+                else {
+                    throw "Not an array or integer or float";
+                }
                 tr.appendChild(td_module_value);
 
                 tbody.appendChild(tr);
@@ -112,26 +162,25 @@ class ParamsTableManager {
         }
     }
 
-    hook_up_table_with_diff_viewer() {
-        const tds =  this.table_node.querySelectorAll('.td-module-value');
-        tds.forEach(td => {
-            td.addEventListener('input', () => {
-                //const testing_value = ttd.innerText.replace(/^\s+|\s+$/g, '')
-                if (this.td.innerText.replace(/^\s+|\s+$/g, '') != this.module_params[td.dataset.paramKey]) {
-                    if (!td.classList.contains('table-danger')) {
-                        td.classList.add('table-danger');
-                    }
-                }
-                else {
-                    console.log('IS SAME');
-                    if (td.classList.contains('table-danger')) {
-                        td.classList = td.classList.filter(className => {
-                            return className !== 'table-danger'
-                        });
-                    }
-                }
-            })
+    is_valid() {
+        const tds_module_value = document.querySelectorAll('.td-module-value');
+
+        const arr = Array.from(tds_module_value);
+        const is_td_valid = td => { return td.editableParamManager.is_valid(); };
+        const is_td_different = td => { return td.editableParamManager.is_different(); };
+
+        return arr.every(is_td_valid) && arr.some(is_td_different);
+    }
+
+    to_data() {
+        const tds_module_value = document.querySelectorAll('.td-module-value');
+        const result = {};
+
+        tds_module_value.forEach(td => {
+            result[td.dataset.paramKey] = td.editableParamManager.to_data();
         });
+
+        return result;
     }
 }
 
@@ -197,7 +246,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     //
-    // AJAX query for module's params
+    // AJAX query for initial module's params
     //
 
     const module_param_req = new XMLHttpRequest();
@@ -207,10 +256,33 @@ document.addEventListener("DOMContentLoaded", () => {
         const params = JSON.parse(module_param_req.responseText);
         const table = document.querySelector('#table-params-output');
 
-        global_table_manager = new ParamsTableManager(params, table);
+        global_table_manager = new ParamsTableManager(params, table, form.dataset.unique_id);
     }
 
     module_param_req.send();
+
+    //
+    //  enable searchable params
+    //
+
+    const input = document.querySelector('#table-params-output-search');
+    const param_table = document.querySelector('#table-params-output');
+    input.onkeyup = () => {
+        const filter = input.value.toUpperCase();
+        const trs = param_table.querySelectorAll('tr');
+
+        trs.forEach(tr => {
+            const td = tr.querySelector('.td-param-name');
+            if (td !== null) {
+                if (td.innerText.toUpperCase().indexOf(filter) > -1) {
+                    tr.style.display = '';
+                }
+                else {
+                    tr.style.display = 'none';
+                }
+            }
+        })
+    };
 });
 
 function add_access_attempt(access_attempt, accordion = null) {

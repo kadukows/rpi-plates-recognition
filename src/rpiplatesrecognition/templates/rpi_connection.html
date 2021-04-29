@@ -47,12 +47,42 @@
             max-width: 25px;
             overflow: auto;
         }
+
+        .anim-jigger {
+            animation: jigger 0.4s;
+        }
+
+        @keyframes jigger {
+            0% {
+            transform: translateX(0px) rotate(0deg);
+            }
+
+            20% {
+                transform: translateX(-4px) rotate(-4deg);
+            }
+
+            40% {
+                transform: translateX(-2px) rotate(-2deg);
+            }
+
+            60% {
+                transform: translateX(4px) rotate(4deg);
+            }
+
+            80% {
+                transform: translateX(2px) rotate(2deg);
+            }
+
+            100% {
+                transform: translateX(0px) rotate(0deg);
+            }
+        }
     </style>
 {% endblock %}
 
 {% block app_content %}
 <div class="row my-4">
-    <div class="col-md-8">
+    <div class="col-lg-8">
         <div class="row">
             <div class="col-md-12">
                 <div id="output" style="overflow: auto; height: 150px;"></div>
@@ -74,7 +104,8 @@
             </div>
         </div>
     </div>
-    <div class="col-md-4">
+    <div class="col-lg-4">
+        <input type="text" class="form-control mb-2" placeholder="Search for param..." id="table-params-output-search">
         <table id="table-params-output" class="table table-bordered table-hover">
             <thead>
                 <td>param key</td>
@@ -84,6 +115,14 @@
 
             </tbody>
         </table>
+        <div class="row">
+            <div class="col-lg-8">
+                <div id="submit-output"></div>
+            </div>
+            <div class="col-lg-4">
+                <button class="btn btn-primary" id="submit-params">Submit changes</button>
+            </div>
+        </div>
     </div>
 </div>
 
