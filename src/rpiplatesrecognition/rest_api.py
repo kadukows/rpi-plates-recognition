@@ -28,12 +28,12 @@ def init_app_sio(app: Flask, sio: SocketIO):
         active_modules = Module.query.filter_by(user_id=user.id, is_active=True).all()
 
         return {'active_rpis': [active_module.unique_id for active_module in active_modules]}
-    
+
     @app.route('/api/get_modules', methods=['GET'])
     @rest_auth.login_required
     def get_modules():
         """Route returning modules asigned to user"""
-        
+
         #http -a user1:user1 GET http://127.0.0.1:5000/api/get_modules
 
         user = rest_auth.current_user()
@@ -43,12 +43,12 @@ def init_app_sio(app: Flask, sio: SocketIO):
             return 'No module on list', 500
 
         return {'modules': [module.unique_id for module in modules]}
-    
+
     @app.route('/api/add_module', methods=['POST'])
     @rest_auth.login_required
     def post_module():
         # http -a user1:user1 POST http://127.0.0.1:5000/api/add_module unique_id=unique_id_5
-        
+
         user = rest_auth.current_user()
         data = request.get_json() or {}
         if "unique_id" not in data or user is None:
@@ -69,7 +69,7 @@ def init_app_sio(app: Flask, sio: SocketIO):
     @rest_auth.login_required
     def remove_module():
         #http -a user1:user1 DELETE http://127.0.0.1:5000/api/remove_module unique_id=unique_id_5
-        
+
         user = rest_auth.current_user()
         data = request.get_json() or {}
         if "unique_id" not in data or user is None:
@@ -79,7 +79,7 @@ def init_app_sio(app: Flask, sio: SocketIO):
 
         if module is None:
             return 'No resource', 404
-        
+
         if module.user is not user:
             return 'Module with such ID is bound to another user or is not bound to anyone', 412
 
@@ -89,17 +89,17 @@ def init_app_sio(app: Flask, sio: SocketIO):
 
         return "Succesfuly removed from user", 201
 
-    
+
     @app.route('/api/create_whitelist', methods=['POST'])
     @rest_auth.login_required
     def create_whitelist():
         #http -a user1:user1 POST http://127.0.0.1:5000/api/create_whitelist whitelist_name=test
-       
+
         user = rest_auth.current_user()
         data = request.get_json() or {}
         if "whitelist_name" not in data or user is None:
             return "Wrong json", 401
-        
+
         if Whitelist.query.filter_by(name=data['whitelist_name']).first() is not None:
             return 'Whitelist with such name already exists',418
 
@@ -111,7 +111,7 @@ def init_app_sio(app: Flask, sio: SocketIO):
             db.session.commit()
 
         return "Created whitelist", 201
-    
+
 
     @app.route('/api/get_all_whitelists', methods=['GET'])
     @rest_auth.login_required
@@ -140,15 +140,8 @@ def init_app_sio(app: Flask, sio: SocketIO):
         whitelist = Whitelist.query.filter_by(name=data['id']).first()
 
         if whitelist is None:
-            return "Whitelist with such id does not exists", 404       
-        
+            return "Whitelist with such id does not exists", 404
+
 
         # not done yet
         return {'plates':'a'}
-
-    
-    
-
-    
-    
-

@@ -6,7 +6,7 @@ from flask_socketio import SocketIO, join_room, leave_room
 from werkzeug.urls import url_parse
 
 from .db import db
-from .forms import ChangePasswordForm, LoginForm, RegistrationForm, AddModuleForm, AddWhitelistForm
+from .forms import ChangePasswordForm, LoginForm, RegistrationForm, AddModuleForm, AddWhitelistForm, AddPlateForm
 from .models import User, Module, Whitelist, Plate
 from .auth import admin_required
 
@@ -114,8 +114,45 @@ def init_app(app: Flask, sio: SocketIO):
     def add_whitelist():
         form = AddWhitelistForm()
         
-        if form.validate_on_submit():     
+        if form.validate_on_submit(): 
+            whitelist = Whitelist(name=form.whitelist_name.data)
+            whitelist.user = current_user
+            db.session.add(whitelist)
+            db.session.commit()
+
             flash('Added whitelist')       
             return redirect(url_for('whitelists'))
 
         return render_template('add_whitelist.html', form=form)
+    
+
+    @app.route('/add_plate_to_whitelist/<int:whitelist_id>', methods=['GET','POST'])
+    @login_required
+    def add_plate_to_whitelist(whitelist_id):
+        form = AddPlateForm(whitelist_id)
+        whitelist = (Whitelist.query.join(User, User.id == current_user.id)
+            .filter(Whitelist.id == whitelist_id)).first()
+        
+        if form.validate_on_submit(): 
+            plate = Plate(text=form.licence_plate_number.data)
+            whitelist.plates.append(plate)
+            db.session.add(plate)
+            db.session.commit()
+
+            flash('Added licence plate: ' + plate.text + ' to whitelist: ' + whitelist.name)  
+            return redirect(url_for('whitelists'))
+        
+        return render_template('add_plate_to_whitelist.html',whitelist=whitelist,form=form)
+
+    @app.route('/delete_plate_from_whitelist/<int:whitelist_id>&<int:plate_id>', methods=['GET'])
+    @login_required
+    def delete_plate_from_whitelist(whitelist_id,plate_id):
+        whitelist = Whitelist.query.filter_by(id = whitelist_id).first()
+        plate = Plate.query.filter_by(id = plate_id).first()
+
+        if plate in whitelist.plates:
+            whitelist.plates.remove(plate)
+        db.session.commit()
+
+        flash('Licence plate removed from whitelist')  
+        return redirect(url_for('edit_whitelist',whitelist_id=whitelist.id))
