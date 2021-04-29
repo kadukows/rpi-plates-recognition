@@ -1,5 +1,5 @@
 import base64, os, pickle
-import enum
+import enum, json
 from typing import Tuple, List
 
 import numpy as np
@@ -189,3 +189,10 @@ class AccessAttempt(db.Model):
     def init_directories(self):
         os.mkdir(self.get_edge_proj_dirpath(Dirs.Absolute))
         os.mkdir(self.get_segments_dirpath(Dirs.Absolute))
+
+    def to_dict(self) -> str:
+        return {
+            'id': self.id,
+            'date': self.date.strftime('%d.%m.%y %H:%M'),
+            'plate': self.recognized_plate
+        }

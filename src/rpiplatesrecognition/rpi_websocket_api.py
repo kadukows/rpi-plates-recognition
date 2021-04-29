@@ -1,5 +1,6 @@
 from logging import Formatter, LogRecord
 from types import SimpleNamespace
+import json
 
 from flask import session, request, jsonify
 from flask_socketio import SocketIO, join_room
@@ -48,9 +49,15 @@ def init_app(sio: SocketIO):
 
     @sio.on('image_from_rpi', namespace='/rpi')
     def image(data):
-        if 'module_id' in session and 'access_token' in data and 'img' in data:
+        if 'module_id' in session:
             module = Module.query.get(session['module_id'])
             if module and module.user:
-                access_attempt = AccessAttempt(module, data['img'].encode('utf8'))
+                access_attempt = AccessAttempt(module, data)
                 db.session.add(access_attempt)
                 db.session.commit()
+
+                sio.emit(
+                    'new_access_attempt_from_server_to_client',
+                    data=json.dumps(access_attempt.to_dict()),
+                    namespace='/rpi',
+                    to=module.unique_id)

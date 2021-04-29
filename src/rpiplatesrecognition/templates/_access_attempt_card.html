@@ -1,0 +1,39 @@
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <button class="btn btn-link show-access-attempt-btn"
+                data-toggle="collapse" data-target="#access-attempt-card-{{ access_attempt.id }}"
+                data-access-attempt-id="{{ access_attempt.id }}">
+                Access attempt: #{{ access_attempt.id }}
+            </button>
+        </h5>
+    </div>
+</div>
+
+<div id="access-attempt-card-{{ access_attempt.id }}" class="collapse hidden" data-parent="#accordion">
+    <div class="card-body">
+        <div class="container">
+            <div class="row" style="min-height: 300px;">
+                <div class="col-md-8">
+                    <img class="img-responsive img-rounded img-src" style="max-width: 100%;">
+                </div>
+                <div class="col-md-4">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <img class="img-responsive img-rounded img-segments" style="max-width: 100%;">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <table class="table table-hover table-projection">
+                                <tbody>
+
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

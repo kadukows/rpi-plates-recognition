@@ -1,4 +1,4 @@
-import base64, os
+import base64, os, json
 from dataclasses import asdict
 from flask import Blueprint, render_template, jsonify, flash, url_for, send_from_directory, current_app
 from flask_login.utils import login_required
@@ -43,6 +43,32 @@ def get_images_for_access_attempt(access_attempt_id: int):
         ],
         'extraction_params': asdict(access_attempt.extraction_params)
     }
+
+@bp.route('/get_access_attempts/<string:unique_id>')
+@login_required
+@admin_required
+def get_access_attempts(unique_id: str):
+    module = Module.query.filter_by(unique_id=unique_id).first()
+    module: Module
+
+    if module is None:
+        return {}
+
+    return jsonify(
+        [access_attempt.to_dict() for access_attempt in module.access_attempts]
+    )
+
+@bp.route('/get_module_params/<string:unique_id>')
+@login_required
+@admin_required
+def get_module_params(unique_id: str):
+    module = Module.query.filter_by(unique_id=unique_id).first()
+    module: Module
+
+    if module is None:
+        return {}
+
+    return asdict(module.extraction_params)
 
 @bp.route('/upload_access_attempt/<string:unique_id>/', methods=['GET', 'POST'])
 @login_required
