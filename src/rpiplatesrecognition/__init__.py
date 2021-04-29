@@ -49,7 +49,7 @@ def create_app(test_config=None, return_socketio=False):
     client_websocket_routes.init_app_sio(app, sio)
 
     from flask_bootstrap import Bootstrap
-    Bootstrap(app)
+    bootstrap = Bootstrap(app)
 
     from . import manual_image
     manual_image.init_app(app)

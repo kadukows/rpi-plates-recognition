@@ -48,11 +48,9 @@ def init_app(sio: SocketIO):
 
     @sio.on('image_from_rpi', namespace='/rpi')
     def image(data):
-        if 'module_id' in session:
+        if 'module_id' in session and 'access_token' in data and 'img' in data:
             module = Module.query.get(session['module_id'])
             if module and module.user:
-                pass
-                # uncomment when done
-                #access_attempt = AccessAttempt(module=module)
-                #db.session.commit()  # inits access_attempt.id
-                # access_attempt.init_files(data)
+                access_attempt = AccessAttempt(module, data['img'].encode('utf8'))
+                db.session.add(access_attempt)
+                db.session.commit()

@@ -29,10 +29,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     //
     //
-    //  Buttons for shwoing different access attempts
+    //  Buttons for showing different access attempts
     //
     //
 
+    /*
     const img_src_output = document.querySelector("#src-image-output");
     const edge_projection_table_ouput = document.querySelector("#edge-projection-output");
     const segmentation_table_output = document.querySelector("#segmentation-output");
@@ -63,6 +64,29 @@ document.addEventListener("DOMContentLoaded", () => {
 
             req.send();
         }
+    });
+    */
+
+
+    var buttons = document.querySelectorAll(".show-access-attempt-button");
+
+    buttons.forEach(button => {
+        button.onclick = function() {
+            const access_attempt_id = this.dataset.accessAttemptId;
+            const img_src_output = document.querySelector(`#src-image-output-${access_attempt_id}`);
+
+            const req = new XMLHttpRequest();
+            req.open('GET', `/rpi_connection/get_images_for_access_attempt/${access_attempt_id}`);
+
+            req.onload = () => {
+                const data = JSON.parse(req.responseText);
+                if (Object.keys(data).length !== 0) {
+                    img_src_output.src = data['img_src'];
+                }
+            };
+
+            req.send();
+        };
     });
 });
 

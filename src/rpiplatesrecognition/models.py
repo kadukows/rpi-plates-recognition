@@ -112,7 +112,12 @@ class AccessAttempt(db.Model):
 
         # save plate regions
         plates_regions = global_edge_projection(img, extraction_params_)
-        if all(all(shape != 0 for shape in region.shape) for region in plates_regions):
+        if plates_regions is None:
+            self.plate_region_num = 0
+            self.segments_num = 0
+            self.recognized_plate = "Plate region empty"
+
+        else:
             self.plate_region_num = len(plates_regions)
             for idx, plate_region in enumerate(plates_regions):
                 assert cv.imwrite(
@@ -121,7 +126,11 @@ class AccessAttempt(db.Model):
 
             # save segments
             segments = find_segments(plates_regions, extraction_params_)
-            if len(segments) != 0:
+            if segments is None:
+                self.segments_num = 0
+                self.recognized_plate = "Segments empty"
+
+            else:
                 segments_one = combine_to_one(segments)
                 self.segments_num = 1
                 # quick hack for better table in html
@@ -132,13 +141,8 @@ class AccessAttempt(db.Model):
 
                 self.recognized_plate = image_to_string(segments_one, lang='eng', config='--psm 6')
 
-            else:
-                self.segments_num = 0
-                self.recognized_plate = "Segments empty"
-        else:
-            self.plate_region_num = 0
-            self.segments_num = 0
-            self.recognized_plate = "Plate region empty"
+
+
 
 
 

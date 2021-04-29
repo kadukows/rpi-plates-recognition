@@ -36,7 +36,7 @@
 {% endblock %}
 
 {% block app_content %}
-<div class="row equal">
+<div class="row">
     <div class="col-md-6">
         <div id="output" style="overflow: auto; height: 150px;"></div>
         <form class="form-inline" id="command_form" data-unique_id="{{ module.unique_id }}">
@@ -47,6 +47,7 @@
             <button type="submit" class="btn btn-default">Submit</button>
         </form>
     </div>
+<!--
     <div class="col-md-6">
         <div class="tableFixHead">
             <table class="table table-hover table-bordered" >
@@ -65,15 +66,40 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for access_attempt in module.access_attempts | reverse %}
-                        {% include '_access_attempt.html' %}
-                    {% endfor %}
+                    {# for access_attempt in module.access_attempts | reverse #}
+                        {# include '_access_attempt.html' #}
+                    {# endfor #}
                 </tbody>
             </table>
         </div>
     </div>
+-->
+</div>
+<div class="col-md-6">
+
 </div>
 <hr>
+<div class="row">
+    <div class="col-md-8">
+        <table class="table table-hover table-bordered" >
+            <thead style="font-weight: bold;">
+                <tr>
+                    <th>No</th>
+                    <th>Date</th>
+                    <th>User</th>
+                    <th>unique_id</th>
+                    <th>Plate</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for access_attempt in module.access_attempts | reverse %}
+                    {% include '_access_attempt.html' %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<!--
 <div class="row">
     <div class="col-md-4">
             <h2>Source image</h2>
@@ -119,5 +145,6 @@
 
     </div>
 </div>
+-->
 
 {% endblock %}
