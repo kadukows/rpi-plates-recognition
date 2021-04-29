@@ -3,11 +3,13 @@
         {{ whitelist.name }}
     </td>
     <td>
-        <a href="{{ url_for('edit_whitelist', whitelist_id=whitelist.id) }}">
-            <button type="button" class="btn btn-primary">Edit</button>
-        </a>
-        <a href="{{ url_for('add_plate_to_whitelist', whitelist_id=whitelist.id) }}">
-            <button type="button" class="btn btn-primary">Add licence plate</button>
-        </a>
+        <div class="btn-group">
+            <a class="btn btn-secondary" href="{{ url_for('edit_whitelist', whitelist_id=whitelist.id) }}">
+                Edit
+            </a>
+            <a class="btn btn-secondary" href="{{ url_for('add_plate_to_whitelist', whitelist_id=whitelist.id) }}">
+                Add plate
+            </a>
+        </div>
     </td>
 </tr>

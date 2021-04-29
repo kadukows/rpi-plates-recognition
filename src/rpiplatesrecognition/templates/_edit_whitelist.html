@@ -3,9 +3,8 @@
         {{ plate.text }}
     </td>
     <td>
-        <div class="btn-group">
-            <button type="button" class="btn btn-default plate-edit-button" data-plate-text="{{ plate.text }}" data-toggle="modal" data-target="#editModal">Edit</button>
-            <button type="button" class="btn btn-danger plate-remove-button" data-plate-text="{{ plate.text }}" data-toggle="modal" data-id=plate.id data-target="#removeModal{{plate.id}}">Remove</button>
-        </div>
+        <button type="button" class="btn btn-secondary" data-plate-text="{{ plate.text }}"
+            data-toggle="modal" data-plate-id="{{ plate.id }}" data-whitelist-id="{{ whitelist.id }}"
+            data-target="#removeModal">Remove</button>
     </td>
 </tr>

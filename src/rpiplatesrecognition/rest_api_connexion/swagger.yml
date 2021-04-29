@@ -1,0 +1,146 @@
+openapi: 3.0.0
+info:
+  version: 0.0.1
+  title: rpi-plates-recognition
+  description: API for rpi-plates-recognition project
+
+servers:
+  - url: /api
+    description: Base path for all api calls
+
+components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+      x-basicInfoFunc: rpiplatesrecognition.rest_api_connexion.auth.verify_password
+
+security:
+  - basicAuth: []
+
+
+paths:
+  /get_modules:
+    get:
+      operationId: rpiplatesrecognition.rest_api_connexion.routes.get_modules
+      description: Returns information about current users modules
+      tags:
+        - observers
+      responses:
+        '200':
+          description: Returns a json with an array of modules unique_ids
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  modules:
+                    type: array
+                    items:
+                      type: string
+
+
+  /add_module:
+    post:
+      operationId: rpiplatesrecognition.rest_api_connexion.routes.add_module
+      description: Adds module to an user
+      parameters:
+        - in: query
+          name: unique_id
+          schema:
+            type: string
+          description: Module's unique id
+      responses:
+        '201':
+          description: Sucessfully added module to an user
+        '401':
+          description: Module with that unique_id was not found
+        '409':
+          description: Module is already assigned to another user
+
+
+  /remove_module:
+    post:
+      operationId: rpiplatesrecognition.rest_api_connexion.routes.remove_module
+      description: Unbounds modules from current user
+      parameters:
+        - in: query
+          name: unique_id
+          schema:
+            type: string
+          description: Module's unique id
+      responses:
+        '201':
+          description: Sucessfully unbound module from user
+        '404':
+          description: Module not found on server
+        '412':
+          description: Module is not currently bound to user
+
+
+  /create_whitelist:
+    post:
+      operationId: rpiplatesrecognition.rest_api_connexion.routes.create_whitelist
+      description: Creates new whitelist for an user
+      parameters:
+        - in: query
+          name: whitelist_name
+          schema:
+            type: string
+          description: New whitelist name
+      responses:
+        '201':
+          description: Successsfully created whitelist
+        '412':
+          description: Whitelist with such name already exists
+
+
+  /get_whitelists:
+    get:
+      operationId: rpiplatesrecognition.rest_api_connexion.routes.get_whitelists
+      description: Returns whitelists owned by current user
+      tags:
+        - observers
+      responses:
+        '200':
+          description: Returns a json with an array of whitelists names
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  whitelists:
+                    type: array
+                    items:
+                      type: string
+
+
+  /get_plates_in_whitelist:
+    get:
+      operationId: rpiplatesrecognition.rest_api_connexion.routes.get_plates_in_whitelist
+      description: Returns plates in a whitelists
+      tags:
+        - observers
+      parameters:
+        - in: query
+          name: whitelist_name
+          schema:
+            type: string
+          description: Whitelist for which to fetch names
+      responses:
+        '200':
+          description: Returns a json with an array of plates in a whitelist
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  whitelist_name:
+                    type: string
+                  plates:
+                    type: array
+                    items:
+                      type: string
+
+        '404':
+          description: No such whitelist exists

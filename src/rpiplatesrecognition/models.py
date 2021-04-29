@@ -62,22 +62,14 @@ class Module(db.Model):
         return f'<Module {self.unique_id}>'
 
 
-whitelist_assignment = db.Table('whitelist_assignments',
-    db.Column('whitelist_id', db.Integer, db.ForeignKey('whitelists.id'), primary_key=True),
-    db.Column('plate_id', db.Integer, db.ForeignKey('plates.id'), primary_key=True)
-)
-
 class Whitelist(db.Model):
     __tablename__ = 'whitelists'
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(32))
+    name = db.Column(db.String(32), unique=True)
 
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     user = db.relationship('User', backref=db.backref('whitelists', lazy=True))
-
-    plates = db.relationship('Plate', secondary=whitelist_assignment, lazy='subquery',
-        backref=db.backref('whitelists', lazy=True))
 
 
 class Plate(db.Model):
@@ -85,6 +77,9 @@ class Plate(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     text = db.Column(db.String(10), unique=True, index=True, nullable=False)
+
+    whitelist_id = db.Column(db.Integer, db.ForeignKey('whitelists.id'))
+    whitelist = db.relationship('Whitelist', backref=db.backref('plates', lazy=True))
 
 
 class AccessAttempt(db.Model):
@@ -140,10 +135,6 @@ class AccessAttempt(db.Model):
                         segment)
 
                 self.recognized_plate = image_to_string(segments_one, lang='eng', config='--psm 6')
-
-
-
-
 
 
     id = db.Column(db.Integer, primary_key=True)
