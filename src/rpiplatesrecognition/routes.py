@@ -6,6 +6,7 @@ from flask_socketio import SocketIO, join_room, leave_room
 from werkzeug.urls import url_parse
 
 from .db import db
+from .db.helpers import get_whitelists_for_user_query
 from .forms import ChangePasswordForm, LoginForm, RegistrationForm, AddModuleForm, AddWhitelistForm, AddPlateForm
 from .models import User, Module, Whitelist, Plate
 from .auth import admin_required
@@ -98,15 +99,38 @@ def init_app(app: Flask, sio: SocketIO):
     @app.route('/edit_whitelist/<int:whitelist_id>', methods=['GET'])
     @login_required
     def edit_whitelist(whitelist_id):
-        whitelist = (Whitelist.query
-                .join(User, User.id == current_user.id)
-                .filter(Whitelist.id == whitelist_id)).first()
+        whitelist = get_whitelists_for_user_query(current_user) \
+            .filter(Whitelist.id == whitelist_id).first()
 
         if whitelist is None:
             flash('Unknown whitelist id')
             return redirect(url_for('index'))
 
-        return render_template('edit_whitelist.html', whitelist=whitelist)
+        form = AddPlateForm(whitelist_id = whitelist.id)
+
+        return render_template('edit_whitelist.html', whitelist=whitelist, form=form)
+
+
+    @app.route('/edit_whitelist/add_plate', methods=['POST'])
+    @login_required
+    def edit_whitelist_add_plate():
+        form = AddPlateForm()
+
+        if not form.validate_on_submit():
+            result = {'errors': {}}
+            for field in form:
+                if field.errors:
+                    result['errors'][field.name] = [error for error in field.errors]
+
+            return result, 409
+        else:
+            plate = Plate(text=form.plate.data)
+            whitelist = Whitelist.query.get(form.whitelist_id.data)
+            whitelist.plates.append(plate)
+            db.session.commit()
+            flash(f'Added plate: {plate.text}')
+            return {'plate': plate.text}, 201
+
 
 
     @app.route('/add_whitelist', methods=['GET','POST'])
@@ -126,6 +150,7 @@ def init_app(app: Flask, sio: SocketIO):
         return render_template('add_whitelist.html', form=form)
 
 
+    '''
     @app.route('/add_plate_to_whitelist/<int:whitelist_id>', methods=['GET','POST'])
     @login_required
     def add_plate_to_whitelist(whitelist_id):
@@ -143,6 +168,7 @@ def init_app(app: Flask, sio: SocketIO):
             return redirect(url_for('whitelists'))
 
         return render_template('add_plate_to_whitelist.html',whitelist=whitelist,form=form)
+    '''
 
 
     @app.route('/delete_plate_from_whitelist/<int:whitelist_id>', methods=['POST'])

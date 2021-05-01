@@ -4,9 +4,11 @@ from flask_wtf import FlaskForm
 from flask_wtf.file import FileRequired, FileAllowed, FileField
 from flask_login import current_user
 from wtforms import StringField, PasswordField, SubmitField
+from wtforms.fields.simple import HiddenField
 from wtforms.validators import DataRequired, Email, EqualTo, ValidationError, Length
 
 from .models import User, Module, Whitelist, Plate
+from .db.helpers import get_whitelists_for_user_query
 
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
@@ -55,6 +57,7 @@ class UploadImageForm(FlaskForm):
     file = FileField('Image', validators=[FileRequired(), FileAllowed(['jpg'], 'Only jpg images!')])
     submit = SubmitField('Add an access attempt')
 
+
 class AddWhitelistForm(FlaskForm):
     whitelist_name = StringField('Whitelist name', validators=[DataRequired(),Length(2)])
     submit = SubmitField('Add whitelist')
@@ -65,17 +68,25 @@ class AddWhitelistForm(FlaskForm):
         if whitelist is not None:
             raise ValidationError('This name is already taken')
 
+
 class AddPlateForm(FlaskForm):
-    licence_plate_number = StringField('Licence plate number', validators=[DataRequired(),Length(4,10)])
-    submit = SubmitField('Add licence plate')
+    plate = StringField('Plate', validators=[DataRequired()], render_kw={'placeholder': 'Plate...'})
+    whitelist_id = HiddenField('whitelist_id', validators=[DataRequired()])
 
-    def __init__(self, whitelist_id: int):
-        FlaskForm.__init__(self)
-        self.whitelist_id = whitelist_id
+    def validate_whitelist_id(self, whitelist_id):
+        whitelist = get_whitelists_for_user_query(current_user).filter(Whitelist.id == whitelist_id.data).first()
 
-    def validate_licence_plate_number(self, licence_plate_number):
-        whitelist = Whitelist.query.filter_by(id = self.whitelist_id).first()
-        licence_plate = Plate.query.filter_by(text=licence_plate_number.data).first()
+        if whitelist is None:
+            raise ValidationError('Wrong whitelist id')
 
-        if licence_plate in whitelist.plates:
-            raise ValidationError('This plate is already in the whitelist')
+    def validate_plate(self, plate):
+        if not Plate.is_valid_plate(plate.data):
+            raise ValidationError('Plate does not comply to policy')
+
+        possible_plate = (Whitelist.query
+            .join(Plate, Whitelist.id == Plate.whitelist_id)
+            .filter(Whitelist.id == self.whitelist_id.data)
+            .filter(Plate.text == plate.data)).first()
+
+        if possible_plate is not None:
+            raise ValidationError('Plate already in a whitelist')

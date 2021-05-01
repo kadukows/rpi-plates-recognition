@@ -80,6 +80,10 @@ class Whitelist(db.Model):
 class Plate(db.Model):
     __tablename__ = 'plates'
 
+    def __init__(self, text, **kwargs):
+        assert Plate.is_valid_plate(text)
+        db.Model.__init__(self, text=text, **kwargs)
+
     id = db.Column(db.Integer, primary_key=True)
     text = db.Column(db.String(10), unique=True, index=True, nullable=False)
 
@@ -90,6 +94,7 @@ class Plate(db.Model):
 
     @staticmethod
     def is_valid_plate(text):
+        assert isinstance(text, str)
         return Plate.PLATE_RE.match(text)
 
 
