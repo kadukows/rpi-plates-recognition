@@ -62,3 +62,8 @@ class ExtractionConfigParameters:
     camera_saturation: int = 0 #-100 - 100
     camera_quality: int = 100 #0 - 100
 
+###########################################
+        # gate controller
+    gatecontroller_gpio_pin_number: int = 3
+    gatecontroller_button_press_time: float = 0.35 
+    gatecontroller_gate_opening_time: float = 15
