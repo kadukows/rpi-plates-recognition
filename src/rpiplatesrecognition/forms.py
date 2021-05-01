@@ -64,14 +64,13 @@ class AddWhitelistForm(FlaskForm):
 
         if whitelist is not None:
             raise ValidationError('This name is already taken')
-        
-class AddPlateForm(FlaskForm):
 
+class AddPlateForm(FlaskForm):
     licence_plate_number = StringField('Licence plate number', validators=[DataRequired(),Length(4,10)])
     submit = SubmitField('Add licence plate')
 
-    def __init__(self, whitelist_id: int, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, whitelist_id: int):
+        FlaskForm.__init__(self)
         self.whitelist_id = whitelist_id
 
     def validate_licence_plate_number(self, licence_plate_number):

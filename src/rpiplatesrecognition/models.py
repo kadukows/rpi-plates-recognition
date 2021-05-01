@@ -1,4 +1,4 @@
-import base64, os, pickle
+import base64, os, pickle, re
 import enum, json
 from typing import Tuple, List
 
@@ -35,6 +35,11 @@ class User(UserMixin, db.Model):
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+
+    @staticmethod
+    def does_password_comply_to_policy(password) -> bool:
+        # TO BE IMPLEMENTED
+        return True
 
 
 whitelist_to_module_assignment = db.Table("whitelist_to_module_assignment",
@@ -80,6 +85,12 @@ class Plate(db.Model):
 
     whitelist_id = db.Column(db.Integer, db.ForeignKey('whitelists.id'))
     whitelist = db.relationship('Whitelist', backref=db.backref('plates', lazy=True))
+
+    PLATE_RE = re.compile(r'^[A-Z]{2,3}[A-Z0-9]{3,4}$')
+
+    @staticmethod
+    def is_valid_plate(text):
+        return Plate.PLATE_RE.match(text)
 
 
 class AccessAttempt(db.Model):

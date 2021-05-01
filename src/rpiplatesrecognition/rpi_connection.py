@@ -87,7 +87,13 @@ def upload_new_params(unique_id: str):
 
     assert request.is_json
 
-    module.extraction_params = ExtractionConfigParameters(**request.json)
+    extraction_params_dict = request.get_json()
+    for key in extraction_params_dict.keys():
+        if isinstance(extraction_params_dict[key], list):
+            extraction_params_dict[key] = tuple(extraction_params_dict[key])
+
+
+    module.extraction_params = ExtractionConfigParameters(**extraction_params_dict)
     db.session.commit()
 
     time.sleep(2)

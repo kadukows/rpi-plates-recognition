@@ -96,31 +96,33 @@ class ParamsTableManager {
 
         this.rebuild_table_with_params(this.module_params);
 
-        const submit_button = document.querySelector('#submit-params');
-        submit_button.onclick = () => {
-            if (!this.is_valid()) {
-                submit_button.classList.remove('anim-jigger');
-                void submit_button.offsetWidth;
-                submit_button.classList.add('anim-jigger');
-            }
-            else {
-                submit_button.setAttribute('disabled', '');
-
-                const data = JSON.stringify(this.to_data());
-
-                const req = new XMLHttpRequest();
-                req.open('POST', `/rpi_connection/upload_new_params/${unique_id}`);
-                req.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-
-                req.onload = () => {
-                    const new_params = JSON.parse(req.responseText);
-                    this.rebuild_table_with_params(new_params);
-                    submit_button.removeAttribute('disabled', '');
+        const submit_buttons = document.querySelectorAll('.submit-params');
+        submit_buttons.forEach(submit_button => {
+            submit_button.onclick = () => {
+                if (!this.is_valid()) {
+                    submit_button.classList.remove('anim-jigger');
+                    void submit_button.offsetWidth;
+                    submit_button.classList.add('anim-jigger');
                 }
+                else {
+                    submit_button.setAttribute('disabled', '');
 
-                req.send(data);
-            }
-        };
+                    const data = JSON.stringify(this.to_data());
+
+                    const req = new XMLHttpRequest();
+                    req.open('POST', `/rpi_connection/upload_new_params/${unique_id}`);
+                    req.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+
+                    req.onload = () => {
+                        const new_params = JSON.parse(req.responseText);
+                        this.rebuild_table_with_params(new_params);
+                        submit_button.removeAttribute('disabled', '');
+                    }
+
+                    req.send(data);
+                }
+            };
+        });
     }
 
     rebuild_table_with_params(params) {
