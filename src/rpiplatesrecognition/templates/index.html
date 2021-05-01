@@ -1,15 +1,55 @@
 {% extends "base.html" %}
+{% from 'bootstrap/form.html' import render_form %}
+
+{% block scripts %}
+    {{ super() }}
+    <script type="text/javascript" src="{{ url_for('static', filename='ajax_form.js') }}"></script>
+    {% if current_user.is_authenticated %}
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const form_node = document.querySelector('#addModuleModal form');
+                const ajax_form_route = '{{ url_for("add_module_ajax") }}';
+                const submit_btn = document.querySelector('#addModuleModal #submit-btn');
+
+                const ajax_form = new AjaxForm(form_node, ajax_form_route, [submit_btn]);
+            });
+        </script>
+    {% endif %}
+{% endblock %}
 
 {% block app_content %}
     {% if current_user.is_authenticated %}
+        <div class="modal fade" id="addModuleModal" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Add a module</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    {{ render_form(form) }}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-info" id="submit-btn">Submit</button>
+                    <button type="button" class="btn btn-secodary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+            </div>
+        </div>
+
         <h1>Hi, {{ current_user.username }}!</h1>
         <hr>
-        <div class="col-md-6">
+        <div class="col-md-8">
             <h2>Your modules:</h2>
             <table class="table table-hover">
                 <thead style="font-weight: bold;">
                     <td> Unique id </td>
                     <td> Active </td>
+                    {% if current_user.role == 'User' %}
+                        <td>
+                            <button type="button" class="btn btn-info" data-toggle="modal" data-target="#addModuleModal">Add a module</button>
+                        </td>
+                    {% endif %}
                 </thead>
                 {% for module in modules %}
                     {% include '_module.html' %}

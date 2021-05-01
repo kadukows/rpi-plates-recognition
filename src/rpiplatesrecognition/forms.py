@@ -42,6 +42,10 @@ class AddModuleForm(FlaskForm):
             raise ValidationError('Module is already registed to a user')
 
 
+class AddModuleFormAjax(AddModuleForm):
+    submit = None
+
+
 class ChangePasswordForm(FlaskForm):
     new_password = PasswordField('Password', validators=[DataRequired()])
     new_password2 = PasswordField('Repeat Password', validators=[DataRequired(), EqualTo('new_password')])

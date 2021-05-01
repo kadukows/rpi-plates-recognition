@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from 'bootstrap/form.html' import render_form, render_field %}
+{% from 'bootstrap/form.html' import render_form %}
 
 {% block scripts %}
     {{ super() }}
@@ -18,11 +18,10 @@
             });
 
             const form_node = document.querySelector('#addModal form');
-            const inv_feedback_con = document.querySelector('#addModal #invalid-feedback-container');
             const ajax_form_route = '{{ url_for("edit_whitelist_add_plate") }}';
             const submit_btn = document.querySelector('#addModal #submit-btn');
 
-            const ajax_form = new AjaxForm(form_node, inv_feedback_con, ajax_form_route, [submit_btn]);
+            const ajax_form = new AjaxForm(form_node, ajax_form_route, [submit_btn]);
         });
     </script>
 {% endblock %}
@@ -57,18 +56,7 @@
             <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
             </div>
             <div class="modal-body">
-                <form id="add_plate_form" method="POST">
-                        {{ form.hidden_tag() }}
-                        <div class="form-group">
-                            {{ form.plate(class="form-control") }}
-                        </div>
-                        <div id="invalid-feedback-container">
-
-                        </div>
-                </form>
-                <div id="result">
-
-                </div>
+                {{ render_form(form) }}
             </div>
             <div class="modal-footer">
                     <button type="button" class="btn btn-info" id="submit-btn">Submit</button>

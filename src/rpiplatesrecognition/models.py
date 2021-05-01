@@ -90,7 +90,7 @@ class Plate(db.Model):
     whitelist_id = db.Column(db.Integer, db.ForeignKey('whitelists.id'))
     whitelist = db.relationship('Whitelist', backref=db.backref('plates', lazy=True))
 
-    PLATE_RE = re.compile(r'^[A-Z]{2,3}[A-Z0-9]{3,4}$')
+    PLATE_RE = re.compile(r'^[A-Z]{2,3}[A-Z0-9]{3,5}$')
 
     @staticmethod
     def is_valid_plate(text):

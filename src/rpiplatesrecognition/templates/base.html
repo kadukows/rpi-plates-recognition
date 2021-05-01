@@ -29,9 +29,6 @@
                     {% if current_user.is_authenticated %}
                         {% if current_user.role == 'User' %}
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('add_module') }}">Add module</a>
-                            </li>
-                            <li class="nav-item">
                                 <a class="nav-link" href="{{ url_for('whitelists') }}">Whitelists</a>
                             </li>
                         {% elif current_user.role == 'Admin' %}
@@ -56,11 +53,15 @@
                             <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
                         </li>
                     {% endif %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="/api/ui">Swagger API</a>
+                    </li>
                 </ul>
             </div>
         </nav>
 
-        <div class="container-fluid">
+
+        <div class="container" id="main_div">
             {% with messages = get_flashed_messages() %}
                 {% if messages %}
                     {% for message in messages %}
@@ -74,7 +75,6 @@
 
         {% block scripts %}
             {{ bootstrap.load_js() }}
-            <script src="https://cdn.socket.io/3.1.1/socket.io.min.js"></script>
         {% endblock %}
     </body>
 </html>

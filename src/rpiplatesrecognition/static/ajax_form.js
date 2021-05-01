@@ -1,38 +1,48 @@
 class AjaxForm {
-    constructor(form_node, invalid_feedback_container_node, ajax_form_route, submit_btns) {
+    constructor(form_node, ajax_form_route, submit_btns) {
         this.form_node = form_node;
-        this.invalid_feedback_container_node = invalid_feedback_container_node;
+        this.ajax_form_route = ajax_form_route;
+
+        this.invalid_feedback_container_node = document.createElement('div');
+        this.form_node.appendChild(this.invalid_feedback_container_node);
 
         submit_btns.forEach(button => {
-            button.onclick = () => {
-                const req = new XMLHttpRequest();
-                req.open('POST', ajax_form_route);
-
-                req.onload = () => {
-                    const data = JSON.parse(req.responseText);
-
-                    if (req.status === 201) {
-                        location.reload();
-                    }
-                    else if (req.status === 409) {
-                        // pop all warnings beforehand
-                        this.pop_all_warnings();
-
-                        for (var field in data.errors) {
-                            const invalid_feedback = create_invalid_feedback(data.errors[field]);
-
-                            this.invalid_feedback_container_node.appendChild(invalid_feedback);
-
-                            const field_node = this.form_node.querySelector(`#${field}`);
-                            field_node.classList.add('is-invalid');
-                        }
-                    }
-                };
-
-                const form_data = new FormData(this.form_node);
-                req.send(form_data);
-            };
+            button.onclick = () => { this.fake_submit(); };
         });
+
+        this.form_node.onsubmit = () => {
+            this.fake_submit();
+            return false;
+        };
+    }
+
+    fake_submit() {
+        const req = new XMLHttpRequest();
+        req.open('POST', this.ajax_form_route);
+
+        req.onload = () => {
+            if (req.status === 201) {
+                location.reload();
+            }
+            else if (req.status === 409) {
+                // pop all warnings beforehand
+                this.pop_all_warnings();
+
+                const data = JSON.parse(req.responseText);
+
+                for (var field in data.errors) {
+                    const invalid_feedback = create_invalid_feedback(data.errors[field]);
+
+                    this.invalid_feedback_container_node.appendChild(invalid_feedback);
+
+                    const field_node = this.form_node.querySelector(`#${field}`);
+                    field_node.classList.add('is-invalid');
+                }
+            }
+        };
+
+        const form_data = new FormData(this.form_node);
+        req.send(form_data);
     }
 
     pop_all_warnings() {

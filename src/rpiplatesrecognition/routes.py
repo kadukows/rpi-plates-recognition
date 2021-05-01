@@ -7,7 +7,7 @@ from werkzeug.urls import url_parse
 
 from .db import db
 from .db.helpers import get_whitelists_for_user_query
-from .forms import ChangePasswordForm, LoginForm, RegistrationForm, AddModuleForm, AddWhitelistForm, AddPlateForm
+from .forms import AddModuleFormAjax, ChangePasswordForm, LoginForm, RegistrationForm, AddModuleForm, AddWhitelistForm, AddPlateForm
 from .models import User, Module, Whitelist, Plate
 from .auth import admin_required
 
@@ -16,12 +16,39 @@ def init_app(app: Flask, sio: SocketIO):
     @app.route('/index')
     def index():
         if current_user.is_authenticated:
+            form = AddModuleFormAjax()
             if current_user.role == 'User':
-                return render_template('index.html', modules=current_user.modules)
+                return render_template('index.html', modules=current_user.modules, form=form)
             elif current_user.role == 'Admin':
-                return render_template('index.html', modules=Module.query.all())
+                return render_template('index.html', modules=Module.query.all(), form=form)
         else:
             return render_template('index.html')
+
+
+    @app.route('/add_module_ajax', methods=['POST'])
+    @login_required
+    def add_module_ajax():
+        form = AddModuleFormAjax()
+
+        if not form.validate_on_submit():
+            result = {'errors': {}}
+            for field in form:
+                if field.errors:
+                    result['errors'][field.name] = [error for error in field.errors]
+
+            return result, 409
+        else:
+            module = Module.query.filter_by(unique_id=form.unique_id.data).first()
+            module: Module
+            assert module
+
+            module.user = current_user
+            db.session.commit()
+
+            return '', 201
+
+
+
 
     @app.route('/login', methods=['GET', 'POST'])
     def login():
@@ -91,10 +118,12 @@ def init_app(app: Flask, sio: SocketIO):
 
         return render_template('user_profile.html', form=form)
 
+
     @app.route('/whitelists')
     @login_required
     def whitelists():
         return render_template('whitelists.html', whitelists=current_user.whitelists)
+
 
     @app.route('/edit_whitelist/<int:whitelist_id>', methods=['GET'])
     @login_required
@@ -148,27 +177,6 @@ def init_app(app: Flask, sio: SocketIO):
             return redirect(url_for('whitelists'))
 
         return render_template('add_whitelist.html', form=form)
-
-
-    '''
-    @app.route('/add_plate_to_whitelist/<int:whitelist_id>', methods=['GET','POST'])
-    @login_required
-    def add_plate_to_whitelist(whitelist_id):
-        form = AddPlateForm(whitelist_id)
-        whitelist = (Whitelist.query.join(User, User.id == current_user.id)
-            .filter(Whitelist.id == whitelist_id)).first()
-
-        if form.validate_on_submit():
-            plate = Plate(text=form.licence_plate_number.data)
-            whitelist.plates.append(plate)
-            db.session.add(plate)
-            db.session.commit()
-
-            flash('Added licence plate: ' + plate.text + ' to whitelist: ' + whitelist.name)
-            return redirect(url_for('whitelists'))
-
-        return render_template('add_plate_to_whitelist.html',whitelist=whitelist,form=form)
-    '''
 
 
     @app.route('/delete_plate_from_whitelist/<int:whitelist_id>', methods=['POST'])
