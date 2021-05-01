@@ -10,11 +10,17 @@ import shutil
 db = SQLAlchemy()
 
 def init_db():
+    from rpiplatesrecognition.models import AccessAttempt
+
     db.drop_all()
     db.create_all()
     try:
-        shutil.rmtree(os.path.join(current_app.static_folder, 'photos'))
+        shutil.rmtree(os.path.join(current_app.instance_path, AccessAttempt.STATIC_ROOT_DIR))
     except OSError:
+        pass
+    try:
+        os.mkdir(os.path.join(current_app.instance_path, AccessAttempt.STATIC_ROOT_DIR))
+    except FileExistsError:
         pass
     db.session.commit()
 
@@ -41,6 +47,7 @@ def init_db_debug_command():
 
     db.session.add(user)
     db.session.add(admin)
+    db.session.add(module)
 
     module_wo_user = Module(unique_id='unique_id_2')
     db.session.add(module_wo_user)
@@ -51,16 +58,16 @@ def init_db_debug_command():
     for plate_text in ['WA6642E', 'WI027HJ', 'ERA75TM', 'ERA81TL']:
         whitelist.plates.append(Plate(text=plate_text))
 
-    for _ in range(15):
-        access_attempt = AccessAttempt(module)
-        # this commit neds to be here
-        # AccessAtempt.init_files needs AccessAttempt to have 'id'
-        db.session.commit()
+    db.session.commit()
 
-        with open(os.path.join(current_app.static_folder, 'debug.jpg'), 'rb') as file:
-            encoded_image = base64.encodebytes(file.read())
+    with db.session.no_autoflush:
+        for _ in range(5):
+            with open(os.path.join(current_app.static_folder, 'debug.jpg'), 'rb') as file:
+                encoded_image = base64.encodebytes(file.read())
+            access_attempt = AccessAttempt(module, encoded_image)
+            db.session.add(access_attempt)
 
-        access_attempt.init_files(encoded_image)
+    db.session.commit()
 
     click.echo('Initialized db with default values')
 
@@ -76,7 +83,7 @@ def init_app(app: Flask):
         Module.query.update({Module.is_active: False})
         db.session.commit()
 
-    # this check for integrity of 'static/photos' folder with dataabse state
+    # this check for integrity of 'instance/photos' folder with dataabse state
     @app.before_first_request
     def access_attempts_integrity_check():
             from .models import AccessAttempt

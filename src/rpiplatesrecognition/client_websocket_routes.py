@@ -23,13 +23,6 @@ def init_app_sio(app: Flask, sio: SocketIO):
         if 'unique_id' in data:
             # check if current user own module that it wants to connect to
 
-            '''
-            module = (Module.query
-                    .join(User, Module.user_id == User.id)
-                    .filter(Module.unique_id == data['unique_id'])
-                    .filter(User.id == session['sio_user_id'])).first()
-            '''
-
             module = Module.query.filter_by(unique_id=data['unique_id']).first()
 
             if module is not None:

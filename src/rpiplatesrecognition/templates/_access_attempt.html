@@ -12,6 +12,28 @@
         {{ access_attempt.module.unique_id }}
     </td>
     <td>
-        <button class="btn btn-primary show-access-attempt-button" data-access-attempt-id="{{ access_attempt.id }}">Show</button>
+        {{ access_attempt.recognized_plate }}
+    </td>
+    <td>
+        <button class="btn btn-primary show-access-attempt-button" data-access-attempt-id="{{ access_attempt.id }}"
+            data-toggle="collapse" data-target=".access-attempt-{{ access_attempt.id }}"
+            data-access-attempt-id="{{ access_attempt.id }}">Show</button>
     </td>
 </tr>
+<div class="collapse access-attempt-{{ access_attempt.id }}">
+    <tr>
+        <td>
+            <h2>Source image</h2>
+        </td>
+        <td colspan="5">
+            <img class="img-responsive img-rounded" id="src-image-output-{{ access_attempt.id }}">
+        </td>
+    </tr>
+</div>
+<!--
+<tr class="collapse access_attempt-{{ access_attempt.id }}">
+    <td>
+
+    </td>
+</tr>
+-->

@@ -1,5 +1,6 @@
 from logging import Formatter, LogRecord
 from types import SimpleNamespace
+import json
 
 from flask import session, request, jsonify
 from flask_socketio import SocketIO, join_room
@@ -51,8 +52,12 @@ def init_app(sio: SocketIO):
         if 'module_id' in session:
             module = Module.query.get(session['module_id'])
             if module and module.user:
-                pass
-                # uncomment when done
-                #access_attempt = AccessAttempt(module=module)
-                #db.session.commit()  # inits access_attempt.id
-                # access_attempt.init_files(data)
+                access_attempt = AccessAttempt(module, data)
+                db.session.add(access_attempt)
+                db.session.commit()
+
+                sio.emit(
+                    'new_access_attempt_from_server_to_client',
+                    data=json.dumps(access_attempt.to_dict()),
+                    namespace='/rpi',
+                    to=module.unique_id)

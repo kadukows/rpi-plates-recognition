@@ -1,0 +1,41 @@
+Table users {
+  id int [pk, increment]
+  username varchar [not null, unique]
+  password_hash varcher [not null]
+}
+
+Table modules {
+  id int [pk, increment]
+  unique_id varchar [not null, unique]
+  user_id int [ref: > users.id]
+}
+
+Table whitelists {
+  id int [pk, increment]
+  name varchar [not null]
+  user_id varchar [ref: > users.id]
+}
+
+Table whitelist_to_module_assignment {
+  whitelist_id int [pk, ref: > whitelists.id]
+  module_id int [pk, ref: > modules.id]
+}
+
+Table plates {
+  id int [pk, increment]
+  text varchar [not null]
+  whitelist_id int [ref: > whitelists.id]
+}
+
+Table access_attempts {
+  id int [pk, increment]
+  date datetime [default: `now()`]
+  module_id int [ref: > modules.id]
+  user_id int [ref: > users.id]
+
+  plate_region_num int
+  segments_num int
+  recognized_plate varchar
+  extraction_params blob
+  photos_dir varchar
+}

@@ -2,11 +2,15 @@ import os
 
 from flask import Flask
 from flask_socketio import SocketIO
+from .rest_api_connexion import ConfigurableFlaskApp
 
 def create_app(test_config=None, return_socketio=False):
     """This is default factory function for creating app object"""
 
-    app = Flask(__name__, instance_relative_config=True)
+    connexion_app = ConfigurableFlaskApp(__name__,
+        specification_dir='./rest_api_connexion',
+        flask_instance_relative_config=True)
+    app = connexion_app.app
     app.config.from_mapping(
         SECRET_KEY='dev',
         SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(app.instance_path, 'rpiplatesrecognition.sqlite'),
@@ -36,9 +40,6 @@ def create_app(test_config=None, return_socketio=False):
     from . import rpi_websocket_api
     rpi_websocket_api.init_app(sio)
 
-    from . import rest_api
-    rest_api.init_app_sio(app, sio)
-
     from . import routes
     routes.init_app(app, sio)
 
@@ -49,10 +50,13 @@ def create_app(test_config=None, return_socketio=False):
     client_websocket_routes.init_app_sio(app, sio)
 
     from flask_bootstrap import Bootstrap
-    Bootstrap(app)
+    bootstrap = Bootstrap(app)
 
     from . import manual_image
     manual_image.init_app(app)
+
+    from . import rest_api_connexion
+    rest_api_connexion.init_connexion_app(connexion_app)
 
     if return_socketio:
         return (app, sio)

@@ -5,15 +5,20 @@ from .edge_projection_algorithm import edge_projection_algorithm
 from .signs_extraction import find_segments, combine_to_one
 from .edge_projection_second import edge_projection_algorithm_v2
 from .config_file import *
-"""
 
+'''
+This is a module for plate_acquisitiion
+'''
+
+
+'''
 from edge_projection_algorithm import edge_projection_algorithm
 from signs_extraction import find_segments, combine_to_one
 from edge_projection_second import edge_projection_algorithm_v2
 from config_file import *
 import os
 import cv2 as cv
-"""
+'''
 
 def global_edge_projection(img: np.ndarray, parameters: ExtractionConfigParameters):
     if parameters.algorithm_choice == 1:
@@ -66,4 +71,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
