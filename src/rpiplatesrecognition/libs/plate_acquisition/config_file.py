@@ -9,7 +9,7 @@ class ExtractionConfigParameters:
 
     algorithm_choice: int = 2  # 1 or 2
 
-    img_size: Tuple[int, int] = (800, 600)
+    img_size: Tuple[int, int] = (800, 600) #also passed to camera
     max_areas: int = 2
 
     gauss_kernel: Tuple[int, int] = (3, 3)
@@ -52,3 +52,13 @@ class ExtractionConfigParameters:
     threshold_morphology: int = 100 #below this bound image pixels are set to 0 after morphology operations
     min_number_of_ch: int = 4 # minimum number of characters found on plate
     max_number_of_ch: int = 9 # maximum number of characters found on plate
+
+        ###########################################
+        # camera
+    camera_timeout_in_ms: int = 2000 #do not go below 1200
+    camera_sharpness: int = 0 #-100 - 100
+    camera_contrast: int = 0 #-100 - 100
+    camera_brightness: int = 0 #-100 - 100
+    camera_saturation: int = 0 #-100 - 100
+    camera_quality: int = 100 #0 - 100
+

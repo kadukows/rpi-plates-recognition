@@ -7,6 +7,8 @@ from flask_socketio import SocketIO, join_room
 
 from .db import db
 from .models import Module, AccessAttempt
+from .libs.plate_acquisition.config_file import ExtractionConfigParameters
+import dataclasses
 
 def init_app(sio: SocketIO):
     @sio.on('login_from_rpi', namespace='/rpi')
@@ -61,3 +63,11 @@ def init_app(sio: SocketIO):
                     data=json.dumps(access_attempt.to_dict()),
                     namespace='/rpi',
                     to=module.unique_id)
+
+    @sio.on('update_config', namespace='/rpi')
+    def log(data):
+        if 'module_id' in session:
+            module = Module.query.get(session['module_id'])
+            if module and module.user:
+                return json.dumps(dataclasses.asdict(module.extraction_params or ExtractionConfigParameters()))
+                
