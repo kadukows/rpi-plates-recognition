@@ -3,8 +3,9 @@ import re
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileRequired, FileAllowed, FileField
 from flask_login import current_user
-from wtforms import StringField, PasswordField, SubmitField
+from wtforms import StringField, PasswordField, SubmitField, SelectField
 from wtforms.validators import DataRequired, Email, EqualTo, ValidationError, Length
+from .db import db
 
 from .models import User, Module, Whitelist, Plate
 
@@ -57,9 +58,24 @@ class UploadImageForm(FlaskForm):
 
 class AddWhitelistForm(FlaskForm):
     whitelist_name = StringField('Whitelist name', validators=[DataRequired(),Length(2)])
+    modules_assign = SelectField(u'Module to assign', choices=[])
     submit = SubmitField('Add whitelist')
 
-    def validate_whitelist_name(self, whitelist_name):
+    def __init__(self, user_id: int):
+        FlaskForm.__init__(self)
+        self.modules = []
+        user = User.query.filter_by(id=user_id).first()
+        if user is not None:
+            modules_found = db.session.query(Module.unique_id).filter(Module.user_id == current_user.id).all()
+            for module in modules_found:
+                self.modules.append(module.unique_id)
+        
+        if self.modules is not None:
+            self.modules_assign.choices = self.modules
+
+
+    def validate_whitelist_name(self, whitelist_name):  
+
         whitelist = Whitelist.query.filter_by(name=whitelist_name.data).first()
 
         if whitelist is not None:
