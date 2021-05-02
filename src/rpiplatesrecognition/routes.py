@@ -37,7 +37,7 @@ def init_app(app: Flask, sio: SocketIO):
     @app.route('/bind_modules_to_whitelists', methods=['POST'])
     @login_required
     def bind_modules_to_whitelists():
-        form = BindWhitelistToModuleDynamicCtor()
+        form = BindWhitelistToModuleDynamicCtor(current_user)
 
         if not form.validate_on_submit():
             result = {'errors': {}}
