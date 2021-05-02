@@ -5,15 +5,16 @@
     <hr>
 
     <div class="col-md-6">
+       
+            <a href="{{ url_for('add_whitelist') }}">
+                <button type="button" class="btn btn-success">Add new whitelist</button>
+            </a>
+        
         <table class="table table-hover">
             <thead style="font-weight: bold;">
+
                 <td>
                     Name
-                </td>
-                <td>
-                    <a href="{{ url_for('add_whitelist') }}">
-                        <button type="button" class="btn btn-success">Add new whitelist</button>
-                    </a>
                 </td>
             </thead>
             {% for whitelist in whitelists %}

@@ -3,6 +3,7 @@
 
 {% block scripts %}
     {{ super() }}
+    <script type="text/javascript" src="{{ url_for('static', filename='ajax_form.js') }}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             $('#removeModal').on('show.bs.modal', function (event) {
@@ -14,6 +15,20 @@
 
                 const fakeForm = document.querySelector('#fakeForm');
                 fakeForm.action = `{{ url_for('delete_plate_from_whitelist', whitelist_id=whitelist.id) }}?plate_id=${plate_id}`;
+            });
+
+            //
+            //  Add a whitelist ajax form set-up
+            //
+
+            const form_node = document.querySelector('#addModal form');
+            const ajax_form_route = '{{ url_for("edit_whitelist_add_plate") }}';
+            const submit_btn = document.querySelector('#addModal #submit-btn');
+
+            const ajax_form = new AjaxForm(form_node, ajax_form_route, [submit_btn]);
+
+            ajax_form.addEventListener('validatedAndSubmitted', () => {
+                location.reload();
             });
         });
     </script>
@@ -40,6 +55,7 @@
         </div>
         </div>
     </div>
+
     <div class="modal fade" id="addModal" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -48,26 +64,32 @@
             <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
             </div>
             <div class="modal-body">
-            <p>Are you sure you want to delete: <strong id="plate-text-output"></strong>?</p>
+                {{ render_form(form) }}
             </div>
             <div class="modal-footer">
-                <form method="POST" id="fakeForm">
-                    <input type="submit" class="btn btn-danger" value="Remove"></button>
-                </form>
-
-                <button type="button" class="btn" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-info" id="submit-btn">Submit</button>
+                    <button type="button" class="btn btn-secodary" data-dismiss="modal">Close</button>
             </div>
         </div>
         </div>
     </div>
 
 
-    <h1>Editing whitelist: <strong>{{ whitelist.name }}</strong></h1>
+    <div class="row">
+        <div class="col-sm-12 mx-2 my-2">
+            <h1>Editing whitelist: <strong>{{ whitelist.name }}</strong></h1>
+        </div>
+    </div>
     <div class="row">
         <div class="col-md-8">
             <table class="table table-hover">
                 <thead style="font-weight: bold;">
-                    <td>Plate</td>
+                    <td>
+                        Plate
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-info" data-toggle="modal" data-target="#addModal">Add a plate</button>
+                    </td>
                 </thead>
                 <tbody>
                     {% for plate in whitelist.plates %}

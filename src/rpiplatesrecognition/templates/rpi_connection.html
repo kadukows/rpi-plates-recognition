@@ -2,38 +2,17 @@
 
 {% block scripts %}
     {{ super() }}
+    <script src="https://cdn.socket.io/3.1.1/socket.io.min.js"></script>
     <script src="{{ url_for('static', filename='rpi_connection.js') }}"></script>
+{% endblock %}
+
+{% block container_div %}
+    <div class="container-fluid">
 {% endblock %}
 
 {% block styles %}
     {{ super() }}
     <style>
-        /*
-        tbody { height: 250px; overflow-y: scroll; display:block;}
-        th { position: sticky; top: 0; }
-        */
-        .tableFixHead {
-            overflow-y: auto;
-            height: 200px;
-        }
-
-        .tableFixHead table {
-            border-collapse: collapse;
-            width: 100%;
-        }
-
-        .tableFixHead th,
-        .tableFixHead td {
-            padding: 8px 16px;
-        }
-
-        .tableFixHead th {
-            position: sticky;
-            top: 0;
-            background: #eee;
-        }
-
-
         .card {
             transform: scale(0);
             transition: 0.5s;
@@ -76,6 +55,10 @@
             100% {
                 transform: translateX(0px) rotate(0deg);
             }
+        }
+
+        .loading {
+            cursor: progress;
         }
     </style>
 {% endblock %}
