@@ -4,14 +4,45 @@
 {% block scripts %}
     {{ super() }}
     <script type="text/javascript" src="{{ url_for('static', filename='ajax_form.js') }}"></script>
-    {% if current_user.is_authenticated %}
+    {% if current_user.is_authenticated and current_user.role == 'User' %}
         <script>
             document.addEventListener('DOMContentLoaded', () => {
-                const form_node = document.querySelector('#addModuleModal form');
-                const ajax_form_route = '{{ url_for("add_module_ajax") }}';
-                const submit_btn = document.querySelector('#addModuleModal #submit-btn');
+                // block for adding a module
+                // to prevent varaible name clash
+                {
 
-                const ajax_form = new AjaxForm(form_node, ajax_form_route, [submit_btn]);
+
+                    const form_node = document.querySelector('#addModuleModal form');
+                    const ajax_form_route = '{{ url_for("add_module_ajax") }}';
+                    const submit_btn = document.querySelector('#addModuleModal #submit-btn');
+
+                    const ajax_form = new AjaxForm(form_node, ajax_form_route, [submit_btn]);
+
+                    ajax_form.addEventListener('validatedAndSubmitted', () => {
+                        location.reload();
+                    });
+                }
+
+                // block for editing a module's whitelists
+                {
+
+                    const form = document.querySelector('#editWhitelistsModal form');
+
+                    const bind_module_to_whitelits_btns = document.querySelectorAll('.bind-module-to-whitelists-btn');
+                    bind_module_to_whitelits_btns.forEach(button => {
+                        button.onclick = function () {
+                            const req = new XMLHttpRequest();
+                            req.open('GET', `{{ url_for("get_bound_whitelists_for_module") }}?unique_id=${this.dataset.unique_id}`);
+                            req.onload = () => {
+                                if (req.status == 201) {
+                                    const data = JSON.parse(req.responseText);
+                                    console.log(data);
+                                }
+                            };
+                            req.send();
+                        };
+                    });
+                }
             });
         </script>
     {% endif %}
@@ -19,23 +50,45 @@
 
 {% block app_content %}
     {% if current_user.is_authenticated %}
-        <div class="modal fade" id="addModuleModal" tabindex="-1" role="dialog">
-            <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h4 class="modal-title">Add a module</h4>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        {% if current_user.role == 'User' %}
+            <div class="modal fade" id="addModuleModal" tabindex="-1" role="dialog">
+                <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Add a module</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    </div>
+                    <div class="modal-body">
+                        {{ render_form(form) }}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-info" id="submit-btn">Submit</button>
+                        <button type="button" class="btn btn-secodary" data-dismiss="modal">Close</button>
+                    </div>
                 </div>
-                <div class="modal-body">
-                    {{ render_form(form) }}
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-info" id="submit-btn">Submit</button>
-                    <button type="button" class="btn btn-secodary" data-dismiss="modal">Close</button>
                 </div>
             </div>
+
+            <div class="modal fade" id="editWhitelistsModal" tabindex="-1" role="dialog">
+                <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Edit whitelist</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    </div>
+                    <div class="modal-body">
+                        {{ render_form(edit_whitelist_form) }}
+
+                        {# ren(edit_whitelist_form) #}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-info" id="submit-btn">Submit</button>
+                        <button type="button" class="btn btn-secodary" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+                </div>
             </div>
-        </div>
+        {% endif %}
 
         <h1>Hi, {{ current_user.username }}!</h1>
         <hr>
@@ -51,6 +104,16 @@
                         </td>
                     {% endif %}
                 </thead>
+                <tr>
+                    <td></td>
+                    <form class="form-inline">
+                        <select class="selectpicker" multiple>
+                            <option>ex1</option>
+                            <option>ex2</option>
+                        </select>
+                    </form>
+                </tr>
+
                 {% for module in modules %}
                     {% include '_module.html' %}
                 {% endfor %}

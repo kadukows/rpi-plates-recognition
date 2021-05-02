@@ -1,5 +1,6 @@
-class AjaxForm {
+class AjaxForm extends EventTarget {
     constructor(form_node, ajax_form_route, submit_btns) {
+        super();
         this.form_node = form_node;
         this.ajax_form_route = ajax_form_route;
 
@@ -22,7 +23,8 @@ class AjaxForm {
 
         req.onload = () => {
             if (req.status === 201) {
-                location.reload();
+                const event = new CustomEvent('validatedAndSubmitted');
+                this.dispatchEvent(event);
             }
             else if (req.status === 409) {
                 // pop all warnings beforehand

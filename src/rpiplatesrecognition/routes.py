@@ -6,8 +6,8 @@ from flask_socketio import SocketIO, join_room, leave_room
 from werkzeug.urls import url_parse
 
 from .db import db
-from .db.helpers import get_whitelists_for_user_query
-from .forms import AddModuleFormAjax, ChangePasswordForm, LoginForm, RegistrationForm, AddModuleForm, AddWhitelistForm, AddPlateForm
+from .db.helpers import get_whitelists_for_user_query, get_modules_for_user_query
+from .forms import AddModuleFormAjax, BindModuleToWhitelistsForm, ChangePasswordForm, LoginForm, RegistrationForm, AddModuleForm, AddWhitelistForm, AddPlateForm
 from .models import User, Module, Whitelist, Plate
 from .auth import admin_required
 
@@ -17,10 +17,14 @@ def init_app(app: Flask, sio: SocketIO):
     def index():
         if current_user.is_authenticated:
             form = AddModuleFormAjax()
+
+            edit_whitelist_form = BindModuleToWhitelistsForm()
+            edit_whitelist_form.whitelists.choices = [(whitelist.id, whitelist.name) for whitelist in current_user.whitelists]
+
             if current_user.role == 'User':
-                return render_template('index.html', modules=current_user.modules, form=form)
+                return render_template('index.html', modules=current_user.modules, form=form, edit_whitelist_form=edit_whitelist_form)
             elif current_user.role == 'Admin':
-                return render_template('index.html', modules=Module.query.all(), form=form)
+                return render_template('index.html', modules=Module.query.all())
         else:
             return render_template('index.html')
 
@@ -208,3 +212,20 @@ def init_app(app: Flask, sio: SocketIO):
         flash(f'Sucessfully removed plate: {plate.text}')
         db.session.commit()
         return redirect(url_for('edit_whitelist', whitelist_id=whitelist_id))
+
+
+    @app.route('/get_bound_whitelists_for_module')
+    @login_required
+    def get_bound_whitelists_for_module():
+        unique_id = request.args['unique_id'] or None
+        if unique_id is None:
+            return {}, 409
+
+        module = get_modules_for_user_query(current_user).filter(Module.unique_id == unique_id).first()
+
+        if module is None:
+            return {}, 409
+
+        return {
+            'whitelists_names': [whitelist.name for whitelist in module.whitelists]
+        }, 201

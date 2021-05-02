@@ -22,5 +22,13 @@
                 <button type="button" class="btn btn-primary" data-unique_id="{{ module.unique_id }}">More</button>
             </a>
         </td>
+    {% elif current_user.role == 'User' %}
+        <td>
+
+        </td>
+        <td>
+            <button type="button" class="btn btn-primary bind-module-to-whitelists-btn"
+                data-toggle="modal" data-target="#editWhitelistsModal" data-unique_id="{{ module.unique_id }}">Edit whitelists</button>
+        </td>
     {% endif %}
 </tr>

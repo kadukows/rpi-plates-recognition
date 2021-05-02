@@ -4,13 +4,10 @@
     {{ super() }}
     <script src="https://cdn.socket.io/3.1.1/socket.io.min.js"></script>
     <script src="{{ url_for('static', filename='rpi_connection.js') }}"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const main_div = document.querySelector('#main_div');
-            main_div.classList.remove('container');
-            main_div.classList.add('container-fluid');
-        })
-    </script>
+{% endblock %}
+
+{% block container_div %}
+    <div class="container-fluid">
 {% endblock %}
 
 {% block styles %}

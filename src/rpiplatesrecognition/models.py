@@ -94,7 +94,6 @@ class Plate(db.Model):
 
     @staticmethod
     def is_valid_plate(text):
-        assert isinstance(text, str)
         return Plate.PLATE_RE.match(text)
 
 
@@ -200,6 +199,6 @@ class AccessAttempt(db.Model):
     def to_dict(self) -> str:
         return {
             'id': self.id,
-            'date': self.date.strftime('%d.%m.%y %H:%M'),
+            'date': self.date.strftime('%d.%m.%y %H:%M:%S'),
             'plate': self.recognized_plate
         }

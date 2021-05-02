@@ -4,11 +4,13 @@ from flask_wtf import FlaskForm
 from flask_wtf.file import FileRequired, FileAllowed, FileField
 from flask_login import current_user
 from wtforms import StringField, PasswordField, SubmitField
+from wtforms.fields.core import RadioField, SelectMultipleField
 from wtforms.fields.simple import HiddenField
 from wtforms.validators import DataRequired, Email, EqualTo, ValidationError, Length
+from wtforms.widgets.core import Select, SubmitInput
 
 from .models import User, Module, Whitelist, Plate
-from .db.helpers import get_whitelists_for_user_query
+from .db.helpers import get_modules_for_user_query, get_whitelists_for_user_query
 
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
@@ -94,3 +96,21 @@ class AddPlateForm(FlaskForm):
 
         if possible_plate is not None:
             raise ValidationError('Plate already in a whitelist')
+
+
+def whitelist_id_to_whitelist(whitelist_id_str: str):
+    whitelist_id = int(whitelist_id_str)
+    return get_whitelists_for_user_query(current_user).filter(Whitelist.id == whitelist_id).first()
+
+
+class BindModuleToWhitelistsForm(FlaskForm):
+    unique_id = HiddenField('unique_id', validators=[DataRequired()])
+    whitelists = SelectMultipleField('Whitelists', coerce=whitelist_id_to_whitelist, render_kw={'class': 'selectpicker'})
+
+    def validate_unique_id(self, unique_id):
+        if get_modules_for_user_query(current_user).filter(Module.unique_id == unique_id).first() is None:
+            raise ValidationError('Wrong unique_id')
+
+    def validate_whitelists(self, whitelists):
+        if not all(whitelist is not None for whitelist in whitelists.data):
+            raise ValidationError('Wrong whitelists')
