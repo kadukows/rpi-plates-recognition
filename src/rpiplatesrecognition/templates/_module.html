@@ -1,4 +1,4 @@
-<tr>
+<tr class="selectpicker-edit-whitelist-row">
     <td>
         {{ module.unique_id }}
     </td>
@@ -24,11 +24,7 @@
         </td>
     {% elif current_user.role == 'User' %}
         <td>
-
-        </td>
-        <td>
-            <button type="button" class="btn btn-primary bind-module-to-whitelists-btn"
-                data-toggle="modal" data-target="#editWhitelistsModal" data-unique_id="{{ module.unique_id }}">Edit whitelists</button>
+            {{ (edit_whitelist_form|attr(module.unique_id + '_whitelists')) (form='select-picker-form') }}
         </td>
     {% endif %}
 </tr>

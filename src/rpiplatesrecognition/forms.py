@@ -98,19 +98,30 @@ class AddPlateForm(FlaskForm):
             raise ValidationError('Plate already in a whitelist')
 
 
-def whitelist_id_to_whitelist(whitelist_id_str: str):
-    whitelist_id = int(whitelist_id_str)
+def whitelist_id_to_whitelist(whitelist_id: int):
     return get_whitelists_for_user_query(current_user).filter(Whitelist.id == whitelist_id).first()
 
 
-class BindModuleToWhitelistsForm(FlaskForm):
-    unique_id = HiddenField('unique_id', validators=[DataRequired()])
-    whitelists = SelectMultipleField('Whitelists', coerce=whitelist_id_to_whitelist, render_kw={'class': 'selectpicker'})
+def BindWhitelistToModuleDynamicCtor(user: User):
+    class Form(FlaskForm):
+        pass
 
-    def validate_unique_id(self, unique_id):
-        if get_modules_for_user_query(current_user).filter(Module.unique_id == unique_id).first() is None:
-            raise ValidationError('Wrong unique_id')
+    for module in user.modules:
+        form_name = f'{module.unique_id}_whitelists'
 
-    def validate_whitelists(self, whitelists):
-        if not all(whitelist is not None for whitelist in whitelists.data):
-            raise ValidationError('Wrong whitelists')
+        users_whitelists = [(whitelist.id, whitelist.name) for whitelist in user.whitelists]
+
+        setattr(Form, form_name, SelectMultipleField(
+            'Select whitelists',
+            choices=users_whitelists,
+            default=[whitelist.id for whitelist in module.whitelists],
+            coerce=int,
+            render_kw={"class": "selectpicker"}))
+
+        def validate(self, field):
+            if not all(whitelist is not None for whitelist in field.data):
+                raise ValidationError('Wrong whitelists')
+
+        setattr(Form, 'validate_' + form_name, validate)
+
+    return Form()

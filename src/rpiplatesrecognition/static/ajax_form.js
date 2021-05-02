@@ -37,8 +37,17 @@ class AjaxForm extends EventTarget {
 
                     this.invalid_feedback_container_node.appendChild(invalid_feedback);
 
-                    const field_node = this.form_node.querySelector(`#${field}`);
-                    field_node.classList.add('is-invalid');
+                    var field_node = this.form_node.querySelector(`#${field}`);
+                    if (field_node === null) {
+                        // hack for 'remote' inputs to form
+                        const possible_fields = [...document.querySelectorAll(`#${field}`)];
+                        field_node = possible_fields.find(el => {
+                             return el.form === this.form_node;
+                        });
+                    }
+                    if (field_node !== null) {
+                        field_node.classList.add('is-invalid');
+                    }
                 }
             }
         };
