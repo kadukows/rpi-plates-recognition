@@ -106,6 +106,7 @@ class ParamsTableManager {
                 }
                 else {
                     submit_button.setAttribute('disabled', '');
+                    submit_button.classList.add('loading');
 
                     const data = JSON.stringify(this.to_data());
 
@@ -117,6 +118,7 @@ class ParamsTableManager {
                         const new_params = JSON.parse(req.responseText);
                         this.rebuild_table_with_params(new_params);
                         submit_button.removeAttribute('disabled', '');
+                        submit_button.classList.remove('loading');
                     }
 
                     req.send(data);

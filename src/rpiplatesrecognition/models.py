@@ -80,13 +80,17 @@ class Whitelist(db.Model):
 class Plate(db.Model):
     __tablename__ = 'plates'
 
+    def __init__(self, text, **kwargs):
+        assert Plate.is_valid_plate(text)
+        db.Model.__init__(self, text=text, **kwargs)
+
     id = db.Column(db.Integer, primary_key=True)
     text = db.Column(db.String(10), unique=True, index=True, nullable=False)
 
     whitelist_id = db.Column(db.Integer, db.ForeignKey('whitelists.id'))
     whitelist = db.relationship('Whitelist', backref=db.backref('plates', lazy=True))
 
-    PLATE_RE = re.compile(r'^[A-Z]{2,3}[A-Z0-9]{3,4}$')
+    PLATE_RE = re.compile(r'^[A-Z]{2,3}[A-Z0-9]{3,5}$')
 
     @staticmethod
     def is_valid_plate(text):
@@ -195,6 +199,6 @@ class AccessAttempt(db.Model):
     def to_dict(self) -> str:
         return {
             'id': self.id,
-            'date': self.date.strftime('%d.%m.%y %H:%M'),
+            'date': self.date.strftime('%d.%m.%y %H:%M:%S'),
             'plate': self.recognized_plate
         }

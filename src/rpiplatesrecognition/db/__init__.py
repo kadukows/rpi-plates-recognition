@@ -35,12 +35,12 @@ def init_db_command():
 def init_db_debug_command():
     """Helper command for aiding development process, populates databse with default values"""
 
-    from .models import User, Module, Whitelist, Plate, AccessAttempt
+    from ..models import User, Module, Whitelist, Plate, AccessAttempt, DEFAULT_EXTRACTION_PARAMS
 
     init_db()
 
     user = User(username='user1', password_hash=generate_password_hash('user1'))
-    module = Module(unique_id='unique_id_1')
+    module = Module(unique_id='unique_id_1', extraction_params=DEFAULT_EXTRACTION_PARAMS)
     user.modules.append(module)
 
     admin = User(username='admin1', password_hash=generate_password_hash('admin1'), role='Admin')
@@ -49,16 +49,15 @@ def init_db_debug_command():
     db.session.add(admin)
     db.session.add(module)
 
-    module_wo_user = Module(unique_id='unique_id_2')
-    db.session.add(module_wo_user)
+    for idx in range(2, 6):
+        new_module = Module(unique_id=f'unique_id_{idx}')
+        db.session.add(new_module)
 
     whitelist = Whitelist(name='example whitelist name')
     user.whitelists.append(whitelist)
 
     for plate_text in ['WA6642E', 'WI027HJ', 'ERA75TM', 'ERA81TL']:
         whitelist.plates.append(Plate(text=plate_text))
-
-    db.session.commit()
 
     with db.session.no_autoflush:
         for _ in range(5):
@@ -79,14 +78,14 @@ def init_app(app: Flask):
     # workaround for quick development (ie quick app resets)
     with app.app_context():
         db.create_all()
-        from .models import Module
+        from ..models import Module
         Module.query.update({Module.is_active: False})
         db.session.commit()
 
     # this check for integrity of 'instance/photos' folder with dataabse state
     @app.before_first_request
     def access_attempts_integrity_check():
-            from .models import AccessAttempt
+            from ..models import AccessAttempt
             access_attempts = AccessAttempt.query.all()
             assert all(access_attempt.photos_exist() for access_attempt in access_attempts), \
                 "There are access attempts without photos existing, please reinit db with 'flask init-db' or 'flask init-db-debug'"
