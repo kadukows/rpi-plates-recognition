@@ -6,6 +6,8 @@ from flask.cli import with_appcontext
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash
 import shutil
+import gzip
+
 
 db = SQLAlchemy()
 
@@ -74,6 +76,7 @@ def init_app(app: Flask):
     db.init_app(app)
     app.cli.add_command(init_db_command)
     app.cli.add_command(init_db_debug_command)
+    app.cli.add_command(init_db_backup_command)
 
     # workaround for quick development (ie quick app resets)
     with app.app_context():
@@ -89,3 +92,11 @@ def init_app(app: Flask):
             access_attempts = AccessAttempt.query.all()
             assert all(access_attempt.photos_exist() for access_attempt in access_attempts), \
                 "There are access attempts without photos existing, please reinit db with 'flask init-db' or 'flask init-db-debug'"
+
+
+@click.command('init-db-backup')
+@click.argument('directory',default='src/instance/photos')
+@with_appcontext
+def init_db_backup_command(directory ):
+    """Command for creating backup of database and processed images"""
+    shutil.make_archive('photo_backup', 'tar',directory)
