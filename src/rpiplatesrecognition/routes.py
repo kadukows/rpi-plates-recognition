@@ -263,3 +263,14 @@ def init_app(app: Flask, sio: SocketIO):
         flash(f'Sucessfully removed plate: {plate.text}')
         db.session.commit()
         return redirect(url_for('edit_whitelist', whitelist_id=whitelist_id))
+
+    @app.route('/remove_whitelist', methods=['POST'])
+    @login_required
+    def delete_whitelist():
+        whitelist_id = request.args.get('whitelist_id', None)
+        whitelist = Whitelist.query.filter_by(id=whitelist_id).first()
+        
+        if whitelist is not None:
+            db.session.delete(whitelist)
+            db.session.commit()
+        return redirect(url_for('whitelists'))
