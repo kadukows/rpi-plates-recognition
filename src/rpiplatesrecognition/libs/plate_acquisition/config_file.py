@@ -29,8 +29,8 @@ class ExtractionConfigParameters:
     max_width: int = 600
     min_size_x: int = 100
 
-        ###########################################
-        # second algorithm
+    ###########################################
+    # second algorithm
 
     mean_size_x_v2: int = 8  # to remove noises from projection - count mean of mean_size_x pixels
     min_size_y_v2: int = 20  # min height of possible area
@@ -40,8 +40,9 @@ class ExtractionConfigParameters:
     max_width_v2: int = 600
     min_size_x_v2: int = 150
 
-        ###########################################
-        # signs_extraction algorithm
+    ###########################################
+    # signs_extraction algorithm
+
     adaptive_threshhold_size: int = 11 #size of a pixel neighborhood that is used to calculate a threshold value
     adaptive_threshhold_C: int = 2 # constant subtracted from the mean
     connectivity: int = 4 #4 or 8 connectivity in cca algorithm
@@ -53,8 +54,9 @@ class ExtractionConfigParameters:
     min_number_of_ch: int = 4 # minimum number of characters found on plate
     max_number_of_ch: int = 9 # maximum number of characters found on plate
 
-        ###########################################
-        # camera
+    ###########################################
+    # camera
+
     camera_timeout_in_ms: int = 2000 #do not go below 1200
     camera_sharpness: int = 0 #-100 - 100
     camera_contrast: int = 0 #-100 - 100
@@ -62,8 +64,9 @@ class ExtractionConfigParameters:
     camera_saturation: int = 0 #-100 - 100
     camera_quality: int = 100 #0 - 100
 
-###########################################
-        # gate controller
+    ###########################################
+    # gate controller
+
     gatecontroller_gpio_pin_number: int = 3
-    gatecontroller_button_press_time: float = 0.35 
+    gatecontroller_button_press_time: float = 0.35
     gatecontroller_gate_opening_time: float = 15

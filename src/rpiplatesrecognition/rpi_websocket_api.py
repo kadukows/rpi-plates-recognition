@@ -40,7 +40,7 @@ def init_app(sio: SocketIO):
             session.clear()
 
     @sio.on('log_from_rpi', namespace='/rpi')
-    def log(data):
+    def log_from_rpi(data):
         if 'module_id' in session:
             module = Module.query.get(session['module_id'])
             sio.emit(
@@ -50,7 +50,7 @@ def init_app(sio: SocketIO):
                 to=module.unique_id)
 
     @sio.on('image_from_rpi', namespace='/rpi')
-    def image(data):
+    def image_from_rpi(data):
         if 'module_id' in session:
             module = Module.query.get(session['module_id'])
             if module and module.user:
@@ -65,9 +65,8 @@ def init_app(sio: SocketIO):
                     to=module.unique_id)
 
     @sio.on('update_config', namespace='/rpi')
-    def log(data):
+    def update_config(data):
         if 'module_id' in session:
             module = Module.query.get(session['module_id'])
             if module and module.user:
-                return json.dumps(dataclasses.asdict(module.extraction_params or ExtractionConfigParameters()))
-                
+                return json.dumps(dataclasses.asdict(module.extraction_params))
