@@ -5,8 +5,7 @@ from flask.app import Flask
 from flask.cli import with_appcontext
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash
-import shutil
-import gzip
+import shutil,gzip,time
 
 
 db = SQLAlchemy()
@@ -95,8 +94,29 @@ def init_app(app: Flask):
 
 
 @click.command('init-db-backup')
-@click.argument('directory',default='src/instance/photos')
 @with_appcontext
-def init_db_backup_command(directory ):
+def init_db_backup_command():
     """Command for creating backup of database and processed images"""
-    shutil.make_archive('photo_backup', 'tar',directory)
+    
+    try:
+        if not os.path.split(os.getcwd())[1] == 'rpi-plates-recognition':
+            raise Exception("Not proper start point directory. Run command in base repo directory.")
+
+        path = 'backup/'
+        if not os.path.isdir(path):
+            os.mkdir(path)
+
+        directory = 'src/instance/photos'
+        photo_backup_dir = path + 'photo_backup'+ time.strftime("-%Y%m%d-%H%M%S")
+            
+        shutil.make_archive(photo_backup_dir, 'tar',directory)
+        print ("\nCreated photo backup dir: {}.tar".format(photo_backup_dir))
+            
+        db_file = 'src/instance/rpiplatesrecognition.sqlite'
+        backup_db_file = path + 'rpiplaterecognition' + time.strftime("-%Y%m%d-%H%M%S") + '.sqlite'
+            
+        shutil.copyfile(db_file, backup_db_file)
+        print ("Created database backup file: {}\n".format(backup_db_file))
+    except Exception as error:
+        print("Failed to create database backup")
+        print(error)
