@@ -123,6 +123,7 @@ def init_db_backup_command(filename,verbose):
         backup_arch = filename + time.strftime("-%Y%m%d-%H%M%S")
         shutil.make_archive(backup_arch, 'tar', path)
         print ("Created database arch: {}.tar\n".format(backup_arch))
+        shutil.rmtree(path)
             
     except Exception as error:
         print("Failed to create database backup")
