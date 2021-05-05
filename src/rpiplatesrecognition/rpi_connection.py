@@ -100,7 +100,7 @@ def upload_new_params(unique_id: str):
 
     return asdict(module.extraction_params)
 
-@bp.route('/upload_access_attempt/<string:unique_id>/', methods=['GET', 'POST'])
+@bp.route('/upload_access_attempt/<string:unique_id>', methods=['GET', 'POST'])
 @login_required
 @admin_required
 def upload_access_attempt(unique_id):
