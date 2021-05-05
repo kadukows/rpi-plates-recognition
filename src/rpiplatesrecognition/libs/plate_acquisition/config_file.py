@@ -60,7 +60,7 @@ class ExtractionConfigParameters:
     camera_timeout_in_ms: int = 2000 #do not go below 1200
     camera_sharpness: int = 0 #-100 - 100
     camera_contrast: int = 0 #-100 - 100
-    camera_brightness: int = 0 #-100 - 100
+    camera_brightness: int = 50 #-100 - 100
     camera_saturation: int = 0 #-100 - 100
     camera_quality: int = 100 #0 - 100
 

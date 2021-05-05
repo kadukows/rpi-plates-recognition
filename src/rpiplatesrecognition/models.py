@@ -117,7 +117,7 @@ class AccessAttempt(db.Model):
 
         # save original photo
         with open(self.get_src_image_filepath(Dirs.Absolute), 'wb') as file:
-            file.write(base64.decodebytes(encoded_image))
+            file.write(base64.b64decode(encoded_image))
 
         img = cv.imread(self.get_src_image_filepath(Dirs.Absolute))
 
