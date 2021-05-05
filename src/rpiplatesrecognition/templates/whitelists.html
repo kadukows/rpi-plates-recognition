@@ -1,6 +1,51 @@
 {% extends "base.html" %}
 
+
+{% block scripts %}
+    {{ super() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            $('#removeWhitelistModal').on('show.bs.modal', function (event) {
+                const button = $(event.relatedTarget);
+                var whitelist_id = button.data('whitelist-id');
+
+                const whitelist_text_output = document.querySelector('#whitelist-text-output');
+                whitelist_text_output.innerText = button.data('whitelist-name');
+
+                const deleteFakeForm = document.querySelector('#deleteFakeForm');
+                deleteFakeForm.action = `{{ url_for('delete_whitelist')}}?whitelist_id=${whitelist_id}`;
+            });
+
+        });
+    </script>
+{% endblock %}
+
+>
 {% block app_content %}
+
+<div class="modal fade" id="removeWhitelistModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h4 class="modal-title">Whitelist removal</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        </div>
+        <div class="modal-body">
+        <p>Are you sure you want to delete <strong id="whitelist-text-output"></strong> whitelist ?</p>
+        </div>
+        <div class="modal-footer">
+            <form method="POST" id="deleteFakeForm">
+                <input type="submit" class="btn btn-danger" value="Remove"></button>
+            </form>
+
+            <button type="button" class="btn" data-dismiss="modal">Close</button>
+        </div>
+    </div>
+    </div>
+</div>
+
+
+
     <h1>Whitelists</h1>
     <hr>
 

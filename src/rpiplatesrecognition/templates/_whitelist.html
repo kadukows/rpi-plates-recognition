@@ -7,6 +7,11 @@
             <a class="btn btn-secondary" href="{{ url_for('edit_whitelist', whitelist_id=whitelist.id) }}">
                 Edit
             </a>
+
+            <button type="button" class="btn btn-danger" 
+            data-toggle="modal"  data-whitelist-id = "{{ whitelist.id }}" data-whitelist-name="{{ whitelist.name }}"
+            data-target="#removeWhitelistModal">Remove
+            </button>
         </div>
     </td>
 </tr>

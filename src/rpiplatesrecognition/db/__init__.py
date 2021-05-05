@@ -5,7 +5,8 @@ from flask.app import Flask
 from flask.cli import with_appcontext
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash
-import shutil
+import shutil,gzip,time
+
 
 db = SQLAlchemy()
 
@@ -39,11 +40,11 @@ def init_db_debug_command():
 
     init_db()
 
-    user = User(username='user1', password_hash=generate_password_hash('user1'))
+    user = User(username='user1', password_hash=generate_password_hash('user1'),email='testMail@mail.com')
     module = Module(unique_id='unique_id_1', extraction_params=DEFAULT_EXTRACTION_PARAMS)
     user.modules.append(module)
 
-    admin = User(username='admin1', password_hash=generate_password_hash('admin1'), role='Admin')
+    admin = User(username='admin1', password_hash=generate_password_hash('admin1'), role='Admin',email='admin@admin.com')
 
     db.session.add(user)
     db.session.add(admin)
@@ -74,6 +75,7 @@ def init_app(app: Flask):
     db.init_app(app)
     app.cli.add_command(init_db_command)
     app.cli.add_command(init_db_debug_command)
+    app.cli.add_command(init_db_backup_command)
 
     # workaround for quick development (ie quick app resets)
     with app.app_context():
@@ -89,3 +91,40 @@ def init_app(app: Flask):
             access_attempts = AccessAttempt.query.all()
             assert all(access_attempt.photos_exist() for access_attempt in access_attempts), \
                 "There are access attempts without photos existing, please reinit db with 'flask init-db' or 'flask init-db-debug'"
+
+
+@click.command('init-db-backup')
+@click.argument('filename',default='database_backup')
+@click.option('--verbose','-clean', is_flag=True,help='Clean backup dir')
+@with_appcontext
+def init_db_backup_command(filename,verbose):
+    """Command for creating backup of database and processed images"""
+    
+    try:
+        path = 'backup'
+
+        if verbose and os.path.isdir(path):
+            shutil.rmtree(path)
+
+        if not os.path.isdir(path):
+            os.mkdir(path)
+        
+        db_file = os.path.join(current_app.instance_path, 'rpiplatesrecognition.sqlite') 
+        backup_db_file = os.path.join(path, 'rpiplaterecognition' + time.strftime("-%Y%m%d-%H%M%S") + '.sqlite') 
+            
+        shutil.copyfile(db_file, backup_db_file)
+        print ("\nCreated database backup file: {}".format(backup_db_file))
+
+        directory = os.path.join(current_app.instance_path, 'photos')
+        photo_backup_dir = os.path.join(path, 'photos' + time.strftime("-%Y%m%d-%H%M%S"))
+        shutil.copytree(directory, photo_backup_dir)
+        print ("Created photo backup dir: {}".format(photo_backup_dir))
+        
+        backup_arch = filename + time.strftime("-%Y%m%d-%H%M%S")
+        shutil.make_archive(backup_arch, 'tar', path)
+        print ("Created database arch: {}.tar\n".format(backup_arch))
+        shutil.rmtree(path)
+            
+    except Exception as error:
+        print("Failed to create database backup")
+        print(error)
