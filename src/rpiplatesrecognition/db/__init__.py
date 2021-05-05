@@ -40,11 +40,11 @@ def init_db_debug_command():
 
     init_db()
 
-    user = User(username='user1', password_hash=generate_password_hash('user1'))
+    user = User(username='user1', password_hash=generate_password_hash('user1'),email='testMail@mail.com')
     module = Module(unique_id='unique_id_1', extraction_params=DEFAULT_EXTRACTION_PARAMS)
     user.modules.append(module)
 
-    admin = User(username='admin1', password_hash=generate_password_hash('admin1'), role='Admin')
+    admin = User(username='admin1', password_hash=generate_password_hash('admin1'), role='Admin',email='admin@admin.com')
 
     db.session.add(user)
     db.session.add(admin)
@@ -94,29 +94,36 @@ def init_app(app: Flask):
 
 
 @click.command('init-db-backup')
+@click.argument('filename',default='database_backup')
+@click.option('--verbose','-clean', is_flag=True,help='Clean backup dir')
 @with_appcontext
-def init_db_backup_command():
+def init_db_backup_command(filename,verbose):
     """Command for creating backup of database and processed images"""
     
     try:
-        if not os.path.split(os.getcwd())[1] == 'rpi-plates-recognition':
-            raise Exception("Not proper start point directory. Run command in base repo directory.")
+        path = 'backup'
 
-        path = 'backup/'
+        if verbose and os.path.isdir(path):
+            shutil.rmtree(path)
+
         if not os.path.isdir(path):
             os.mkdir(path)
-
-        directory = 'src/instance/photos'
-        photo_backup_dir = path + 'photo_backup'+ time.strftime("-%Y%m%d-%H%M%S")
-            
-        shutil.make_archive(photo_backup_dir, 'tar',directory)
-        print ("\nCreated photo backup dir: {}.tar".format(photo_backup_dir))
-            
-        db_file = 'src/instance/rpiplatesrecognition.sqlite'
-        backup_db_file = path + 'rpiplaterecognition' + time.strftime("-%Y%m%d-%H%M%S") + '.sqlite'
+        
+        db_file = os.path.join(current_app.instance_path, 'rpiplatesrecognition.sqlite') 
+        backup_db_file = os.path.join(path, 'rpiplaterecognition' + time.strftime("-%Y%m%d-%H%M%S") + '.sqlite') 
             
         shutil.copyfile(db_file, backup_db_file)
-        print ("Created database backup file: {}\n".format(backup_db_file))
+        print ("\nCreated database backup file: {}".format(backup_db_file))
+
+        directory = os.path.join(current_app.instance_path, 'photos')
+        photo_backup_dir = os.path.join(path, 'photos' + time.strftime("-%Y%m%d-%H%M%S"))
+        shutil.copytree(directory, photo_backup_dir)
+        print ("Created photo backup dir: {}".format(photo_backup_dir))
+        
+        backup_arch = filename + time.strftime("-%Y%m%d-%H%M%S")
+        shutil.make_archive(backup_arch, 'tar', path)
+        print ("Created database arch: {}.tar\n".format(backup_arch))
+            
     except Exception as error:
         print("Failed to create database backup")
         print(error)

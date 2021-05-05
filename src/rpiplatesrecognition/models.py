@@ -24,6 +24,7 @@ class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), index=True, unique=True)
     password_hash = db.Column(db.String(120), unique=True)
+    email = db.Column(db.String(120), unique=True,nullable=False)
     # workaround, right now possible Values: 'Admin' and 'User'
     role = db.Column(db.String(12), index=False, unique=False, default='User')
 
