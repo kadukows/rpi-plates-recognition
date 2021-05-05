@@ -4,9 +4,9 @@
     </td>
     <td>
         {% if module.is_active %}
-            <span class="label label-success">Yes</span>
+            <span class="badge badge-success">Yes</span>
         {% else %}
-            <span class="label label-default">No</span>
+            <span class="badge badge-secondary">No</span>
         {% endif %}
     </td>
     {% if current_user.role == 'Admin' %}

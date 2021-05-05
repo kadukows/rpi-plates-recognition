@@ -48,6 +48,9 @@ def create_whitelist(user: User, whitelist_name):
         return '', 412
 
     whitelist = Whitelist(name=whitelist_name)
+    whitelist.user = user
+    db.session.add(whitelist)
+    db.session.commit()
 
     return '', 201
 

@@ -145,14 +145,16 @@
             </table>
         </div>
 
-        <div class="row">
-            <div class="col-md-10">
+        {% if current_user.role == 'User' %}
+            <div class="row">
+                <div class="col-md-10">
 
+                </div>
+                <div class="col-md-2">
+                    <button style="width: 100%;" type="button" class="btn btn-primary" id="submit-whitelist-changes-btn">Submit</button>
+                </div>
             </div>
-            <div class="col-md-2">
-                <button style="width: 100%;" type="button" class="btn btn-primary" id="submit-whitelist-changes-btn">Submit</button>
-            </div>
-        </div>
+        {% endif %}
     {% else %}
         <h1>Not logged in</h1>
     {% endif %}
