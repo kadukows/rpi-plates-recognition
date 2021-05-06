@@ -151,6 +151,9 @@ class AccessAttempt(db.Model):
                         segment)
 
                 self.recognized_plate = image_to_string(segments_one, lang='eng', config='--psm 6')
+                possible_plate_groups = Plate.PLATE_RE.search(self.recognized_plate)
+                if possible_plate_groups:
+                    self.processed_plate_string = possible_plate_groups.group(0)
 
 
     id = db.Column(db.Integer, primary_key=True)
@@ -165,6 +168,8 @@ class AccessAttempt(db.Model):
     plate_region_num = db.Column(db.Integer, nullable=False)
     segments_num = db.Column(db.Integer, nullable=False)
     recognized_plate = db.Column(db.String(30), nullable=False)
+    processed_plate_string = db.Column(db.String(15), nullable=False, default='')
+    got_access = db.Column(db.Boolean, nullable=False, default=False)
     extraction_params = db.Column(db.PickleType, nullable=False, default=DEFAULT_EXTRACTION_PARAMS)
     photos_dir = db.Column(db.String(120), nullable=False)
 

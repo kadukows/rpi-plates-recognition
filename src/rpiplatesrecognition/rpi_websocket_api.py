@@ -6,7 +6,7 @@ from flask import session, request, jsonify
 from flask_socketio import SocketIO, join_room
 
 from .db import db
-from .models import Module, AccessAttempt
+from .models import Module, AccessAttempt, Plate, Whitelist, whitelist_to_module_assignment
 from .libs.plate_acquisition.config_file import ExtractionConfigParameters
 import dataclasses
 
@@ -56,13 +56,33 @@ def init_app(sio: SocketIO):
             if module and module.user:
                 access_attempt = AccessAttempt(module, data)
                 db.session.add(access_attempt)
-                db.session.commit()
 
                 sio.emit(
                     'new_access_attempt_from_server_to_client',
                     data=json.dumps(access_attempt.to_dict()),
                     namespace='/rpi',
                     to=module.unique_id)
+
+                if access_attempt.processed_plate_string:
+                    whitelist_with_plate = (Whitelist.query
+                        .join(whitelist_to_module_assignment)
+                        .filter(whitelist_to_module_assignment.c.module_id == module.id)
+                        .filter(whitelist_to_module_assignment.c.whitelist_id == Whitelist.id)
+                        .join(Plate, Plate.whitelist_id == Whitelist.id)
+                        .filter(Plate.text == access_attempt.processed_plate_string)
+                    ).first()
+
+                    if whitelist_with_plate:
+                        access_attempt.got_access = True
+                        sio.emit(
+                            'message_from_server_to_rpi',
+                            data={'command': 'open_gate'},
+                            namespace='/rpi',
+                            to=module.unique_id)
+
+                db.session.commit()
+
+
 
     @sio.on('update_config', namespace='/rpi')
     def update_config(data):
