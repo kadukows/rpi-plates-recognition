@@ -86,12 +86,12 @@ class Plate(db.Model):
         db.Model.__init__(self, text=text, **kwargs)
 
     id = db.Column(db.Integer, primary_key=True)
-    text = db.Column(db.String(10), unique=True, index=True, nullable=False)
+    text = db.Column(db.String(10), unique=False, index=True, nullable=False)
 
-    whitelist_id = db.Column(db.Integer, db.ForeignKey('whitelists.id'))
+    whitelist_id = db.Column(db.Integer, db.ForeignKey('whitelists.id'), nullable=False)
     whitelist = db.relationship('Whitelist', backref=db.backref('plates', lazy=True))
 
-    PLATE_RE = re.compile(r'^[A-Z]{2,3}[A-Z0-9]{3,5}$')
+    PLATE_RE = re.compile(r'[A-Z]{2,3}[A-Z0-9]{3,5}')
 
     @staticmethod
     def is_valid_plate(text):
@@ -151,6 +151,26 @@ class AccessAttempt(db.Model):
                         segment)
 
                 self.recognized_plate = image_to_string(segments_one, lang='eng', config='--psm 6')
+                possible_plate_groups = Plate.PLATE_RE.search(self.recognized_plate)
+                if possible_plate_groups is not None:
+                    self.processed_plate_string = possible_plate_groups.group(0)
+
+                    query = sqlalchemy.text(f'''
+                        SELECT plates.id
+                        FROM plates
+                            INNER JOIN whitelists ON plates.whitelist_id = whitelists.id
+                            INNER JOIN whitelist_to_module_assignment ON whitelists.id = whitelist_to_module_assignment.whitelist_id
+                        WHERE
+                            whitelist_to_module_assignment.module_id = :module_id
+                            AND plates.text = :plate_text
+                    ''').bindparams(module_id=self.module.id, plate_text=self.processed_plate_string)
+                    possible_plate_id = db.session.execute(query).fetchone()
+
+                    if possible_plate_id is not None:
+                        self.got_access = True
+
+
+
 
 
     id = db.Column(db.Integer, primary_key=True)
@@ -165,6 +185,8 @@ class AccessAttempt(db.Model):
     plate_region_num = db.Column(db.Integer, nullable=False)
     segments_num = db.Column(db.Integer, nullable=False)
     recognized_plate = db.Column(db.String(30), nullable=False)
+    processed_plate_string = db.Column(db.String(15), nullable=False, default='')
+    got_access = db.Column(db.Boolean, nullable=False, default=False)
     extraction_params = db.Column(db.PickleType, nullable=False, default=DEFAULT_EXTRACTION_PARAMS)
     photos_dir = db.Column(db.String(120), nullable=False)
 
@@ -201,5 +223,7 @@ class AccessAttempt(db.Model):
         return {
             'id': self.id,
             'date': self.date.strftime('%d.%m.%y %H:%M:%S'),
-            'plate': self.recognized_plate
+            'plate': self.recognized_plate,
+            'processed_plate_string': self.processed_plate_string,
+            'got_access': self.got_access
         }

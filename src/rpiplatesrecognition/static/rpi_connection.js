@@ -212,7 +212,9 @@ document.addEventListener("DOMContentLoaded", () => {
     // implement handling message from server
 
     socket.on('message_from_server_to_client', data => {
-        document.querySelector('#output').innerHTML += data.toString() + '<br>';
+        const output = document.querySelector('#output');
+        output.innerHTML += data.toString() + '<br>';
+        output.scrollTop = Math.pow(10, 10);  // don't ask me
     });
 
     form.onsubmit = () => {
@@ -361,6 +363,11 @@ function replace_old_tbody_img(img_links, table) {
 
 function create_card(access_attempt) {
     const template = document.createElement('template');
+
+    const got_access_string = access_attempt['got_access'] === true
+        ? '<span class="badge badge-success">Permitted access</span>'
+        : '<span class="badge badge-danger">Forbidden access</span>';
+
     template.innerHTML = `
     <div class="card mb-3 shadow">
         <div class="card-header">
@@ -368,7 +375,7 @@ function create_card(access_attempt) {
                 <button class="btn btn-link show-access-attempt-btn"
                     data-toggle="collapse" data-target="#access-attempt-card-${access_attempt['id']}"
                     data-access-attempt-id="${access_attempt['id']}">
-                    Access attempt: #${access_attempt['id']} | ${access_attempt['date']} | ${access_attempt['plate']}
+                    Access attempt: #${access_attempt['id']} | ${access_attempt['date']} | Raw plate: ${access_attempt['plate']} | Processed plate: ${access_attempt['processed_plate_string']} | ${got_access_string}
                 </button>
             </h5>
         </div>

@@ -54,11 +54,15 @@ def init_db_debug_command():
         new_module = Module(unique_id=f'unique_id_{idx}')
         db.session.add(new_module)
 
-    whitelist = Whitelist(name='example whitelist name')
+    whitelist = Whitelist(name='debug_whitelist_1')
     user.whitelists.append(whitelist)
 
-    for plate_text in ['WA6642E', 'WI027HJ', 'ERA75TM', 'ERA81TL']:
+    for plate_text in ['WA6642E', 'WI027HJ', 'ERA75TM', 'ERA81TL', 'DBL6S01']:
         whitelist.plates.append(Plate(text=plate_text))
+
+    module.whitelists.append(whitelist)
+
+    db.session.commit()
 
     with db.session.no_autoflush:
         for _ in range(5):
@@ -99,7 +103,7 @@ def init_app(app: Flask):
 @with_appcontext
 def init_db_backup_command(filename,verbose):
     """Command for creating backup of database and processed images"""
-    
+
     try:
         path = 'backup'
 
@@ -108,10 +112,10 @@ def init_db_backup_command(filename,verbose):
 
         if not os.path.isdir(path):
             os.mkdir(path)
-        
-        db_file = os.path.join(current_app.instance_path, 'rpiplatesrecognition.sqlite') 
-        backup_db_file = os.path.join(path, 'rpiplaterecognition' + time.strftime("-%Y%m%d-%H%M%S") + '.sqlite') 
-            
+
+        db_file = os.path.join(current_app.instance_path, 'rpiplatesrecognition.sqlite')
+        backup_db_file = os.path.join(path, 'rpiplaterecognition' + time.strftime("-%Y%m%d-%H%M%S") + '.sqlite')
+
         shutil.copyfile(db_file, backup_db_file)
         print ("\nCreated database backup file: {}".format(backup_db_file))
 
@@ -119,12 +123,12 @@ def init_db_backup_command(filename,verbose):
         photo_backup_dir = os.path.join(path, 'photos' + time.strftime("-%Y%m%d-%H%M%S"))
         shutil.copytree(directory, photo_backup_dir)
         print ("Created photo backup dir: {}".format(photo_backup_dir))
-        
+
         backup_arch = filename + time.strftime("-%Y%m%d-%H%M%S")
         shutil.make_archive(backup_arch, 'tar', path)
         print ("Created database arch: {}.tar\n".format(backup_arch))
         shutil.rmtree(path)
-            
+
     except Exception as error:
         print("Failed to create database backup")
         print(error)
