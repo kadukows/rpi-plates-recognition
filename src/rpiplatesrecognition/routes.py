@@ -39,6 +39,8 @@ def init_app(app: Flask, sio: SocketIO):
     def bind_modules_to_whitelists():
         form = BindWhitelistToModuleDynamicCtor(current_user)
 
+        edited_modules_names = []
+
         if not form.validate_on_submit():
             result = {'errors': {}}
             for field in form:
@@ -55,11 +57,16 @@ def init_app(app: Flask, sio: SocketIO):
                         assert module
                         module: Module
 
+                        edited_modules_names.append(module.unique_id)
+
                         module.whitelists.clear()
                         for whitelist_id in field.data:
                             module.whitelists.append(Whitelist.query.get(whitelist_id))
 
             db.session.commit()
+            if len(edited_modules_names) > 0:
+                flash('Successfulyl edited modules: ' + ', '.join(edited_modules_names))
+
             return '', 201
 
     @app.route('/get_whitelists_with_bound_modules_ajax')
@@ -251,15 +258,16 @@ def init_app(app: Flask, sio: SocketIO):
             flash("Wrong plate")
             return redirect(url_for('edit_whitelist', whitelist_id=whitelist_id))
 
-        plate = (Plate.query
+        plate_query = (Plate.query
             .filter(Plate.whitelist_id == whitelist_id)
-            .filter(Plate.id == plate_id)).first()
+            .filter(Plate.id == plate_id))
 
-        if plate is None:
+        if plate_query.count() == 0:
             flash('Wrong plate')
             return redirect(url_for('edit_whitelist', whitelist_id=whitelist_id))
 
-        whitelist.plates.remove(plate)
+        plate = plate_query.first()
+        plate_query.delete()
         flash(f'Sucessfully removed plate: {plate.text}')
         db.session.commit()
         return redirect(url_for('edit_whitelist', whitelist_id=whitelist_id))
@@ -269,7 +277,7 @@ def init_app(app: Flask, sio: SocketIO):
     def delete_whitelist():
         whitelist_id = request.args.get('whitelist_id', None)
         whitelist = Whitelist.query.filter_by(id=whitelist_id).first()
-        
+
         if whitelist is not None:
             db.session.delete(whitelist)
             db.session.commit()
