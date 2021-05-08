@@ -8,7 +8,7 @@ from werkzeug.security import generate_password_hash
 
 from rpiplatesrecognition import create_app
 from rpiplatesrecognition.db import init_db, db, init_db_command
-from rpiplatesrecognition.models import User, Module
+from rpiplatesrecognition.models import User, Module, Whitelist, Plate
 
 from .tests_libs.rpi_test_client import RpiTestClient
 
@@ -19,7 +19,9 @@ def app_sio():
     app, sio = create_app({
         'TESTING': True,
         'SQLALCHEMY_DATABASE_URI': 'sqlite:///' + db_path,
-        'SQLALCHEMY_TRACK_MODIFICATIONS': False
+        'SQLALCHEMY_TRACK_MODIFICATIONS': False,
+        'WTF_CSRF_ENABLED': False,
+        'LOGIN_DISABLED': True
     }, return_socketio=True)
 
     with app.app_context():
@@ -29,12 +31,20 @@ def app_sio():
         # populate database with basic values
         # add more if neccessary
         user = User(username='user1', password_hash=generate_password_hash('user1'))
-        user.modules.append(Module(unique_id='unique_id_1'))
+        module_1 = Module('unique_id_1')
+        user.modules.append(module_1)
         user.modules.append(Module(unique_id='unique_id_3'))
         db.session.add(user)
 
         module2 = Module(unique_id='unique_id_2')
         db.session.add(module2)
+
+        whitelist = Whitelist(name='debug_whitelist_1')
+        module_1.whitelists.append(whitelist)
+
+        for plate_text in ('DEBUG1', 'DEBUG2'):
+            whitelist.append(Plate(text=plate_text))
+
 
         db.session.commit()
 

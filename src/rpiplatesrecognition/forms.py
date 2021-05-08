@@ -80,12 +80,12 @@ class AddWhitelistForm(FlaskForm):
             modules_found = db.session.query(Module.unique_id).filter(Module.user_id == current_user.id).all()
             for module in modules_found:
                 self.modules.append(module.unique_id)
-        
+
         if self.modules is not None:
             self.modules_assign.choices = self.modules
 
 
-    def validate_whitelist_name(self, whitelist_name):  
+    def validate_whitelist_name(self, whitelist_name):
 
         whitelist = Whitelist.query.filter_by(name=whitelist_name.data).first()
 
@@ -114,10 +114,6 @@ class AddPlateForm(FlaskForm):
 
         if possible_plate is not None:
             raise ValidationError('Plate already in a whitelist')
-
-
-def whitelist_id_to_whitelist(whitelist_id: int):
-    return get_whitelists_for_user_query(current_user).filter(Whitelist.id == whitelist_id).first()
 
 
 def BindWhitelistToModuleDynamicCtor(user: User):
