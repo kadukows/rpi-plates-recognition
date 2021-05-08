@@ -221,18 +221,17 @@ def init_app(app: Flask, sio: SocketIO):
     @app.route('/add_whitelist', methods=['GET','POST'])
     @login_required
     def add_whitelist():
-        form = AddWhitelistForm(current_user.id)
+        form = AddWhitelistForm()
+        form.modules_assign.choices = [module.unique_id for module in current_user.modules] + ['Unnasigned']
 
         if form.validate_on_submit():
             whitelist = Whitelist(name=form.whitelist_name.data)
-            whitelist.user = current_user
-            module_to_assign = form.modules_assign.data
-            module_to_assign = Module.query.filter_by(unique_id=module_to_assign).first()
-            if module_to_assign is None:
-                flash('No modules are assigned to current user')
-            else:
-                module_to_assign.whitelists.append(whitelist)
-            db.session.add(whitelist)
+            current_user.whitelists.append(whitelist)
+
+            possible_module = form.modules_assign.data
+            if possible_module is not None:
+                possible_module.whitelists.append(whitelist)
+
             db.session.commit()
 
             flash('Added whitelist')

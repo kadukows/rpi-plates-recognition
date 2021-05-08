@@ -15,7 +15,8 @@ def create_app(test_config=None, return_socketio=False):
         SECRET_KEY='dev',
         SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(app.instance_path, 'rpiplatesrecognition.sqlite'),
         SQLALCHEMY_TRACK_MODIFICATIONS = False,
-        WTF_CSRF_ENABLED = True
+        WTF_CSRF_ENABLED = True,
+        BOOTSTRAP_SERVE_LOCAL = True
     )
 
     if test_config is None:

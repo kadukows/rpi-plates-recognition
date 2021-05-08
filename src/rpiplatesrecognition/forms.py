@@ -66,27 +66,15 @@ class UploadImageForm(FlaskForm):
     file = FileField('Image', validators=[FileRequired(), FileAllowed(['jpg'], 'Only jpg images!')])
     submit = SubmitField('Add an access attempt')
 
+def unique_id_to_module(unique_id: str) -> Module:
+    return get_modules_for_user_query(current_user).filter(Module.unique_id == unique_id).first()
 
 class AddWhitelistForm(FlaskForm):
     whitelist_name = StringField('Whitelist name', validators=[DataRequired(),Length(2)])
-    modules_assign = SelectField(u'Module to assign', choices=[])
+    modules_assign = SelectField(u'Module to assign', coerce=unique_id_to_module)
     submit = SubmitField('Add whitelist')
 
-    def __init__(self, user_id: int):
-        FlaskForm.__init__(self)
-        self.modules = []
-        user = User.query.filter_by(id=user_id).first()
-        if user is not None:
-            modules_found = db.session.query(Module.unique_id).filter(Module.user_id == current_user.id).all()
-            for module in modules_found:
-                self.modules.append(module.unique_id)
-        
-        if self.modules is not None:
-            self.modules_assign.choices = self.modules
-
-
-    def validate_whitelist_name(self, whitelist_name):  
-
+    def validate_whitelist_name(self, whitelist_name):
         whitelist = Whitelist.query.filter_by(name=whitelist_name.data).first()
 
         if whitelist is not None:
