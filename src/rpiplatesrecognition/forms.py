@@ -68,29 +68,25 @@ class UploadImageForm(FlaskForm):
 
 
 class AddWhitelistForm(FlaskForm):
-    whitelist_name = StringField('Whitelist name', validators=[DataRequired(),Length(2)])
-    modules_assign = SelectField(u'Module to assign', choices=[])
+    whitelist_name = StringField('Whitelist name', validators=[DataRequired(), Length(2)])
+    modules_assign = SelectField('Module to assign', validators=[DataRequired()])
     submit = SubmitField('Add whitelist')
 
-    def __init__(self, user_id: int):
-        FlaskForm.__init__(self)
-        self.modules = []
-        user = User.query.filter_by(id=user_id).first()
-        if user is not None:
-            modules_found = db.session.query(Module.unique_id).filter(Module.user_id == current_user.id).all()
-            for module in modules_found:
-                self.modules.append(module.unique_id)
-
-        if self.modules is not None:
-            self.modules_assign.choices = self.modules
-
-
     def validate_whitelist_name(self, whitelist_name):
+        possible_users_whitelist = get_whitelists_for_user_query(current_user).filter(Whitelist.name == whitelist_name.data).first()
 
-        whitelist = Whitelist.query.filter_by(name=whitelist_name.data).first()
-
-        if whitelist is not None:
+        if possible_users_whitelist is not None:
             raise ValidationError('This name is already taken')
+
+    def validate_modules_assign(self, modules_assign):
+        if modules_assign.data != 'Unassigned':
+            module = get_modules_for_user_query(current_user).filter(Module.unique_id == modules_assign.data).first()
+
+            if module is None:
+                raise ValidationError('Wrong modules unique_id')
+
+    def get_modules_assign_module(self):
+        return get_modules_for_user_query(current_user).filter(Module.unique_id == self.modules_assign.data).first()
 
 
 class AddPlateForm(FlaskForm):

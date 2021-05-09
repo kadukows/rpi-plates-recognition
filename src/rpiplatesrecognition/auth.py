@@ -29,10 +29,10 @@ def init_app(app: Flask):
 def admin_required(f):
     @wraps(f)
     def wrap(*args, **kwargs):
-        if current_user.role == 'Admin':
+        if current_user.is_admin():
             return f(*args, **kwargs)
         else:
             flash("you need to be an admin to view this page")
-            return redirect(url_for('index'))
+            return redirect(url_for('index.index'))
 
     return wrap

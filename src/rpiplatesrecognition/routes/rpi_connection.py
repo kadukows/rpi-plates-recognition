@@ -6,11 +6,11 @@ from werkzeug.utils import redirect
 
 from rpiplatesrecognition.libs.plate_acquisition.config_file import ExtractionConfigParameters
 
-from .auth import admin_required
-from .models import Module, AccessAttempt
-from .forms import UploadImageForm
-from .db import db
-from .helpers import Dirs
+from ..auth import admin_required
+from ..models import Module, AccessAttempt
+from ..forms import UploadImageForm
+from ..db import db
+from ..helpers import Dirs
 
 bp = Blueprint('rpi_connection', __name__, url_prefix='/rpi_connection')
 
@@ -21,7 +21,7 @@ def index(unique_id):
     module = Module.query.filter_by(unique_id=unique_id).first()
     if module is None:
         flash("wrong unique_id!")
-        return redirect(url_for('index'))
+        return redirect(url_for('index.index'))
 
     return render_template('rpi_connection.html', module=module)
 
@@ -108,7 +108,7 @@ def upload_access_attempt(unique_id):
 
     if module is None:
         flash('Wrong unique_id')
-        return redirect(url_for('index'))
+        return redirect(url_for('index.index'))
 
     if module.user is None:
         flash('Cant upload an access attempt to not bound module!')

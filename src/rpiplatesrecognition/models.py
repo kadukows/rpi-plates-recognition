@@ -37,6 +37,12 @@ class User(UserMixin, db.Model):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
+    def is_user(self):
+        return self.role == 'User'
+
+    def is_admin(self):
+        return self.role == 'Admin'
+
     @staticmethod
     def does_password_comply_to_policy(password) -> bool:
         # TO BE IMPLEMENTED
@@ -72,7 +78,7 @@ class Whitelist(db.Model):
     __tablename__ = 'whitelists'
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(32), unique=True)
+    name = db.Column(db.String(32), index=True)
 
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     user = db.relationship('User', backref=db.backref('whitelists', lazy=True))

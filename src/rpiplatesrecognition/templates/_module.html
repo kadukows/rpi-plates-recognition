@@ -9,7 +9,7 @@
             <span class="badge badge-secondary">No</span>
         {% endif %}
     </td>
-    {% if current_user.role == 'Admin' %}
+    {% if current_user.is_admin() %}
         <td>
             {% if module.user %}
                 <strong>{{ module.user.username }}</strong>
@@ -22,7 +22,7 @@
                 <button type="button" class="btn btn-primary" data-unique_id="{{ module.unique_id }}">More</button>
             </a>
         </td>
-    {% elif current_user.role == 'User' %}
+    {% elif current_user.is_user() %}
         <td>
             {{ (edit_whitelist_form|attr(module.unique_id + '_whitelists')) (form='select-picker-form') }}
         </td>
