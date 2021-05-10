@@ -70,3 +70,33 @@ class ExtractionConfigParameters:
     gatecontroller_gpio_pin_number: int = 3
     gatecontroller_button_press_time: float = 0.35
     gatecontroller_gate_opening_time: float = 15
+
+
+    def to_dict(self):
+        from dataclasses import fields
+
+        result = {}
+
+        for field in fields(self):
+            result[field.name] = _from_field(self, field)
+
+        return result
+
+
+def _from_field(var, field):
+    import typing
+
+    def type_to_str(type_):
+        if type_ is int:
+            return 'int'
+        elif type_ is float:
+            return 'float'
+        elif type_ is typing.Tuple[int, int]:
+            return 'Tuple[int]'
+        else:
+            raise NotImplementedError()
+
+    return {
+        'value': getattr(var, field.name),
+        'type': type_to_str(field.type)
+    }

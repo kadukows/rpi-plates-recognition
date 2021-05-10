@@ -81,7 +81,7 @@ class EditableParamManagerTupleInts extends EditableParamManager {
 
 class EditableParamManagerSingleFloat extends EditableParamManager {
     constructor (td, original_param_value) {
-        super(td, /^\d*[.]\d+\s*$/, original_param_value);
+        super(td, /^(\d*[.]\d+)|(\d+)\s*$/, original_param_value);
     }
 
     to_data() {
@@ -105,8 +105,10 @@ class ParamsTableManager {
                     submit_button.classList.add('anim-jigger');
                 }
                 else {
-                    submit_button.setAttribute('disabled', '');
-                    submit_button.classList.add('loading');
+                    submit_buttons.forEach(button => {
+                        button.setAttribute('disabled', '');
+                        button.classList.add('loading');
+                    })
 
                     const data = JSON.stringify(this.to_data());
 
@@ -117,8 +119,12 @@ class ParamsTableManager {
                     req.onload = () => {
                         const new_params = JSON.parse(req.responseText);
                         this.rebuild_table_with_params(new_params);
-                        submit_button.removeAttribute('disabled', '');
-                        submit_button.classList.remove('loading');
+                        //submit_button.removeAttribute('disabled', '');
+                        //submit_button.classList.remove('loading');
+                        submit_buttons.forEach(button => {
+                            button.removeAttribute('disabled', '');
+                            button.classList.remove('loading');
+                        })
                     }
 
                     req.send(data);
@@ -144,21 +150,11 @@ class ParamsTableManager {
 
                 const td_module_value = document.createElement('td');
                 td_module_value.dataset.paramKey = key;
-                td_module_value.innerHTML = params[key];
+                td_module_value.innerHTML = params[key]['value'];
                 td_module_value.classList.add('td-module-value')
                 td_module_value.contentEditable = "true";
-                if (Number.isInteger(params[key])) {
-                    td_module_value.editableParamManager = new EditableParamManagerSingleInt(td_module_value, params[key]);
-                }
-                else if (typeof(params[key]) === "number") {
-                    td_module_value.editableParamManager = new EditableParamManagerSingleFloat(td_module_value, params[key]);
-                }
-                else if (Array.isArray(params[key])) {
-                    td_module_value.editableParamManager = new EditableParamManagerTupleInts(td_module_value, params[key]);
-                }
-                else {
-                    throw "Not an array or integer or float";
-                }
+                const factory = new EditableParamManagerFactory();
+                td_module_value.editableParamManager = factory.make_param_manager(td_module_value, params[key]);
                 tr.appendChild(td_module_value);
 
                 tbody.appendChild(tr);
@@ -185,6 +181,29 @@ class ParamsTableManager {
         });
 
         return result;
+    }
+}
+
+class EditableParamManagerFactoryException {
+    constructor(value) {
+        this.value = value;
+    }
+}
+
+class EditableParamManagerFactory {
+    make_param_manager(td_module_value, field) {
+        if (!field.hasOwnProperty('type') || !field.hasOwnProperty('value')) {
+            throw new EditableParamManagerFactoryException("Wrongly constructed field obj");
+        }
+
+        switch (field['type'])
+        {
+            case 'int': return new EditableParamManagerSingleInt(td_module_value, field['value']);
+            case 'float': return new EditableParamManagerSingleFloat(td_module_value, field['value']);
+            case 'Tuple[int]': return new EditableParamManagerTupleInts(td_module_value, field['value']);
+        }
+
+        throw new EditableParamManagerFactoryException(`Unexpecte fiel['type'] value: ${field['type']}`);
     }
 }
 

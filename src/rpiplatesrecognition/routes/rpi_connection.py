@@ -80,7 +80,7 @@ def get_module_params(unique_id: str):
     if module is None:
         return {}
 
-    return asdict(module.extraction_params)
+    return module.extraction_params.to_dict()
 
 @bp.route('/upload_new_params/<string:unique_id>', methods=['POST'])
 @login_required
@@ -103,9 +103,9 @@ def upload_new_params(unique_id: str):
     module.extraction_params = ExtractionConfigParameters(**extraction_params_dict)
     db.session.commit()
 
-    time.sleep(2)
+    time.sleep(0.5)
 
-    return asdict(module.extraction_params)
+    return module.extraction_params.to_dict()
 
 @bp.route('/upload_access_attempt/<string:unique_id>', methods=['GET', 'POST'])
 @login_required
