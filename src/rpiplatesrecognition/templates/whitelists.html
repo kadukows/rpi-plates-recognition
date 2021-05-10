@@ -1,8 +1,9 @@
 {% extends "base.html" %}
-
+{% from 'bootstrap/form.html' import render_form %}
 
 {% block scripts %}
     {{ super() }}
+    <script type="text/javascript" src="{{ url_for('static', filename='ajax_form.js') }}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             $('#removeWhitelistModal').on('show.bs.modal', function (event) {
@@ -15,12 +16,49 @@
                 const deleteFakeForm = document.querySelector('#deleteFakeForm');
                 deleteFakeForm.action = `{{ url_for('whitelists.remove')}}?whitelist_id=${whitelist_id}`;
             });
+
+            {
+                const form_node = document.querySelector('#addWhitelistModal form');
+                const ajax_form_route = '{{ url_for("whitelists.add_ajax") }}';
+                const submit_btn = document.querySelector('#addWhitelistModal #submit-btn');
+
+                const ajax_form = new AjaxForm(form_node, ajax_form_route, [submit_btn]);
+
+                ajax_form.addEventListener('validatedAndSubmitted', () => {
+                    location.reload();
+                });
+            }
         });
     </script>
 {% endblock %}
 
+{% block styles %}
+    {{ super() }}
+    <style>
+        table td {
+            text-align: center;
+        }
+    </style>
+{% endblock %}
 
 {% block app_content %}
+<div class="modal fade" id="addWhitelistModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h4 class="modal-title">Add a whitelist</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        </div>
+        <div class="modal-body">
+            {{ render_form(form) }}
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-info" id="submit-btn">Submit</button>
+            <button type="button" class="btn btn-secodary" data-dismiss="modal">Close</button>
+        </div>
+    </div>
+    </div>
+</div>
 
 <div class="modal fade" id="removeWhitelistModal" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
@@ -52,9 +90,9 @@
                 Name
             </td>
             <td>
-                <a href="{{ url_for('whitelists.add') }}">
-                    <button type="button" class="btn btn-info btn-block">Add new whitelist</button>
-                </a>
+                <button type="button" class="btn btn-info"
+                    data-toggle="modal" data-target="#addWhitelistModal"
+                >Add new whitelist</button>
             </td>
         </thead>
         {% for whitelist in whitelists %}

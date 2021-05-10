@@ -14,19 +14,52 @@ bp = Blueprint('whitelists', __name__, url_prefix='/whitelists')
 # Whitelists View
 #
 
+class AddWhitelistForm(FlaskForm):
+    whitelist_name = StringField('Whitelist name', validators=[DataRequired(), Length(2)])
+    modules_assign = SelectField('Module to assign', validators=[DataRequired()])
+
+    UNNASIGNED_STR = 'Unassigned'
+
+    def validate_whitelist_name(self, whitelist_name):
+        possible_users_whitelist = get_whitelists_for_user_query(current_user).filter(Whitelist.name == whitelist_name.data).first()
+
+        if possible_users_whitelist is not None:
+            raise ValidationError('This name is already taken')
+
+    def validate_modules_assign(self, modules_assign):
+        if modules_assign.data != self.UNNASIGNED_STR:
+            module = get_modules_for_user_query(current_user).filter(Module.unique_id == modules_assign.data).first()
+
+            if module is None:
+                raise ValidationError('Wrong modules unique_id')
+
+    def get_modules_assign_module(self):
+        return get_modules_for_user_query(current_user).filter(Module.unique_id == self.modules_assign.data).first()
+
+
 @bp.route('')
 @login_required
 def index():
-    return render_template('whitelists.html', whitelists=current_user.whitelists)
-
-
-@bp.route('/add', methods=['GET','POST'])
-@login_required
-def add():
     form = AddWhitelistForm()
-    form.modules_assign.choices = [module.unique_id for module in current_user.modules] + ['Unnasigned']
+    form.modules_assign.choices = [module.unique_id for module in current_user.modules] + [AddWhitelistForm.UNNASIGNED_STR]
 
-    if form.validate_on_submit():
+    return render_template('whitelists.html', whitelists=current_user.whitelists, form=form)
+
+
+@bp.route('/add', methods=['POST'])
+@login_required
+def add_ajax():
+    form = AddWhitelistForm()
+    form.modules_assign.choices = [module.unique_id for module in current_user.modules] + [AddWhitelistForm.UNNASIGNED_STR]
+
+    if not form.validate_on_submit():
+        result = {'errors': {}}
+        for field in form:
+            if field.errors:
+                result['errors'][field.name] = [error for error in field.errors]
+
+        return result, 409
+    else:
         whitelist = Whitelist(name=form.whitelist_name.data)
         current_user.whitelists.append(whitelist)
 
@@ -36,10 +69,8 @@ def add():
 
         db.session.commit()
 
-        flash('Added whitelist')
-        return redirect(url_for('whitelists.index'))
-
-    return render_template('add_whitelist.html', form=form)
+        flash(f'Added a whitelist: {whitelist.name}')
+        return '', 201
 
 
 @bp.route('/edit/<int:whitelist_id>')
@@ -128,27 +159,6 @@ def remove():
         db.session.commit()
     return redirect(url_for('whitelists.index'))
 
-
-class AddWhitelistForm(FlaskForm):
-    whitelist_name = StringField('Whitelist name', validators=[DataRequired(), Length(2)])
-    modules_assign = SelectField('Module to assign', validators=[DataRequired()])
-    submit = SubmitField('Add whitelist')
-
-    def validate_whitelist_name(self, whitelist_name):
-        possible_users_whitelist = get_whitelists_for_user_query(current_user).filter(Whitelist.name == whitelist_name.data).first()
-
-        if possible_users_whitelist is not None:
-            raise ValidationError('This name is already taken')
-
-    def validate_modules_assign(self, modules_assign):
-        if modules_assign.data != 'Unassigned':
-            module = get_modules_for_user_query(current_user).filter(Module.unique_id == modules_assign.data).first()
-
-            if module is None:
-                raise ValidationError('Wrong modules unique_id')
-
-    def get_modules_assign_module(self):
-        return get_modules_for_user_query(current_user).filter(Module.unique_id == self.modules_assign.data).first()
 
 class AddPlateForm(FlaskForm):
     plate = StringField('Plate', validators=[DataRequired()], render_kw={'placeholder': 'Plate...'})
