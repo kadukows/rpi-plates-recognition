@@ -1,13 +1,18 @@
-from flask import Blueprint, flash
-from flask.templating import render_template
+from flask import Blueprint, flash, render_template
 from flask_login import login_required, current_user
+from flask_wtf import FlaskForm
+from wtforms import StringField, SubmitField, ValidationError, SelectMultipleField
+from wtforms.validators import DataRequired
 
-from ..forms import AddModuleFormAjax, BindWhitelistToModuleDynamicCtor
-from ..models import Module, Whitelist
+from ..models import Module, Whitelist, User
 from ..db import db
 
 
 bp = Blueprint('modules', __name__, url_prefix='/modules')
+
+#
+#  User's modules View
+#
 
 @bp.route('')
 @login_required
@@ -83,7 +88,6 @@ def bind_modules_to_whitelists_ajax():
                 if field.name.endswith('_whitelists'):
                     unique_id = field.name.replace('_whitelists', '')
                     module = Module.query.filter_by(unique_id=unique_id).first()
-                    assert module
                     module: Module
 
                     edited_modules_names.append(module.unique_id)
@@ -94,6 +98,47 @@ def bind_modules_to_whitelists_ajax():
 
         db.session.commit()
         if len(edited_modules_names) > 0:
-            flash('Successfulyl edited modules: ' + ', '.join(edited_modules_names))
+            flash('Successfully edited modules: ' + ', '.join(edited_modules_names))
 
         return '', 201
+
+class AddModuleForm(FlaskForm):
+    unique_id = StringField('Unique id', validators=[DataRequired()])
+    submit = SubmitField('Add')
+
+    def validate_unique_id(self, unique_id):
+        module = Module.query.filter_by(unique_id=unique_id.data).first()
+
+        if module is None:
+            raise ValidationError('Unknown unique id')
+
+        if module.user is not None:
+            raise ValidationError('Module is already registed to a user')
+
+
+class AddModuleFormAjax(AddModuleForm):
+    submit = None
+
+def BindWhitelistToModuleDynamicCtor(user: User):
+    class Form(FlaskForm):
+        pass
+
+    for module in user.modules:
+        form_name = f'{module.unique_id}_whitelists'
+
+        users_whitelists = [(whitelist.id, whitelist.name) for whitelist in user.whitelists]
+
+        setattr(Form, form_name, SelectMultipleField(
+            'Select whitelists',
+            choices=users_whitelists,
+            default=[whitelist.id for whitelist in module.whitelists],
+            coerce=int,
+            render_kw={"class": "selectpicker"}))
+
+        def validate(self, field):
+            if not all(whitelist is not None for whitelist in field.data):
+                raise ValidationError('Wrong whitelists')
+
+        setattr(Form, 'validate_' + form_name, validate)
+
+    return Form()

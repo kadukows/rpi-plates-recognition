@@ -19,5 +19,5 @@ def init_app(app: Flask):
     from . import user_profile
     app.register_blueprint(user_profile.bp)
 
-    from . import whitelist
-    app.register_blueprint(whitelist.bp)
+    from . import whitelists
+    app.register_blueprint(whitelists.bp)

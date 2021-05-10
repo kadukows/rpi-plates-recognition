@@ -1,12 +1,18 @@
 from flask import Blueprint, flash, redirect, url_for, render_template, request
 from flask_login import current_user, login_required
+from flask_wtf import FlaskForm
+from wtforms import StringField, SelectField, SubmitField, ValidationError, HiddenField
+from wtforms.validators import DataRequired, Length
 
 from ..db import db
-from ..db.helpers import get_whitelists_for_user_query
-from ..forms import AddPlateForm, AddWhitelistForm
-from ..models import Whitelist, Plate
+from ..db.helpers import get_whitelists_for_user_query, get_modules_for_user_query
+from ..models import Whitelist, Plate, Module
 
 bp = Blueprint('whitelists', __name__, url_prefix='/whitelists')
+
+#
+# Whitelists View
+#
 
 @bp.route('')
 @login_required
@@ -106,15 +112,62 @@ def edit_remove_plate(whitelist_id):
 
 @bp.route('/remove', methods=['POST'])
 @login_required
-def remove(whitelist_id):
+def remove():
     whitelist_id = request.args.get('whitelist_id', None)
     if whitelist_id is None:
         flash('Not correct whitelist id')
-        return redirect(url_for('whitelists'))
+        return redirect(url_for('whitelists.index'))
 
     whitelist = Whitelist.query.filter_by(id=whitelist_id).first()
 
-    if whitelist is not None:
+    if whitelist is None:
+        flash('Wrong whitelist id')
+    else:
+        flash(f'Deleted {whitelist.name} whitelist')
         db.session.delete(whitelist)
         db.session.commit()
-    return redirect(url_for('whitelists'))
+    return redirect(url_for('whitelists.index'))
+
+
+class AddWhitelistForm(FlaskForm):
+    whitelist_name = StringField('Whitelist name', validators=[DataRequired(), Length(2)])
+    modules_assign = SelectField('Module to assign', validators=[DataRequired()])
+    submit = SubmitField('Add whitelist')
+
+    def validate_whitelist_name(self, whitelist_name):
+        possible_users_whitelist = get_whitelists_for_user_query(current_user).filter(Whitelist.name == whitelist_name.data).first()
+
+        if possible_users_whitelist is not None:
+            raise ValidationError('This name is already taken')
+
+    def validate_modules_assign(self, modules_assign):
+        if modules_assign.data != 'Unassigned':
+            module = get_modules_for_user_query(current_user).filter(Module.unique_id == modules_assign.data).first()
+
+            if module is None:
+                raise ValidationError('Wrong modules unique_id')
+
+    def get_modules_assign_module(self):
+        return get_modules_for_user_query(current_user).filter(Module.unique_id == self.modules_assign.data).first()
+
+class AddPlateForm(FlaskForm):
+    plate = StringField('Plate', validators=[DataRequired()], render_kw={'placeholder': 'Plate...'})
+    whitelist_id = HiddenField('whitelist_id', validators=[DataRequired()])
+
+    def validate_whitelist_id(self, whitelist_id):
+        whitelist = get_whitelists_for_user_query(current_user).filter(Whitelist.id == whitelist_id.data).first()
+
+        if whitelist is None:
+            raise ValidationError('Wrong whitelist id')
+
+    def validate_plate(self, plate):
+        if not Plate.is_valid_plate(plate.data):
+            raise ValidationError('Plate does not comply to policy')
+
+        possible_plate = (Whitelist.query
+            .join(Plate, Whitelist.id == Plate.whitelist_id)
+            .filter(Whitelist.id == self.whitelist_id.data)
+            .filter(Plate.text == plate.data)).first()
+
+        if possible_plate is not None:
+            raise ValidationError('Plate already in a whitelist')

@@ -2,17 +2,24 @@ import base64, os, json, time
 from dataclasses import asdict
 from flask import Blueprint, render_template, jsonify, flash, url_for, send_from_directory, current_app, request
 from flask_login.utils import login_required
+from flask_wtf import FlaskForm
+from flask_wtf.file import FileRequired, FileAllowed, FileField
 from werkzeug.utils import redirect
+from wtforms import SubmitField
 
 from rpiplatesrecognition.libs.plate_acquisition.config_file import ExtractionConfigParameters
 
 from ..auth import admin_required
 from ..models import Module, AccessAttempt
-from ..forms import UploadImageForm
 from ..db import db
 from ..helpers import Dirs
 
+
 bp = Blueprint('rpi_connection', __name__, url_prefix='/rpi_connection')
+
+#
+# Admin's panel View
+#
 
 @bp.route('/<string:unique_id>')
 @login_required
@@ -164,3 +171,7 @@ def access_attempt_edge_proj_image(access_attempt_id: int, edge_proj_id: int):
         return b'Not found', 404
 
     return send_from_directory(access_attempt.get_edge_proj_dirpath(Dirs.Absolute), str(edge_proj_id) +'.png')
+
+class UploadImageForm(FlaskForm):
+    file = FileField('Image', validators=[FileRequired(), FileAllowed(['jpg'], 'Only jpg images!')])
+    submit = SubmitField('Add an access attempt')

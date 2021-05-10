@@ -95,7 +95,7 @@ class Plate(db.Model):
     text = db.Column(db.String(10), unique=False, index=True, nullable=False)
 
     whitelist_id = db.Column(db.Integer, db.ForeignKey('whitelists.id'), nullable=False)
-    whitelist = db.relationship('Whitelist', backref=db.backref('plates', lazy=True))
+    whitelist = db.relationship('Whitelist', backref=db.backref('plates', lazy=True, cascade="all, delete-orphan"))
 
     PLATE_RE = re.compile(r'[A-Z]{2,3}[A-Z0-9]{3,5}')
 
