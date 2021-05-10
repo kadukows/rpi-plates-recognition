@@ -11,7 +11,7 @@ import shutil,gzip,time
 db = SQLAlchemy()
 
 def init_db():
-    from rpiplatesrecognition.models import AccessAttempt
+    from rpiplatesrecognition.models import AccessAttempt, UserRole, UserRoleEnum
 
     db.drop_all()
     db.create_all()
@@ -23,6 +23,13 @@ def init_db():
         os.mkdir(os.path.join(current_app.instance_path, AccessAttempt.STATIC_ROOT_DIR))
     except FileExistsError:
         pass
+
+    role_user = UserRole(id=int(UserRoleEnum.User), value=UserRoleEnum.User)
+    role_admin = UserRole(id=int(UserRoleEnum.Admin), value=UserRoleEnum.Admin)
+
+    db.session.add(role_user)
+    db.session.add(role_admin)
+
     db.session.commit()
 
 @click.command('init-db')
@@ -36,7 +43,7 @@ def init_db_command():
 def init_db_debug_command():
     """Helper command for aiding development process, populates databse with default values"""
 
-    from ..models import User, Module, Whitelist, Plate, AccessAttempt, DEFAULT_EXTRACTION_PARAMS
+    from ..models import User, Module, Whitelist, Plate, AccessAttempt, DEFAULT_EXTRACTION_PARAMS, UserRoleEnum, UserRole
 
     init_db()
 
@@ -44,7 +51,8 @@ def init_db_debug_command():
     module = Module(unique_id='unique_id_1', extraction_params=DEFAULT_EXTRACTION_PARAMS)
     user.modules.append(module)
 
-    admin = User(username='admin1', password_hash=generate_password_hash('admin1'), role='Admin',email='admin@admin.com')
+    admin_user_role = UserRole.query.filter_by(value=UserRoleEnum.Admin).first()
+    admin = User(username='admin1', password_hash=generate_password_hash('admin1'), user_role=admin_user_role, email='admin@admin.com')
 
     db.session.add(user)
     db.session.add(admin)

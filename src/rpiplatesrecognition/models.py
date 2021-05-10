@@ -1,4 +1,4 @@
-import base64, os, pickle, re
+import base64, os, pickle, re, enum
 import enum, json
 from typing import Tuple, List
 
@@ -18,6 +18,22 @@ from .libs.plate_acquisition.config_file import ExtractionConfigParameters
 
 DEFAULT_EXTRACTION_PARAMS = ExtractionConfigParameters()
 
+class UserRoleEnum(enum.IntEnum):
+    User = 1
+    Admin = 2
+
+class UserRole(db.Model):
+    __tablename__ = 'user_roles'
+
+    id = db.Column(db.Integer, primary_key=True)
+    value = db.Column(db.Enum(UserRoleEnum), unique=True, nullable=False)
+
+    def __eq__(self, other: UserRoleEnum):
+        if isinstance(other, UserRoleEnum):
+            return self.value == other
+
+        raise RuntimeError('UserRole::__eq__(): wrong type')
+
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
 
@@ -25,8 +41,9 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(64), index=True, unique=True)
     password_hash = db.Column(db.String(120), unique=True)
     email = db.Column(db.String(120), unique=True,nullable=False)
-    # workaround, right now possible Values: 'Admin' and 'User'
-    role = db.Column(db.String(12), index=False, unique=False, default='User')
+    user_role_id = db.Column(db.Integer, db.ForeignKey('user_roles.id'), nullable=False, default=UserRoleEnum.User)
+    user_role = db.relationship('UserRole')
+
 
     def __repr__(self):
         return f'<User {self.username}>'
@@ -38,10 +55,10 @@ class User(UserMixin, db.Model):
         return check_password_hash(self.password_hash, password)
 
     def is_user(self):
-        return self.role == 'User'
+        return self.user_role == UserRoleEnum.User
 
     def is_admin(self):
-        return self.role == 'Admin'
+        return self.user_role == UserRoleEnum.Admin
 
     @staticmethod
     def does_password_comply_to_policy(password) -> bool:
