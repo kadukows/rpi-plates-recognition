@@ -68,6 +68,9 @@ def init_db_debug_command():
     for plate_text in ['WA6642E', 'WI027HJ', 'ERA75TM', 'ERA81TL', 'DBL6S01']:
         whitelist.plates.append(Plate(text=plate_text))
 
+    for i in range(10, 99):
+        whitelist.plates.append(Plate(text='DBL6S' + str(i)))
+
     module.whitelists.append(whitelist)
 
     db.session.commit()

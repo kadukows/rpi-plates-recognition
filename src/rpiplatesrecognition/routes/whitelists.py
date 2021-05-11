@@ -1,11 +1,11 @@
-from flask import Blueprint, flash, redirect, url_for, render_template, request
+from flask import Blueprint, flash, redirect, url_for, render_template, request, current_app
 from flask_login import current_user, login_required
 from flask_wtf import FlaskForm
 from wtforms import StringField, SelectField, SubmitField, ValidationError, HiddenField
 from wtforms.validators import DataRequired, Length
 
 from ..db import db
-from ..db.helpers import get_whitelists_for_user_query, get_modules_for_user_query
+from ..db.helpers import get_whitelists_for_user_query, get_modules_for_user_query, get_plates_for_whitelist_query
 from ..models import Whitelist, Plate, Module
 
 bp = Blueprint('whitelists', __name__, url_prefix='/whitelists')
@@ -85,7 +85,10 @@ def edit(whitelist_id):
 
         form = AddPlateForm(whitelist_id=whitelist_id)
 
-        return render_template('edit_whitelist.html', whitelist=whitelist, form=form)
+        page = request.args.get('page', 1, type=int)
+        pagination = get_plates_for_whitelist_query(whitelist).paginate(page, current_app.config['PLATES_PER_PAGE'], False)
+
+        return render_template('edit_whitelist.html', whitelist=whitelist, pagination=pagination, form=form)
 
 
 @bp.route('/edit/<int:whitelist_id>/add_plate', methods=['POST'])

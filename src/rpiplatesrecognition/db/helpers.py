@@ -12,3 +12,9 @@ def get_modules_for_user_query(user):
     return (Module.query
         .join(User, Module.user_id == User.id)
         .filter(User.id == user.id))
+
+
+def get_plates_for_whitelist_query(whitelist):
+    from ..models import Plate
+
+    return Plate.query.filter(Plate.whitelist_id == whitelist.id)
