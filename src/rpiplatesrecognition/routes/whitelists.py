@@ -1,4 +1,4 @@
-from flask import Blueprint, flash, redirect, url_for, render_template, request, current_app
+from flask import Blueprint, flash, redirect, url_for, render_template, request, current_app, jsonify
 from flask_login import current_user, login_required
 from flask_wtf import FlaskForm
 from wtforms import StringField, SelectField, SubmitField, ValidationError, HiddenField
@@ -76,19 +76,56 @@ def add_ajax():
 @bp.route('/edit/<int:whitelist_id>')
 @login_required
 def edit(whitelist_id):
-        whitelist = get_whitelists_for_user_query(current_user) \
-            .filter(Whitelist.id == whitelist_id).first()
+    whitelist = get_whitelists_for_user_query(current_user) \
+        .filter(Whitelist.id == whitelist_id).first()
 
-        if whitelist is None:
-            flash('Unknown whitelist id')
-            return redirect(url_for('index.index'))
+    if whitelist is None:
+        flash('Unknown whitelist id')
+        return redirect(url_for('index.index'))
 
-        form = AddPlateForm(whitelist_id=whitelist_id)
+    form = AddPlateForm(whitelist_id=whitelist_id)
+    return render_template('edit_whitelist.html', whitelist=whitelist, form=form)
 
-        page = request.args.get('page', 1, type=int)
-        pagination = get_plates_for_whitelist_query(whitelist).paginate(page, current_app.config['PLATES_PER_PAGE'], False)
 
-        return render_template('edit_whitelist.html', whitelist=whitelist, pagination=pagination, form=form)
+@bp.route('/edit/<int:whitelist_id>/get')
+@login_required
+def edit_get_plates(whitelist_id):
+    whitelist = get_whitelists_for_user_query(current_user).filter(Whitelist.id == whitelist_id).first()
+
+    if whitelist is None:
+        return {}
+
+    query = get_plates_for_whitelist_query(whitelist)
+    totalNotFiltered = query.count()
+
+    search = request.args.get('search', None, type=str)
+    if search is not None:
+        query = query.filter(Plate.text.like(f'%{search}%'))
+
+    total = query.count()
+
+    order = request.args.get('order', 'asc', type=str)
+    if order == 'desc':
+        query = query.order_by(Plate.text.desc())
+    else:
+        query = query.order_by(Plate.text.asc())
+
+
+    offset = request.args.get('offset', 0, type=int)
+    query = query.offset(offset)
+
+    limit = request.args.get('limit', 10, type=int)
+    query = query.limit(limit)
+
+
+    return {
+        'total': total,
+        'totalNotFiltered': totalNotFiltered,
+        'rows': [{
+            'id': plate.id,
+            'text': plate.text
+        } for plate in query.all()]
+    }
 
 
 @bp.route('/edit/<int:whitelist_id>/add_plate', methods=['POST'])
@@ -112,35 +149,30 @@ def edit_add_plate(whitelist_id):
         return {'plate': plate.text}, 201
 
 
-@bp.route('/edit/<int:whitelist_id>/remove_plate', methods=['POST'])
+@bp.route('/edit/<int:whitelist_id>/remove_plates', methods=['POST'])
 @login_required
-def edit_remove_plate(whitelist_id):
-    whitelist = (Whitelist.query
-        .filter(Whitelist.user_id == current_user.id)
+def edit_remove_plates(whitelist_id):
+    whitelist = (get_whitelists_for_user_query(current_user)
         .filter(Whitelist.id == whitelist_id)).first()
 
     if whitelist is None:
         flash('Wrong whitelist')
         return redirect(url_for('index.index'))
 
-    plate_id = request.args.get('plate_id', None)
+    plates_id = request.args.getlist('id', None)
 
-    if plate_id is None:
+    if not plates_id:
         flash("Wrong plate")
         return redirect(url_for('whitelists.edit', whitelist_id=whitelist_id))
 
     plate_query = (Plate.query
         .filter(Plate.whitelist_id == whitelist_id)
-        .filter(Plate.id == plate_id))
+        .filter(Plate.id.in_(plates_id)))
 
-    if plate_query.count() == 0:
-        flash('Wrong plate')
-        return redirect(url_for('whitelists.edit', whitelist_id=whitelist_id))
-
-    plate = plate_query.first()
+    plates_text = ", ".join(plate.text for plate in plate_query.all())
     plate_query.delete()
-    flash(f'Sucessfully removed plate: {plate.text}')
     db.session.commit()
+    flash(f'Sucessfully removed plates: {plates_text}')
     return redirect(url_for('whitelists.edit', whitelist_id=whitelist_id))
 
 
