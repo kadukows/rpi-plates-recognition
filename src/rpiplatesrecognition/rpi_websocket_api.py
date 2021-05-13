@@ -49,6 +49,17 @@ def init_app(sio: SocketIO):
                 namespace='/rpi',
                 to=module.unique_id)
 
+    @sio.on('gate_controller_status', namespace='/rpi')
+    def gate_controller_request(data):
+        if 'module_id' in session:
+            module = Module.query.get(session['module_id'])
+            #{"status": "opening/closing/closed/opened"}
+            #will be also called on login with state of the gate
+            print("\n")
+            print(data)
+            print("\n")
+
+
     @sio.on('image_from_rpi', namespace='/rpi')
     def image_from_rpi(data):
         if 'module_id' in session:
