@@ -6,93 +6,67 @@
     <script type="text/javascript" src="{{ url_for('static', filename='ajax_form.js') }}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // block for adding a module
-            // to prevent varaible name clash
-            {
+            const ajax_add_module_form = new AjaxForm(
+                document.querySelector('#addModuleModal form'),
+                `{{ url_for('modules.add') }}`,
+                []
+            );
 
+            ajax_add_module_form.addEventListener('validatedAndSubmitted', () => {
+                location.reload();
+            });
 
-                const form_node = document.querySelector('#addModuleModal form');
-                const ajax_form_route = '{{ url_for("modules.add_module_ajax") }}';
-                const submit_btn = document.querySelector('#addModuleModal #submit-btn');
+            /////////////////////////////////////////
 
-                const ajax_form = new AjaxForm(form_node, ajax_form_route, [submit_btn]);
+            const ajax_remove_module_form = new AjaxForm(
+                document.querySelector('#removeModuleModal form'),
+                `{{ url_for('modules.remove') }}`,
+                []
+            );
 
-                ajax_form.addEventListener('validatedAndSubmitted', () => {
-                    location.reload();
-                });
-            }
-
-            //const module_table = document.querySelector('#module-table');
-            //module_table.selectPickerManager = new SelectPickerManager(module_table);
-
-            {
-                const form_node = document.querySelector('#select-picker-form');
-                const ajax_form_route = '{{ url_for("modules.bind_modules_to_whitelists_ajax") }}';
-                const submit_btn = document.querySelector('#submit-whitelist-changes-btn');
-
-                const ajax_form = new AjaxForm(form_node, ajax_form_route, [submit_btn]);
-
-                ajax_form.addEventListener('validatedAndSubmitted', () => {
-                    location.reload();
-                });
-            }
+            ajax_remove_module_form.addEventListener('validatedAndSubmitted', () => {
+                location.reload();
+            });
         });
 
-        class SelectPickerRowManager {
-            constructor(select_picker_node, select_picker_node_row, unique_id, whitelist_id_to_name_and_bound_modules) {
-                this.select_picker_node = select_picker_node;
-                this.select_picker_node_row = select_picker_node_row;
-                this.unique_id = unique_id;
-                this.is_changed = false;
-
-                for (var whitelist_id in whitelist_id_to_name_and_bound_modules) {
-                    const bound_modules = whitelist_id_to_name_and_bound_modules[whitelist_id].bound_modules;
-                    const whitelist_name = whitelist_id_to_name_and_bound_modules[whitelist_id].name;
-
-                    const option = document.createElement('option');
-                    option.value = whitelist_id;
-                    if (bound_modules.includes(unique_id)) {
-                        option.selected = '';
+        function tableButtons() {
+            return {
+                btnAdd: {
+                    text: 'Add new module',
+                    icon: 'fa-plus',
+                    event: () => {
+                        $('#addModuleModal').modal('show');
                     }
+                },
+                btnRemove: {
+                    text: 'Remove module',
+                    icon: 'fa-minus',
+                    event: () => {
+                        const selections = $('#moduleTable').bootstrapTable('getSelections');
+                        if (selections.length === 0) {
+                            return;
+                        }
 
-                    const text_node = document.createTextNode(whitelist_name);
-                    option.appendChild(text_node);
+                        document.querySelector('#removeModuleModal #output').innerText =
+                            selections.map(s => s.unique_id).join(', ');
 
-                    this.select_picker_node.appendChild(option);
+                        document.querySelector('#removeModuleModal #unique_ids').value =
+                            selections.map(s => s.unique_id).join(',');
+
+                        $('#removeModuleModal').modal('show');
+                    }
                 }
-
-                $(this.select_picker_node).on('changed.bs.select', (e, clickedIndex, isSelected, previousValue) => {
-                    this.is_changed = true;
-                    this.select_picker_node_row.classList.add('table-warning');
-                });
-
-                $(this.select_picker_node).selectpicker('refresh');
             }
         }
 
-        class SelectPickerManager {
-            constructor (table_node) {
-                this.table_node = table_node;
+        function isActiveFormatter(value, row, index, field) {
+            return value
+                ? '<span class="badge badge-success">Yes</span>'
+                : '<span class="badge badge-secondary">No</span>';
+        }
 
-                const req = new XMLHttpRequest();
-                req.open('GET', '{{ url_for("modules.get_whitelists_with_bound_modules_ajax") }}');
-
-                req.onload = () => {
-                    if (req.status === 200) {
-                        const data = JSON.parse(req.responseText);
-                        console.log(data);
-
-                        const select_picker_rows = document.querySelectorAll('.selectpicker-edit-whitelist-row');
-                        select_picker_rows.forEach(tr => {
-                            const select = tr.querySelector('select');
-                            const unique_id = select.dataset.unique_id;
-                            select.selectPickerRowManager = new SelectPickerRowManager(select, tr, unique_id, data);
-                        });
-                    }
-                };
-
-                req.send();
-            }
+        function uniqueIdFormatter(value, row, index, field) {
+            return `<a href="/access_attempts/${value}">${value}</a>`;
         }
     </script>
 {% endblock %}
@@ -106,43 +80,54 @@
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
         </div>
         <div class="modal-body">
-            {{ render_form(form) }}
+            {{ render_form(add_form, id="addModuleForm") }}
         </div>
         <div class="modal-footer">
-            <button type="button" class="btn btn-info" id="submit-btn">Submit</button>
-            <button type="button" class="btn btn-secodary" data-dismiss="modal">Close</button>
+            <input type="submit" class="btn btn-light" form="addModuleForm" value="Submit">
+            <button type="button" class="btn btn-light" data-dismiss="modal">Close</button>
         </div>
     </div>
     </div>
 </div>
 
-<form id="select-picker-form" autocomplete="off">
-    {{ edit_whitelist_form.hidden_tag() }}
-</form>
-
-<div class="row">
-    <div class="col-md-12">
-        <h2>Your modules:</h2>
-        <table class="table table-hover" id="module-table">
-            <thead style="font-weight: bold;">
-                <td> Unique id </td>
-                <td> Active </td>
-                    <td>
-                        <button type="button" class="btn btn-info" data-toggle="modal" data-target="#addModuleModal">Add a module</button>
-                    </td>
-            </thead>
-            {% for module in modules %}
-                {% include '_module.html' %}
-            {% endfor %}
-        </table>
+<div class="modal fade" id="removeModuleModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h4 class="modal-title">Remove a module(s)</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        </div>
+        <div class="modal-body">
+            Are you sure you want to remove modules: <strong id="output"></strong>?
+            {{ render_form(remove_form, id="removeModuleForm") }}
+        </div>
+        <div class="modal-footer">
+            <input type="submit" class="btn btn-light remove-btn" form="removeModuleForm" value="Remove">
+            <button type="button" class="btn btn-light" data-dismiss="modal">Close</button>
+        </div>
+    </div>
     </div>
 </div>
-<div class="row">
-    <div class="col-md-10">
 
-    </div>
-    <div class="col-md-2">
-        <button style="width: 100%;" type="button" class="btn btn-primary btn-block" id="submit-whitelist-changes-btn">Submit</button>
+<div class="row">
+    <div class="col-md-8">
+        <table
+            id="moduleTable"
+            data-toggle="table"
+            data-pagination="true"
+            data-side-pagination="server"
+            data-show-extended-pagination="true"
+            data-search="true"
+            data-buttons="tableButtons"
+            data-url="{{ url_for('modules.get') }}"
+            data-classes="table table-hover my-2"
+            data-click-to-select="true">
+            <thead>
+                <th data-field="state" data-checkbox="true"></th>
+                <th data-field="unique_id" data-sortable="true" data-formatter="uniqueIdFormatter">Unique id</th>
+                <th data-field="is_active" data-formatter="isActiveFormatter">Active</th>
+            </thead>
+        </table>
     </div>
 </div>
 {% endblock %}

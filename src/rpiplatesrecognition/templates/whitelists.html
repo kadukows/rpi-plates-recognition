@@ -72,11 +72,7 @@
         }
 
         function nameFormatter(value, row, index, field) {
-            return `
-                <a class="btn btn-link" href="{{ url_for('whitelists.index') }}/edit/${row['id']}"">
-                    ${value}
-                </a>
-            `;
+            return `<a class="btn btn-link" href="{{ url_for('whitelists.index') }}/edit/${row['id']}"">${value}</a>`;
         }
     </script>
 {% endblock %}
@@ -112,7 +108,7 @@
         </div>
         <div class="modal-footer">
             <form method="POST" id="deleteFakeForm">
-                <input type="submit" class="btn btn-danger" value="Remove"></button>
+                <input type="submit" class="btn btn-danger" value="Remove">
             </form>
 
             <button type="button" class="btn" data-dismiss="modal">Close</button>

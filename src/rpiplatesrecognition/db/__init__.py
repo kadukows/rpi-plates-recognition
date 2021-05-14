@@ -89,6 +89,9 @@ def init_db_debug_command():
     for i in range(1, 100):
         user2.whitelists.append(Whitelist(name='debug_whitelist_' + str(i)))
 
+    for i in range(1, 100):
+        user2.modules.append(Module(unique_id='debug_module_' + str(i)))
+
     db.session.add(user)
     db.session.add(admin)
     db.session.add(user2)
