@@ -179,7 +179,7 @@ class AccessAttempt(db.Model):
                 if possible_plate_groups is not None:
                     self.processed_plate_string = possible_plate_groups.group(0)
 
-                    query = sqlalchemy.text(f'''
+                    query = sqlalchemy.text('''
                         SELECT plates.id
                         FROM plates
                             INNER JOIN whitelists ON plates.whitelist_id = whitelists.id
@@ -188,6 +188,7 @@ class AccessAttempt(db.Model):
                             whitelist_to_module_assignment.module_id = :module_id
                             AND plates.text = :plate_text
                     ''').bindparams(module_id=self.module.id, plate_text=self.processed_plate_string)
+
                     possible_plate_id = db.session.execute(query).fetchone()
 
                     if possible_plate_id is not None:

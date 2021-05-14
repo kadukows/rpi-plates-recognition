@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block scripts %}
+    {{ super() }}
+    <script>
+        function tableButtons() {
+
+        }
+
+        function detailFormatter(index, row, element) {
+            const node = element.get(0);
+
+            const img = document.createElement('img');
+            img.classList.add('img-fluid');
+            img.src = row['image_url'];
+
+            node.appendChild(img);
+        }
+
+        function gotAccessFormatter(value, row, index, field) {
+            if (value) {
+                return '<span class="badge badge-success">Permitted access</span>';
+            }
+            else {
+                return '<span class="badge badge-danger">Forbidden access</span>';
+            }
+        }
+    </script>
+{% endblock %}
+
+{% block app_content %}
+    <div class="row">
+        <div class="col-md-12">
+            <h2>Acces attempt for module: <strong>{{ module.unique_id }}</strong></h2>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-8">
+            <table
+                id="accessAttemptTable"
+                data-toggle="table"
+                data-pagination="true"
+                data-side-pagination="server"
+                data-show-extended-pagination="true"
+                data-search="true"
+                {# data-buttons="tableButtons" #}
+                data-url="{{ url_for('access_attempts.get', unique_id=module.unique_id) }}"
+                data-detail-view="true"
+                data-detail-view-by-click="true"
+                data-detail-formatter="detailFormatter"
+                data-classes="table table-hover my-2">
+                <thead>
+                    <th data-field="date" data-sortable="true">Date</th>
+                    <th data-field="got_access" data-formatter="gotAccessFormatter">Got access</th>
+                    <th data-field="processed_plate_string">Plate</th>
+                </thead>
+            </table>
+        </div>
+    </div>
+{% endblock %}

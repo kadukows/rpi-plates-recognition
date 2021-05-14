@@ -23,7 +23,7 @@ def init_app(app: Flask):
         return User.query.get(int(id))
 
     # endpoint to 'Login' page, same value that is passed to 'url_for' function
-    login_manager.login_view = 'login'
+    login_manager.login_view = 'auth.login'
 
 
 def admin_required(f):

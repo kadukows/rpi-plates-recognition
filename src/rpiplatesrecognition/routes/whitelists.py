@@ -1,12 +1,14 @@
 from flask import Blueprint, flash, redirect, url_for, render_template, request, current_app, jsonify
 from flask_login import current_user, login_required
 from flask_wtf import FlaskForm
+from sqlalchemy.orm import Query
 from wtforms import StringField, SelectField, SubmitField, ValidationError, HiddenField
-from wtforms.validators import DataRequired, Length
+from wtforms.validators import DataRequired, Length, Regexp
 
 from ..db import db
 from ..db.helpers import get_whitelists_for_user_query, get_modules_for_user_query, get_plates_for_whitelist_query
 from ..models import Whitelist, Plate, Module
+from ..helpers import AjaxForm, process_bootstrap_table_request
 
 bp = Blueprint('whitelists', __name__, url_prefix='/whitelists')
 
@@ -73,129 +75,25 @@ def add_ajax():
         return '', 201
 
 
-@bp.route('/edit/<int:whitelist_id>')
+@bp.route('/get')
 @login_required
-def edit(whitelist_id):
-    whitelist = get_whitelists_for_user_query(current_user) \
-        .filter(Whitelist.id == whitelist_id).first()
-
-    if whitelist is None:
-        flash('Unknown whitelist id')
-        return redirect(url_for('index.index'))
-
-    form = AddPlateForm(whitelist_id=whitelist_id)
-    return render_template('edit_whitelist.html', whitelist=whitelist, form=form)
-
-
-@bp.route('/edit/<int:whitelist_id>/get')
-@login_required
-def edit_get_plates(whitelist_id):
-    whitelist = get_whitelists_for_user_query(current_user).filter(Whitelist.id == whitelist_id).first()
-
-    if whitelist is None:
-        return {}
-
-    query = get_plates_for_whitelist_query(whitelist)
-    totalNotFiltered = query.count()
-
-    search = request.args.get('search', None, type=str)
-    if search is not None:
-        query = query.filter(Plate.text.like(f'%{search}%'))
-
-    total = query.count()
-
-    order = request.args.get('order', 'asc', type=str)
-    if order == 'desc':
-        query = query.order_by(Plate.text.desc())
-    else:
-        query = query.order_by(Plate.text.asc())
-
-
-    offset = request.args.get('offset', 0, type=int)
-    query = query.offset(offset)
-
-    limit = request.args.get('limit', 10, type=int)
-    query = query.limit(limit)
-
+def get():
+    total, totalNotFiltered, whitelists = process_bootstrap_table_request(
+        get_whitelists_for_user_query(current_user),
+        Whitelist.name,
+        Whitelist.name
+    )
 
     return {
         'total': total,
         'totalNotFiltered': totalNotFiltered,
         'rows': [{
-            'id': plate.id,
-            'text': plate.text
-        } for plate in query.all()]
+            'id': whitelist.id,
+            'name': whitelist.name
+        } for whitelist in whitelists.all()]
     }
 
-
-@bp.route('/edit/<int:whitelist_id>/add_plate', methods=['POST'])
-@login_required
-def edit_add_plate(whitelist_id):
-    form = AddPlateForm(whitelist_id=whitelist_id)
-
-    if not form.validate_on_submit():
-        result = {'errors': {}}
-        for field in form:
-            if field.errors:
-                result['errors'][field.name] = [error for error in field.errors]
-
-        return result, 409
-    else:
-        plate = Plate(text=form.plate.data)
-        whitelist = Whitelist.query.get(form.whitelist_id.data)
-        whitelist.plates.append(plate)
-        db.session.commit()
-        flash(f'Added plate: {plate.text}')
-        return {'plate': plate.text}, 201
-
-
-@bp.route('/edit/<int:whitelist_id>/remove_plates', methods=['POST'])
-@login_required
-def edit_remove_plates(whitelist_id):
-    whitelist = (get_whitelists_for_user_query(current_user)
-        .filter(Whitelist.id == whitelist_id)).first()
-
-    if whitelist is None:
-        flash('Wrong whitelist')
-        return redirect(url_for('index.index'))
-
-    plates_id = request.args.getlist('id', None)
-
-    if not plates_id:
-        flash("Wrong plate")
-        return redirect(url_for('whitelists.edit', whitelist_id=whitelist_id))
-
-    plate_query = (Plate.query
-        .filter(Plate.whitelist_id == whitelist_id)
-        .filter(Plate.id.in_(plates_id)))
-
-    plates_text = ", ".join(plate.text for plate in plate_query.all())
-    plate_query.delete()
-    db.session.commit()
-    flash(f'Sucessfully removed plates: {plates_text}')
-    return redirect(url_for('whitelists.edit', whitelist_id=whitelist_id))
-
-
-@bp.route('/remove', methods=['POST'])
-@login_required
-def remove():
-    whitelist_id = request.args.get('whitelist_id', None)
-    if whitelist_id is None:
-        flash('Not correct whitelist id')
-        return redirect(url_for('whitelists.index'))
-
-    whitelist = Whitelist.query.filter_by(id=whitelist_id).first()
-
-    if whitelist is None:
-        flash('Wrong whitelist id')
-    else:
-        flash(f'Deleted {whitelist.name} whitelist')
-        db.session.delete(whitelist)
-        db.session.commit()
-    return redirect(url_for('whitelists.index'))
-
-
-class AddPlateForm(FlaskForm):
+class AddPlateForm(AjaxForm):
     plate = StringField('Plate', validators=[DataRequired()], render_kw={'placeholder': 'Plate...'})
     whitelist_id = HiddenField('whitelist_id', validators=[DataRequired()])
 
@@ -216,3 +114,126 @@ class AddPlateForm(FlaskForm):
 
         if possible_plate is not None:
             raise ValidationError('Plate already in a whitelist')
+
+class RemovePlateForm(AjaxForm):
+    plate_ids = HiddenField('plate_ids', validators=[DataRequired()])
+    whitelist_id = HiddenField('whitelist_id', validators=[DataRequired(), Regexp(r'\d+(,\d+)*')])
+
+    def validate_whitelist_id(self, whitelist_id):
+        whitelist = get_whitelists_for_user_query(current_user).filter(Whitelist.id == whitelist_id.data).first()
+
+        if whitelist is None:
+            raise ValidationError('Wrong whitelist id')
+
+    def validate_plate_ids(self, plate_ids):
+        plate_ints = self.get_plate_id_int_list()
+
+        whitelist = get_whitelists_for_user_query(current_user).filter(Whitelist.id == self.whitelist_id.data).first()
+        if whitelist is None:
+            raise ValidationError('Invalid whitelist id')
+
+        query = get_plates_for_whitelist_query(whitelist) \
+            .filter(Plate.id.in_(plate_ints))
+
+        if len(plate_ints) != query.count():
+            raise ValidationError('Some ids are wrong')
+
+    def get_plate_id_int_list(self):
+        return [int(plate_id) for plate_id in self.plate_ids.data.split(',')]
+
+    def get_plates_query(self) -> Query:
+        plate_ints = self.get_plate_id_int_list()
+        query = get_plates_for_whitelist_query(Whitelist.query.get(self.whitelist_id.data)) \
+            .filter(Plate.id.in_(plate_ints))
+        return query
+
+
+@bp.route('/edit/<int:whitelist_id>')
+@login_required
+def edit(whitelist_id):
+    whitelist = get_whitelists_for_user_query(current_user) \
+        .filter(Whitelist.id == whitelist_id).first()
+
+    if whitelist is None:
+        flash('Unknown whitelist id')
+        return redirect(url_for('index.index'))
+
+    add_plate_form = AddPlateForm(whitelist_id=whitelist_id)
+    remove_plate_form = RemovePlateForm(whitelist_id=whitelist_id)
+
+    return render_template('edit_whitelist.html', whitelist=whitelist, add_plate_form=add_plate_form, remove_plate_form=remove_plate_form)
+
+
+@bp.route('/edit/<int:whitelist_id>/get')
+@login_required
+def edit_get_plates(whitelist_id):
+    whitelist = get_whitelists_for_user_query(current_user).filter(Whitelist.id == whitelist_id).first()
+
+    if whitelist is None:
+        return {}
+
+    total, totalNotFiltered, query = process_bootstrap_table_request(
+        get_plates_for_whitelist_query(whitelist),
+        Plate.text,
+        Plate.text
+    )
+
+    return {
+        'total': total,
+        'totalNotFiltered': totalNotFiltered,
+        'rows': [{
+            'id': plate.id,
+            'text': plate.text
+        } for plate in query.all()]
+    }
+
+
+@bp.route('/edit/<int:whitelist_id>/add_plate', methods=['POST'])
+@login_required
+def edit_add_plate(whitelist_id):
+    form = AddPlateForm(whitelist_id=whitelist_id)
+
+    if not form.validate_on_submit():
+        return form.generate_failed_response_dict(), 409
+    else:
+        plate = Plate(text=form.plate.data)
+        whitelist = Whitelist.query.get(form.whitelist_id.data)
+        whitelist.plates.append(plate)
+        db.session.commit()
+        flash(f'Added plate: {plate.text}')
+        return {'plate': plate.text}, 201
+
+
+@bp.route('/edit/<int:whitelist_id>/remove_plates', methods=['POST'])
+@login_required
+def edit_remove_plates(whitelist_id):
+    form = RemovePlateForm(whitelist_id=whitelist_id)
+
+    if not form.validate_on_submit():
+        return form.generate_failed_response_dict(), 409
+    else:
+        query = form.get_plates_query()
+        removed_string = ', '.join(plate.text for plate in query.all())
+        flash(f'Sucessfully removed plates: {removed_string}')
+        query.delete()
+        db.session.commit()
+        return '', 201
+
+
+@bp.route('/remove', methods=['POST'])
+@login_required
+def remove():
+    whitelist_ids = request.args.getlist('id', None)
+    if whitelist_ids is None:
+        flash('Not correct whitelist id')
+        return redirect(url_for('whitelists.index'))
+
+    whitelists = get_whitelists_for_user_query(current_user) \
+        .filter(Whitelist.id.in_(whitelist_ids))
+
+    whitelists_string = ', '.join(whitelist.name for whitelist in whitelists.all())
+
+    flash(f'Deleted {whitelists_string} whitelists')
+    whitelists.delete()
+    db.session.commit()
+    return redirect(url_for('whitelists.index'))

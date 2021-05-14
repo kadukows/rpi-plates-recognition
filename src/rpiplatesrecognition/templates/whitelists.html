@@ -6,17 +6,6 @@
     <script type="text/javascript" src="{{ url_for('static', filename='ajax_form.js') }}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            $('#removeWhitelistModal').on('show.bs.modal', function (event) {
-                const button = $(event.relatedTarget);
-                var whitelist_id = button.data('whitelist-id');
-
-                const whitelist_text_output = document.querySelector('#whitelist-text-output');
-                whitelist_text_output.innerText = button.data('whitelist-name');
-
-                const deleteFakeForm = document.querySelector('#deleteFakeForm');
-                deleteFakeForm.action = `{{ url_for('whitelists.remove')}}?whitelist_id=${whitelist_id}`;
-            });
-
             {
                 const form_node = document.querySelector('#addWhitelistModal form');
                 const ajax_form_route = '{{ url_for("whitelists.add_ajax") }}';
@@ -29,16 +18,67 @@
                 });
             }
         });
-    </script>
-{% endblock %}
 
-{% block styles %}
-    {{ super() }}
-    <style>
-        table td {
-            text-align: center;
+        function tableButtons() {
+            return {
+                btnAdd: {
+                    text: 'Add new whitelist',
+                    icon: 'fa-plus',
+                    event: () => {
+                        $('#addWhitelistModal').modal('show');
+                    }
+                },
+                btnRemove: {
+                    text: 'Remove whitelist(s)',
+                    icon: 'fa-minus',
+                    event: () => {
+                        const selections = $('#whitelistsTable').bootstrapTable('getSelections');
+
+                        if (selections.length === 0) {
+                            return;
+                        }
+
+                        var remove_url = `{{ url_for('whitelists.remove') }}`;
+                        var prefix = '?';
+                        selections.forEach(selection => {
+                            remove_url += prefix + 'id=' + selection.id;
+                            prefix = '&';
+                        });
+
+                        const fakeForm = document.querySelector('#removeWhitelistModal form');
+                        fakeForm.action = remove_url;
+
+                        const text_output = selections.map(selection => selection.name).join(', ');
+                        document.querySelector('#removeWhitelistModal #output').innerText =
+                            selections.map(s => s.name).join(', ');
+
+                        $('#removeWhitelistModal').modal('show');
+                    }
+                }
+            }
         }
-    </style>
+
+        function showRemoveModalWithId(whitelist_id, whitelist_name) {
+            const modal = $('#removeWhitelistModal');
+            const modalNode = modal.get(0);
+
+            const output = modalNode.querySelector('strong #output');
+            output.innerText = whitelist_name;
+
+            const deleteFakeForm = modalNode.querySelector('form');
+            deleteFakeForm.action = `{{ url_for('whitelists.remove') }}?whitelist_id=${whitelist_id}`;
+
+            modal.modal('show');
+        }
+
+        function nameFormatter(value, row, index, field) {
+            return `
+                <a class="btn btn-link" href="{{ url_for('whitelists.index') }}/edit/${row['id']}"">
+                    ${value}
+                </a>
+            `;
+        }
+    </script>
 {% endblock %}
 
 {% block app_content %}
@@ -68,7 +108,7 @@
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
         </div>
         <div class="modal-body">
-        <p>Are you sure you want to delete <strong id="whitelist-text-output"></strong> whitelist ?</p>
+        <p>Are you sure you want to delete <strong id="output"></strong> whitelist ?</p>
         </div>
         <div class="modal-footer">
             <form method="POST" id="deleteFakeForm">
@@ -81,28 +121,28 @@
     </div>
 </div>
 
-<h1>Whitelists</h1>
-
-<div class="col-md-8">
-    <table class="table table-hover">
-        <thead style="font-weight: bold;">
-            <td>
-                Name
-            </td>
-            <td>
-                <button type="button" class="btn btn-info"
-                    data-toggle="modal" data-target="#addWhitelistModal"
-                >Add new whitelist</button>
-            </td>
-        </thead>
-        {% for whitelist in whitelists %}
-            {% include '_whitelist.html' %}
-        {% endfor %}
-    </table>
-    <td>
-
-    </td>
+<div class="row">
+    <h1>Whitelists</h1>
 </div>
 
-
+<div class="row">
+    <div class="col-md-8">
+        <table
+            id="whitelistsTable"
+            data-toggle="table"
+            data-pagination="true"
+            data-side-pagination="server"
+            data-show-extended-pagination="true"
+            data-search="true"
+            data-buttons="tableButtons"
+            data-url="{{ url_for('whitelists.get') }}"
+            data-classes="table table-hover my-2"
+            data-click-to-select="true">
+            <thead>
+                <th data-field="state" data-checkbox="true"></th>
+                <th data-field="name" data-formatter="nameFormatter" data-sortable="true">Whitelist</th>
+            </thead>
+        </table>
+    </div>
+</div>
 {% endblock %}

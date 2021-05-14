@@ -1,6 +1,9 @@
 from flask import Flask
 
 def init_app(app: Flask):
+    from . import access_attempts
+    app.register_blueprint(access_attempts.bp)
+
     from . import admin_modules
     app.register_blueprint(admin_modules.bp)
 
