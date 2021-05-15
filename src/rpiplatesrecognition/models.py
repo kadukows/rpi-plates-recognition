@@ -1,4 +1,4 @@
-import base64, os, pickle, re
+import base64, os, pickle, re, enum
 import enum, json
 from typing import Tuple, List
 
@@ -18,6 +18,22 @@ from .libs.plate_acquisition.config_file import ExtractionConfigParameters
 
 DEFAULT_EXTRACTION_PARAMS = ExtractionConfigParameters()
 
+class UserRoleEnum(enum.IntEnum):
+    User = 1
+    Admin = 2
+
+class UserRole(db.Model):
+    __tablename__ = 'user_roles'
+
+    id = db.Column(db.Integer, primary_key=True)
+    value = db.Column(db.Enum(UserRoleEnum), unique=True, nullable=False)
+
+    def __eq__(self, other: UserRoleEnum):
+        if isinstance(other, UserRoleEnum):
+            return self.value == other
+
+        raise RuntimeError('UserRole::__eq__(): wrong type')
+
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
 
@@ -25,8 +41,9 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(64), index=True, unique=True)
     password_hash = db.Column(db.String(120), unique=True)
     email = db.Column(db.String(120), unique=True,nullable=False)
-    # workaround, right now possible Values: 'Admin' and 'User'
-    role = db.Column(db.String(12), index=False, unique=False, default='User')
+    user_role_id = db.Column(db.Integer, db.ForeignKey('user_roles.id'), nullable=False, default=UserRoleEnum.User)
+    user_role = db.relationship('UserRole')
+
 
     def __repr__(self):
         return f'<User {self.username}>'
@@ -36,6 +53,12 @@ class User(UserMixin, db.Model):
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+
+    def is_user(self):
+        return self.user_role == UserRoleEnum.User
+
+    def is_admin(self):
+        return self.user_role == UserRoleEnum.Admin
 
     @staticmethod
     def does_password_comply_to_policy(password) -> bool:
@@ -72,7 +95,7 @@ class Whitelist(db.Model):
     __tablename__ = 'whitelists'
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(32), unique=True)
+    name = db.Column(db.String(32), index=True)
 
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     user = db.relationship('User', backref=db.backref('whitelists', lazy=True))
@@ -89,7 +112,7 @@ class Plate(db.Model):
     text = db.Column(db.String(10), unique=False, index=True, nullable=False)
 
     whitelist_id = db.Column(db.Integer, db.ForeignKey('whitelists.id'), nullable=False)
-    whitelist = db.relationship('Whitelist', backref=db.backref('plates', lazy=True))
+    whitelist = db.relationship('Whitelist', backref=db.backref('plates', lazy=True, cascade="all, delete-orphan"))
 
     PLATE_RE = re.compile(r'[A-Z]{2,3}[A-Z0-9]{3,5}')
 
@@ -120,6 +143,7 @@ class AccessAttempt(db.Model):
             file.write(base64.b64decode(encoded_image))
 
         img = cv.imread(self.get_src_image_filepath(Dirs.Absolute))
+        assert img is not None
 
         # save plate regions
         plates_regions = global_edge_projection(img, extraction_params_)
@@ -155,7 +179,7 @@ class AccessAttempt(db.Model):
                 if possible_plate_groups is not None:
                     self.processed_plate_string = possible_plate_groups.group(0)
 
-                    query = sqlalchemy.text(f'''
+                    query = sqlalchemy.text('''
                         SELECT plates.id
                         FROM plates
                             INNER JOIN whitelists ON plates.whitelist_id = whitelists.id
@@ -164,6 +188,7 @@ class AccessAttempt(db.Model):
                             whitelist_to_module_assignment.module_id = :module_id
                             AND plates.text = :plate_text
                     ''').bindparams(module_id=self.module.id, plate_text=self.processed_plate_string)
+
                     possible_plate_id = db.session.execute(query).fetchone()
 
                     if possible_plate_id is not None:
@@ -219,7 +244,7 @@ class AccessAttempt(db.Model):
         os.mkdir(self.get_edge_proj_dirpath(Dirs.Absolute))
         os.mkdir(self.get_segments_dirpath(Dirs.Absolute))
 
-    def to_dict(self) -> str:
+    def to_dict(self):
         return {
             'id': self.id,
             'date': self.date.strftime('%d.%m.%y %H:%M:%S'),

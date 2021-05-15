@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% from 'bootstrap/form.html' import render_form %}
+
+{% block scripts %}
+    {{ super() }}
+    <script type="text/javascript" src="{{ url_for('static', filename='ajax_form.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const ajax_add_module_form = new AjaxForm(
+                document.querySelector('#addModuleModal form'),
+                `{{ url_for('modules.add') }}`,
+                []
+            );
+
+            ajax_add_module_form.addEventListener('validatedAndSubmitted', () => {
+                location.reload();
+            });
+
+            /////////////////////////////////////////
+
+            const ajax_remove_module_form = new AjaxForm(
+                document.querySelector('#removeModuleModal form'),
+                `{{ url_for('modules.remove') }}`,
+                []
+            );
+
+            ajax_remove_module_form.addEventListener('validatedAndSubmitted', () => {
+                location.reload();
+            });
+        });
+
+        function tableButtons() {
+            return {
+                btnAdd: {
+                    text: 'Add new module',
+                    icon: 'fa-plus',
+                    event: () => {
+                        $('#addModuleModal').modal('show');
+                    }
+                },
+                btnRemove: {
+                    text: 'Remove module',
+                    icon: 'fa-minus',
+                    event: () => {
+                        const selections = $('#moduleTable').bootstrapTable('getSelections');
+                        if (selections.length === 0) {
+                            return;
+                        }
+
+                        document.querySelector('#removeModuleModal #output').innerText =
+                            selections.map(s => s.unique_id).join(', ');
+
+                        document.querySelector('#removeModuleModal #unique_ids').value =
+                            selections.map(s => s.unique_id).join(',');
+
+                        $('#removeModuleModal').modal('show');
+                    }
+                }
+            }
+        }
+
+        function isActiveFormatter(value, row, index, field) {
+            return value
+                ? '<span class="badge badge-success">Yes</span>'
+                : '<span class="badge badge-secondary">No</span>';
+        }
+
+        function uniqueIdFormatter(value, row, index, field) {
+            return `<a href="/access_attempts/${value}">${value}</a>`;
+        }
+    </script>
+{% endblock %}
+
+{% block app_content %}
+<div class="modal fade" id="addModuleModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h4 class="modal-title">Add a module</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        </div>
+        <div class="modal-body">
+            {{ render_form(add_form, id="addModuleForm") }}
+        </div>
+        <div class="modal-footer">
+            <input type="submit" class="btn btn-light" form="addModuleForm" value="Submit">
+            <button type="button" class="btn btn-light" data-dismiss="modal">Close</button>
+        </div>
+    </div>
+    </div>
+</div>
+
+<div class="modal fade" id="removeModuleModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h4 class="modal-title">Remove a module(s)</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        </div>
+        <div class="modal-body">
+            Are you sure you want to remove modules: <strong id="output"></strong>?
+            {{ render_form(remove_form, id="removeModuleForm") }}
+        </div>
+        <div class="modal-footer">
+            <input type="submit" class="btn btn-light remove-btn" form="removeModuleForm" value="Remove">
+            <button type="button" class="btn btn-light" data-dismiss="modal">Close</button>
+        </div>
+    </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <table
+            id="moduleTable"
+            data-toggle="table"
+            data-pagination="true"
+            data-side-pagination="server"
+            data-show-extended-pagination="true"
+            data-search="true"
+            data-buttons="tableButtons"
+            data-url="{{ url_for('modules.get') }}"
+            data-classes="table table-hover my-2"
+            data-click-to-select="true">
+            <thead>
+                <th data-field="state" data-checkbox="true"></th>
+                <th data-field="unique_id" data-sortable="true" data-formatter="uniqueIdFormatter">Unique id</th>
+                <th data-field="is_active" data-formatter="isActiveFormatter">Active</th>
+            </thead>
+        </table>
+    </div>
+</div>
+{% endblock %}

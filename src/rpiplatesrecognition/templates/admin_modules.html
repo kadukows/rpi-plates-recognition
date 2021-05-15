@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+
+<div class="row">
+    <div class="col-md-8">
+        <table class="table table-hover">
+            <thead style="font-weight: bold;">
+                <td> Unique id </td>
+                <td> Active </td>
+            </thead>
+            {% for module in modules %}
+                {% include '_module.html' %}
+            {% endfor %}
+        </table>
+    </div>
+</div>
+
+{% endblock %}

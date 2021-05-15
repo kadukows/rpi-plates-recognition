@@ -15,7 +15,8 @@ def create_app(test_config=None, return_socketio=False):
         SECRET_KEY='dev',
         SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(app.instance_path, 'rpiplatesrecognition.sqlite'),
         SQLALCHEMY_TRACK_MODIFICATIONS = False,
-        WTF_CSRF_ENABLED = True
+        WTF_CSRF_ENABLED = True,
+        PLATES_PER_PAGE = 10
     )
 
     if test_config is None:
@@ -42,10 +43,7 @@ def create_app(test_config=None, return_socketio=False):
     rpi_websocket_api.init_app(sio)
 
     from . import routes
-    routes.init_app(app, sio)
-
-    from . import rpi_connection
-    app.register_blueprint(rpi_connection.bp)
+    routes.init_app(app)
 
     from . import client_websocket_routes
     client_websocket_routes.init_app_sio(app, sio)

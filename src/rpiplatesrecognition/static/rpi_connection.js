@@ -81,7 +81,7 @@ class EditableParamManagerTupleInts extends EditableParamManager {
 
 class EditableParamManagerSingleFloat extends EditableParamManager {
     constructor (td, original_param_value) {
-        super(td, /^\d*[.]\d+\s*$/, original_param_value);
+        super(td, /^(\d*[.]\d+)|(\d+)\s*$/, original_param_value);
     }
 
     to_data() {
@@ -105,8 +105,10 @@ class ParamsTableManager {
                     submit_button.classList.add('anim-jigger');
                 }
                 else {
-                    submit_button.setAttribute('disabled', '');
-                    submit_button.classList.add('loading');
+                    submit_buttons.forEach(button => {
+                        button.setAttribute('disabled', '');
+                        button.classList.add('loading');
+                    })
 
                     const data = JSON.stringify(this.to_data());
 
@@ -117,8 +119,12 @@ class ParamsTableManager {
                     req.onload = () => {
                         const new_params = JSON.parse(req.responseText);
                         this.rebuild_table_with_params(new_params);
-                        submit_button.removeAttribute('disabled', '');
-                        submit_button.classList.remove('loading');
+                        //submit_button.removeAttribute('disabled', '');
+                        //submit_button.classList.remove('loading');
+                        submit_buttons.forEach(button => {
+                            button.removeAttribute('disabled', '');
+                            button.classList.remove('loading');
+                        })
                     }
 
                     req.send(data);
@@ -144,21 +150,11 @@ class ParamsTableManager {
 
                 const td_module_value = document.createElement('td');
                 td_module_value.dataset.paramKey = key;
-                td_module_value.innerHTML = params[key];
+                td_module_value.innerHTML = params[key]['value'];
                 td_module_value.classList.add('td-module-value')
                 td_module_value.contentEditable = "true";
-                if (Number.isInteger(params[key])) {
-                    td_module_value.editableParamManager = new EditableParamManagerSingleInt(td_module_value, params[key]);
-                }
-                else if (typeof(params[key]) === "number") {
-                    td_module_value.editableParamManager = new EditableParamManagerSingleFloat(td_module_value, params[key]);
-                }
-                else if (Array.isArray(params[key])) {
-                    td_module_value.editableParamManager = new EditableParamManagerTupleInts(td_module_value, params[key]);
-                }
-                else {
-                    throw "Not an array or integer or float";
-                }
+                const factory = new EditableParamManagerFactory();
+                td_module_value.editableParamManager = factory.make_param_manager(td_module_value, params[key]);
                 tr.appendChild(td_module_value);
 
                 tbody.appendChild(tr);
@@ -188,12 +184,33 @@ class ParamsTableManager {
     }
 }
 
+class EditableParamManagerFactoryException {
+    constructor(value) {
+        this.value = value;
+    }
+}
+
+class EditableParamManagerFactory {
+    make_param_manager(td_module_value, field) {
+        if (!field.hasOwnProperty('type') || !field.hasOwnProperty('value')) {
+            throw new EditableParamManagerFactoryException("Wrongly constructed field obj");
+        }
+
+        switch (field['type'])
+        {
+            case 'int': return new EditableParamManagerSingleInt(td_module_value, field['value']);
+            case 'float': return new EditableParamManagerSingleFloat(td_module_value, field['value']);
+            case 'Tuple[int]': return new EditableParamManagerTupleInts(td_module_value, field['value']);
+        }
+
+        throw new EditableParamManagerFactoryException(`Unexpecte fiel['type'] value: ${field['type']}`);
+    }
+}
+
 function add_text_node(node, text) {
     const text_node = document.createTextNode(text);
     node.appendChild(text_node);
 }
-
-var global_table_manager = null;
 
 document.addEventListener("DOMContentLoaded", () => {
 
@@ -236,7 +253,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     req.onload = () => {
         const data = JSON.parse(req.responseText);
-        data.forEach(access_attempt => { add_access_attempt(access_attempt); });
+        data.forEach(access_attempt => { add_access_attempt(access_attempt, socket); });
     };
 
     req.send();
@@ -248,7 +265,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     socket.on('new_access_attempt_from_server_to_client', data => {
         const access_attempt = JSON.parse(data);
-        add_access_attempt(access_attempt);
+        add_access_attempt(access_attempt, socket);
     });
 
     //
@@ -262,7 +279,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const params = JSON.parse(module_param_req.responseText);
         const table = document.querySelector('#table-params-output');
 
-        global_table_manager = new ParamsTableManager(params, table, form.dataset.unique_id);
+        table.paramsTableManger = new ParamsTableManager(params, table, form.dataset.unique_id);
     }
 
     module_param_req.send();
@@ -291,12 +308,12 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 });
 
-function add_access_attempt(access_attempt, accordion = null) {
+function add_access_attempt(access_attempt, socket, accordion = null) {
     if (accordion === null) {
         accordion = document.querySelector('#accordion');
     }
 
-    const card = create_card(access_attempt);
+    const card = create_card(access_attempt, socket);
     const collapsible = create_collapsible(access_attempt['id']);
 
     accordion.insertBefore(collapsible, accordion.firstChild);
@@ -335,6 +352,16 @@ function add_callback_to_show_access_btn(button) {
     }
 }
 
+function add_callback_to_rerun_button(button, socket) {
+    button.onclick = function() {
+        this.setAttribute('disabled', '');
+        socket.emit('rerun_access_attempt_from_client', {'access_attempt_id': this.dataset.accessAttemptId}, () => {
+            this.removeAttribute('disabled', '');
+        });
+
+    };
+}
+
 function replace_old_tbody_img(img_links, table) {
     const old_tbody = table.getElementsByTagName('tbody')[0];
     const tbody = document.createElement('tbody');
@@ -361,7 +388,7 @@ function replace_old_tbody_img(img_links, table) {
     });
 }
 
-function create_card(access_attempt) {
+function create_card(access_attempt, socket) {
     const template = document.createElement('template');
 
     const got_access_string = access_attempt['got_access'] === true
@@ -375,7 +402,10 @@ function create_card(access_attempt) {
                 <button class="btn btn-link show-access-attempt-btn"
                     data-toggle="collapse" data-target="#access-attempt-card-${access_attempt['id']}"
                     data-access-attempt-id="${access_attempt['id']}">
-                    Access attempt: #${access_attempt['id']} | ${access_attempt['date']} | Raw plate: ${access_attempt['plate']} | Processed plate: ${access_attempt['processed_plate_string']} | ${got_access_string}
+                    Access attempt: #${access_attempt['id']} | ${access_attempt['date']} | Raw plate: ${access_attempt['plate']} | Processed plate: ${access_attempt['processed_plate_string']} | ${got_access_string} |
+                </button>
+                <button class="btn btn-primary rerun-access-attempt-btn" data-access-attempt-id="${access_attempt['id']}">
+                    Rerun photo
                 </button>
             </h5>
         </div>
@@ -384,8 +414,11 @@ function create_card(access_attempt) {
 
     const result = template.content.cloneNode(true);
 
-    const button = result.querySelector('button');
-    add_callback_to_show_access_btn(button);
+    const access_attempt_button = result.querySelector('.show-access-attempt-btn');
+    add_callback_to_show_access_btn(access_attempt_button);
+
+    const rerun_button = result.querySelector('.rerun-access-attempt-btn');
+    add_callback_to_rerun_button(rerun_button, socket);
 
     const card = result.querySelector('.card');
     setTimeout(() => { card.classList.add('animate'); }, 100);

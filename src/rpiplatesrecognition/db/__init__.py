@@ -11,7 +11,7 @@ import shutil,gzip,time
 db = SQLAlchemy()
 
 def init_db():
-    from rpiplatesrecognition.models import AccessAttempt
+    from rpiplatesrecognition.models import AccessAttempt, UserRole, UserRoleEnum
 
     db.drop_all()
     db.create_all()
@@ -23,6 +23,13 @@ def init_db():
         os.mkdir(os.path.join(current_app.instance_path, AccessAttempt.STATIC_ROOT_DIR))
     except FileExistsError:
         pass
+
+    role_user = UserRole(id=int(UserRoleEnum.User), value=UserRoleEnum.User)
+    role_admin = UserRole(id=int(UserRoleEnum.Admin), value=UserRoleEnum.Admin)
+
+    db.session.add(role_user)
+    db.session.add(role_admin)
+
     db.session.commit()
 
 @click.command('init-db')
@@ -36,23 +43,17 @@ def init_db_command():
 def init_db_debug_command():
     """Helper command for aiding development process, populates databse with default values"""
 
-    from ..models import User, Module, Whitelist, Plate, AccessAttempt, DEFAULT_EXTRACTION_PARAMS
+    from ..models import User, Module, Whitelist, Plate, AccessAttempt, DEFAULT_EXTRACTION_PARAMS, UserRoleEnum, UserRole
 
     init_db()
+
+    #
+    #  User1 setup
+    #
 
     user = User(username='user1', password_hash=generate_password_hash('user1'),email='testMail@mail.com')
     module = Module(unique_id='unique_id_1', extraction_params=DEFAULT_EXTRACTION_PARAMS)
     user.modules.append(module)
-
-    admin = User(username='admin1', password_hash=generate_password_hash('admin1'), role='Admin',email='admin@admin.com')
-
-    db.session.add(user)
-    db.session.add(admin)
-    db.session.add(module)
-
-    for idx in range(2, 6):
-        new_module = Module(unique_id=f'unique_id_{idx}')
-        db.session.add(new_module)
 
     whitelist = Whitelist(name='debug_whitelist_1')
     user.whitelists.append(whitelist)
@@ -61,6 +62,39 @@ def init_db_debug_command():
         whitelist.plates.append(Plate(text=plate_text))
 
     module.whitelists.append(whitelist)
+
+    #
+    # admin setup
+    #
+
+    admin_user_role = UserRole.query.filter_by(value=UserRoleEnum.Admin).first()
+    admin = User(username='admin1', password_hash=generate_password_hash('admin1'), user_role=admin_user_role, email='admin@admin.com')
+
+    for idx in range(2, 6):
+        new_module = Module(unique_id=f'unique_id_{idx}')
+        db.session.add(new_module)
+
+    #
+    # User2 setup
+    #
+
+    user2 = User(username='user2', email='user2@mail.com')
+    user2.set_password('user2')
+
+    whitelist_big = Whitelist(name='big_whitelist')
+    user2.whitelists.append(whitelist_big)
+    for i in range(10, 99):
+        whitelist_big.plates.append(Plate(text='DBL6S' + str(i)))
+
+    for i in range(1, 100):
+        user2.whitelists.append(Whitelist(name='debug_whitelist_' + str(i)))
+
+    for i in range(1, 100):
+        user2.modules.append(Module(unique_id='debug_module_' + str(i)))
+
+    db.session.add(user)
+    db.session.add(admin)
+    db.session.add(user2)
 
     db.session.commit()
 
@@ -88,7 +122,7 @@ def init_app(app: Flask):
         Module.query.update({Module.is_active: False})
         db.session.commit()
 
-    # this check for integrity of 'instance/photos' folder with dataabse state
+    # this check for integrity of 'instance/photos' folder with database state
     @app.before_first_request
     def access_attempts_integrity_check():
             from ..models import AccessAttempt

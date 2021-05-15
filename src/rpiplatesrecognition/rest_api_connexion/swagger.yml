@@ -47,6 +47,7 @@ paths:
                           items:
                             type: string
 
+
   /get_whitelists:
     get:
       operationId: rpiplatesrecognition.rest_api_connexion.routes.get_whitelists
@@ -96,6 +97,69 @@ paths:
 
         '404':
           description: No such whitelist exists
+
+
+  /get_access_attempts_for_module:
+    get:
+      operationId: rpiplatesrecognition.rest_api_connexion.routes.get_access_attempts_for_module
+      description: Returns access attempts for module
+      tags:
+        - observers
+      parameters:
+        - in: query
+          name: unique_id
+          schema:
+            type: string
+          description: Module for which to fetch access attempts
+      responses:
+        '200':
+          description: Returns a json with an array of access attempts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_attempts:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: number
+                        date:
+                          type: string
+                        plate:
+                          type: string
+                        processed_plate_string:
+                          type: string
+                        got_access:
+                          type: boolean
+        '403':
+          description: Module not bound to a user
+
+
+  /get_photo_for_access_attempt:
+    get:
+      operationId: rpiplatesrecognition.rest_api_connexion.routes.get_photo_for_access_attempt
+      description: Returns a photo for access attempt with given id
+      tags:
+        - observers
+      parameters:
+        - in: query
+          name: access_attempt_id
+          schema:
+            type: number
+          description: Access attempt for which to fetch photo
+      responses:
+        '200':
+          description: Returns a photo
+          content:
+            image/jpg:
+              schema:
+                type: string
+                format: binary
+        '403':
+          description: Client doesn't have permission to access this acess attempt
 
 
   /bind_module:

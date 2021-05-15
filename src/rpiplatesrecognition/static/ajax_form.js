@@ -4,8 +4,7 @@ class AjaxForm extends EventTarget {
         this.form_node = form_node;
         this.ajax_form_route = ajax_form_route;
 
-        this.invalid_feedback_container_node = document.createElement('div');
-        this.form_node.appendChild(this.invalid_feedback_container_node);
+        this.invalid_feedbacks = [];
 
         submit_btns.forEach(button => {
             button.onclick = () => { this.fake_submit(); };
@@ -34,8 +33,7 @@ class AjaxForm extends EventTarget {
 
                 for (var field in data.errors) {
                     const invalid_feedback = create_invalid_feedback(data.errors[field]);
-
-                    this.invalid_feedback_container_node.appendChild(invalid_feedback);
+                    this.invalid_feedbacks.push(invalid_feedback);
 
                     var field_node = this.form_node.querySelector(`#${field}`);
                     if (field_node === null) {
@@ -45,7 +43,8 @@ class AjaxForm extends EventTarget {
                              return el.form === this.form_node;
                         });
                     }
-                    if (field_node !== null) {
+                    if (field_node !== null && field_node !== undefined) {
+                        field_node.parentNode.insertBefore(invalid_feedback, field_node.nextSibling);
                         field_node.classList.add('is-invalid');
                     }
                 }
@@ -62,9 +61,12 @@ class AjaxForm extends EventTarget {
             field.classList.remove('is-invalid');
         });
 
-        const new_container = document.createElement('div');
-        this.invalid_feedback_container_node.replaceWith(new_container);
-        this.invalid_feedback_container_node = new_container;
+        //const new_container = document.createElement('div');
+        //this.invalid_feedback_container_node.replaceWith(new_container);
+        //this.invalid_feedback_container_node = new_container;
+        this.invalid_feedbacks.forEach(node => {
+            node.remove();
+        });
     }
 }
 
