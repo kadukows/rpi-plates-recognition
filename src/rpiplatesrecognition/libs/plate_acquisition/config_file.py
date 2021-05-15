@@ -70,6 +70,7 @@ class ExtractionConfigParameters:
     gatecontroller_gpio_pin_number: int = 3
     gatecontroller_button_press_time: float = 0.35
     gatecontroller_gate_opening_time: float = 15
+    gatecontroller_time_to_drive_in: float = 30
 
 
     def to_dict(self):
