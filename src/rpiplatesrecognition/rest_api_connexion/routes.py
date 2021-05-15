@@ -1,6 +1,11 @@
+import os
 from enum import unique
-from ..models import User, Module, Whitelist, Plate
+from ..models import AccessAttempt, User, Module, Whitelist, Plate, Dirs
 from ..db import db
+from ..db.helpers import get_access_attempts_for_user_query, get_modules_for_user_query
+
+from flask import send_from_directory
+from connexion import NoContent
 
 def get_modules(user: User):
     return {'modules': [
@@ -15,44 +20,44 @@ def bind_module(user: User, unique_id):
     module = Module.query.filter_by(unique_id = unique_id).first()
 
     if module is None:
-        return '', 404
+        return NoContent, 404
 
     if module.user is not None:
-        return '', 409
+        return NoContent, 409
 
     module.user = user
     db.session.commit()
 
-    return '', 201
+    return NoContent, 201
 
 
 def unbind_module(user: User, unique_id):
     module = Module.query.filter_by(unique_id = unique_id).first()
 
     if module is None:
-        return '', 404
+        return NoContent, 404
 
     if module.user.id != user.id:
-        return '', 412
+        return NoContent, 412
 
     module.user = None
     db.session.commit()
 
-    return '', 201
+    return NoContent, 201
 
 
 def create_whitelist(user: User, whitelist_name):
     whitelist = Whitelist.query.filter_by(name=whitelist_name).first()
 
     if whitelist is not None:
-        return '', 412
+        return NoContent, 412
 
     whitelist = Whitelist(name=whitelist_name)
     whitelist.user = user
     db.session.add(whitelist)
     db.session.commit()
 
-    return '', 201
+    return NoContent, 201
 
 
 def get_whitelists(user: User):
@@ -66,7 +71,7 @@ def get_plates_in_whitelist(user: User, whitelist_name):
         .filter(Whitelist.name == whitelist_name)).first()
 
     if whitelist is None:
-        return '', 404
+        return NoContent, 404
 
     return {
         'whitelist_name': whitelist_name,
@@ -78,7 +83,7 @@ def add_plate_to_whitelist(user: User, whitelist_name: str, plate_text: str):
     plate_text = plate_text.capitalize()
 
     if Plate.is_valid_plate(plate_text) is None:
-        return '', 412
+        return NoContent, 412
 
     whitelist = (Whitelist.query
         .join(User, Whitelist.user_id == User.id)
@@ -86,7 +91,7 @@ def add_plate_to_whitelist(user: User, whitelist_name: str, plate_text: str):
         .filter(Whitelist.name == whitelist_name)).first()
 
     if whitelist is None:
-        return '', 409
+        return NoContent, 409
 
     possible_plate = (Plate.query
         .join(Whitelist, Plate.id == Whitelist.id)
@@ -98,7 +103,7 @@ def add_plate_to_whitelist(user: User, whitelist_name: str, plate_text: str):
         whitelist.plates.append(plate)
         db.session.commit()
 
-    return '', 201
+    return NoContent, 201
 
 
 def register(new_user):
@@ -116,4 +121,27 @@ def register(new_user):
     db.session.add(user)
     db.session.commit()
 
-    return '', 201
+    return NoContent, 201
+
+
+def get_access_attempts_for_module(user: User, unique_id: str):
+    possible_module = get_modules_for_user_query(user).filter(Module.unique_id == unique_id).first()
+
+    if possible_module is None:
+        return NoContent, 403
+
+    return {
+        'access_attempts': [
+            access_attempt.to_dict() for access_attempt in possible_module.access_attempts
+        ]
+    }
+
+
+def get_photo_for_access_attempt(user: User, access_attempt_id: int):
+    possible_access_attempt = get_access_attempts_for_user_query(user).filter(AccessAttempt.id == access_attempt_id).first()
+
+    if possible_access_attempt is None:
+        return NoContent, 403
+
+    dirname, filename = os.path.split(possible_access_attempt.get_src_image_filepath(Dirs.Absolute))
+    return send_from_directory(dirname, filename)

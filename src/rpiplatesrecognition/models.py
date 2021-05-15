@@ -244,7 +244,7 @@ class AccessAttempt(db.Model):
         os.mkdir(self.get_edge_proj_dirpath(Dirs.Absolute))
         os.mkdir(self.get_segments_dirpath(Dirs.Absolute))
 
-    def to_dict(self) -> str:
+    def to_dict(self):
         return {
             'id': self.id,
             'date': self.date.strftime('%d.%m.%y %H:%M:%S'),
