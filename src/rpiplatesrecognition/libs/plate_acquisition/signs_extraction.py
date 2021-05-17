@@ -32,7 +32,7 @@ def  cca(img:np.ndarray,parameters):
     #The ratio of the height to the width of the character is greater than 1.2
 
     for i in range(0,out[0]):
-        if stats[i][3]>(parameters.min_len_per*len(img)) and (stats[i][3]/stats[i][2])>parameters.htw_ratio and stats[i][3]<(parameters.max_len_per*len(img)):
+        if stats[i][3]>(parameters.min_len_per*len(img)) and (stats[i][3]/stats[i][2])>parameters.htw_ratio and stats[i][3]<(parameters.max_len_per*len(img)) and stats[i][2]>(parameters.min_wid_per*len(img[0])):
             x=stats[i][0]
             y=stats[i][1]
             img2=img[y:y+stats[i][3],x:x+stats[i][2]+1]
