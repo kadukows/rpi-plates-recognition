@@ -5,15 +5,20 @@ from .edge_projection_algorithm import edge_projection_algorithm
 from .signs_extraction import find_segments, combine_to_one
 from .edge_projection_second import edge_projection_algorithm_v2
 from .config_file import *
-"""
 
+'''
+This is a module for plate_acquisitiion
+'''
+
+
+'''
 from edge_projection_algorithm import edge_projection_algorithm
 from signs_extraction import find_segments, combine_to_one
 from edge_projection_second import edge_projection_algorithm_v2
 from config_file import *
 import os
 import cv2 as cv
-"""
+'''
 
 def global_edge_projection(img: np.ndarray, parameters: ExtractionConfigParameters):
     if parameters.algorithm_choice == 1:
@@ -25,15 +30,6 @@ def global_edge_projection(img: np.ndarray, parameters: ExtractionConfigParamete
 
     return result
 
-def global_edge_projection(img: np.ndarray, parameters: ExtractionConfigParameters):
-    if parameters.algorithm_choice == 1:
-        result = edge_projection_algorithm(img, parameters)
-    elif parameters.algorithm_choice == 2:
-        result = edge_projection_algorithm_v2(img, parameters)
-    else:
-        raise ValueError()
-
-    return result
 
 # this function convert image to recognized number plates string ( can be more than one )
 def photo_to_plate(img: np.ndarray,parameters: ExtractionConfigParameters = ExtractionConfigParameters()):
@@ -75,4 +71,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

@@ -1,35 +1,146 @@
 {% extends "base.html" %}
-{% import 'bootstrap/wtf.html'as wtf %}
+{% from 'bootstrap/form.html' import render_form %}
+{% from 'bootstrap/pagination.html' import render_pager, render_pagination %}
 
 {% block scripts %}
     {{ super() }}
-    <script src="{{ url_for('.static', filename='edit_whitelist.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='ajax_form.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            {
+                //
+                //  Add a plate ajax form set-up
+                //
+
+                const form_node = document.querySelector('#addModal form');
+                const ajax_form_route = '{{ url_for("whitelists.edit_add_plate", whitelist_id=whitelist.id) }}';
+                const submit_btn = document.querySelector('#addModal #submit-btn');
+
+                const ajax_form = new AjaxForm(form_node, ajax_form_route, [submit_btn]);
+
+                ajax_form.addEventListener('validatedAndSubmitted', () => {
+                    location.reload();
+                });
+            }
+            {
+                //
+                // Remove a plate ajax form set up
+                //
+
+                const form_node = document.querySelector('#removeModal form');
+                const ajax_form_roue = `{{ url_for('whitelists.edit_remove_plates', whitelist_id=whitelist.id) }}`;
+
+                const ajax_form = new AjaxForm(form_node, ajax_form_roue, []);
+
+                ajax_form.addEventListener('validatedAndSubmitted', () => {
+                    location.reload();
+                });
+            }
+        });
+
+        function tableButtons() {
+            return {
+                btnAdd: {
+                    text: 'Add new plate',
+                    icon: 'fa-plus',
+                    event: () => {
+                        $('#addModal').modal('show');
+                    },
+                    attributes: {
+
+                    }
+                },
+                btnRemove: {
+                    text: 'Remove plate(s)',
+                    icon: 'fa-minus',
+                    event: () => {
+                        const selections = $('#removeTable').bootstrapTable('getSelections');
+
+                        if (selections.length === 0) {
+                            return;
+                        }
+
+                        document.querySelector('#removeModal #output').innerText = selections.map(s => s.text).join(', ');
+                        document.querySelector('#removePlateForm #plate_ids').value = selections.map(s => s.id).join(',');
+
+                        $('#removeModal').modal('show');
+                    },
+                    attributes: {
+                        class: "remove-btn"
+                    }
+                }
+            }
+        }
+    </script>
 {% endblock %}
 
 {% block app_content %}
-    <div class="modal fade" id="editModal" tabindex="-1" role="dialog">
+    <div class="modal fade" id="removeModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Plate removal</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                </div>
+                <div class="modal-body">
+                <p>Are you sure you want to delete those plates: <strong id="output"></strong>?</p>
+                {{ render_form(remove_plate_form, id="removePlateForm") }}
+                </div>
+                <div class="modal-footer">
+                    <input type="submit" class="btn btn-danger" value="Remove" form="removePlateForm"></button>
+                    <button type="button" class="btn" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="addModal" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
+                <h4 class="modal-title">Add a new plate</h4>
             <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-            <h4 class="modal-title">Edit plate</h4>
             </div>
             <div class="modal-body">
-            <p>One fine body&hellip;</p>
+                {{ render_form(add_plate_form, id="addPlateForm") }}
             </div>
             <div class="modal-footer">
-            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-            <button type="button" class="btn btn-primary">Save changes</button>
+                    <button type="button" class="btn btn-info" id="submit-btn" form="addPlateForm">Submit</button>
+                    <button type="button" class="btn btn-secodary" data-dismiss="modal">Close</button>
             </div>
-        </div><!-- /.modal-content -->
-        </div><!-- /.modal-dialog -->
-    </div><!-- /.modal -->
+        </div>
+        </div>
+    </div>
 
-    <h1>Editing whitelist: <strong>{{ whitelist.name }}</strong></h1>
-    <hr>
-    <table class="table table-hover">
-        {% for plate in whitelist.plates %}
-            {% include '_edit_whitelist.html' %}
-        {% endfor %}
+    <div class="row">
+        <div class="cold-md-12 my-2">
+            <h2>Editing whitelist: <strong>{{ whitelist.name }}</strong></h2>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <table
+                id="removeTable"
+                data-toggle="table"
+                data-pagination="true"
+                data-side-pagination="server"
+                data-show-extended-pagination="true"
+                data-search="true"
+                data-buttons="tableButtons"
+                data-url="{{ url_for('whitelists.edit_get_plates', whitelist_id=whitelist.id) }}"
+                {# data-multiple-select-row="true" #}
+                data-click-to-select="true"
+                data-maintain-meta-data="true"
+                data-classes="table table-hover my-2">
+                <thead>
+                    <tr>
+                        <th data-field="state" data-checkbox="true"></th>
+                        <th data-field="text" data-sortable="true">Plate</th>
+                    </tr>
+                </thead>
     </table>
+        </div>
+    </div>
+
 {% endblock %}

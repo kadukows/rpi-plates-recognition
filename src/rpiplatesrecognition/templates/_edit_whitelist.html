@@ -1,11 +1,15 @@
 <tr>
     <td>
+        {{ plate.id }}
+    </td>
+    <td>
         {{ plate.text }}
     </td>
     <td>
-        <div class="btn-group">
-            <button type="button" class="btn btn-default plate-edit-button" data-plate-text="{{ plate.text }}" data-toggle="modal" data-target="#editModal">Edit</button>
-            <button type="button" class="btn btn-default plate-remove-button" data-plate-text="{{ plate.text }}">Remove</button>
-        </div>
+        <button type="button" class="btn btn-light remove-btn" data-plate-text="{{ plate.text }}"
+            data-toggle="modal" data-plate-id="{{ plate.id }}" data-whitelist-id="{{ whitelist.id }}"
+            data-target="#removeModal">
+        Remove
+        </button>
     </td>
 </tr>

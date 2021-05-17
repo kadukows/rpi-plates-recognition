@@ -22,8 +22,10 @@ export FLASK_ENV='development'
 This tells flask what package it should run with `flask run` command.
 
 ## Initializing database
-Initializing empty database could be done with `flask init-db` command.
-Database should appear in `src/instance/` directory.
+| Command | Result |
+| ------- | ------ |
+| `flask init-db` | Initializes empty database |
+| `flask init-db-debug` | Initialized db with default values |
 
 ## Running a server
 After 1st time set up flask server could be run by:
@@ -34,6 +36,9 @@ Webserver is accessible at http://127.0.0.1:5000
 
 For accessing server from another device on LAN (e.g. a smartphone) you need
 to modify run command to `flask run -h 0.0.0.0`.
+
+## Swagger API documentation
+Swagger API documentation is available at `/api/ui` route.
 
 ## Runing unit tests
 To run unit tests, simply run `pytest` from root directory of repo.

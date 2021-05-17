@@ -1,4 +1,4 @@
-.row.equal {
-    display: flex;
-    flex-wrap: wrap;
+.remove-btn:hover {
+    color: white;
+    background: #dc3545;
 }

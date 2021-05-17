@@ -149,9 +149,9 @@ def edge_projection_algorithm(img: np.ndarray, parameters:ExtractionConfigParame
 
 
         cv.rectangle(img, (left, down), (right, up), (120, 120, 120), 2)
-        cv.imshow("test2", img)
-        cv.imshow("plate", pic)
-        cv.waitKey()
+        #cv.imshow("test2", img)
+        #cv.imshow("plate", pic)
+        #cv.waitKey()
 
 
 

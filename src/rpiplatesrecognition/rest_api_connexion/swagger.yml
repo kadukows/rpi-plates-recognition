@@ -1,0 +1,276 @@
+openapi: 3.0.0
+info:
+  version: 0.0.1
+  title: rpi-plates-recognition
+  description: API for rpi-plates-recognition project
+
+servers:
+  - url: /api
+    description: Base path for all api calls
+
+components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+      x-basicInfoFunc: rpiplatesrecognition.rest_api_connexion.auth.verify_password
+
+security:
+  - basicAuth: []
+
+
+paths:
+  /get_modules:
+    get:
+      operationId: rpiplatesrecognition.rest_api_connexion.routes.get_modules
+      description: Returns information about current users modules
+      tags:
+        - observers
+      responses:
+        '200':
+          description: Returns a json with an array of modules unique_ids
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  modules:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        unique_id:
+                          type: string
+                          description: Unique id of a module
+                        whitelists:
+                          type: array
+                          items:
+                            type: string
+
+
+  /get_whitelists:
+    get:
+      operationId: rpiplatesrecognition.rest_api_connexion.routes.get_whitelists
+      description: Returns whitelists owned by current user
+      tags:
+        - observers
+      responses:
+        '200':
+          description: Returns a json with an array of whitelists names
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  whitelists:
+                    type: array
+                    items:
+                      type: string
+
+
+  /get_plates_in_whitelist:
+    get:
+      operationId: rpiplatesrecognition.rest_api_connexion.routes.get_plates_in_whitelist
+      description: Returns plates in a whitelists
+      tags:
+        - observers
+      parameters:
+        - in: query
+          name: whitelist_name
+          schema:
+            type: string
+          description: Whitelist for which to fetch names
+      responses:
+        '200':
+          description: Returns a json with an array of plates in a whitelist
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  whitelist_name:
+                    type: string
+                  plates:
+                    type: array
+                    items:
+                      type: string
+
+        '404':
+          description: No such whitelist exists
+
+
+  /get_access_attempts_for_module:
+    get:
+      operationId: rpiplatesrecognition.rest_api_connexion.routes.get_access_attempts_for_module
+      description: Returns access attempts for module
+      tags:
+        - observers
+      parameters:
+        - in: query
+          name: unique_id
+          schema:
+            type: string
+          description: Module for which to fetch access attempts
+      responses:
+        '200':
+          description: Returns a json with an array of access attempts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_attempts:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: number
+                        date:
+                          type: string
+                        plate:
+                          type: string
+                        processed_plate_string:
+                          type: string
+                        got_access:
+                          type: boolean
+        '403':
+          description: Module not bound to a user
+
+
+  /get_photo_for_access_attempt:
+    get:
+      operationId: rpiplatesrecognition.rest_api_connexion.routes.get_photo_for_access_attempt
+      description: Returns a photo for access attempt with given id
+      tags:
+        - observers
+      parameters:
+        - in: query
+          name: access_attempt_id
+          schema:
+            type: number
+          description: Access attempt for which to fetch photo
+      responses:
+        '200':
+          description: Returns a photo
+          content:
+            image/jpg:
+              schema:
+                type: string
+                format: binary
+        '403':
+          description: Client doesn't have permission to access this acess attempt
+
+
+  /bind_module:
+    post:
+      operationId: rpiplatesrecognition.rest_api_connexion.routes.bind_module
+      description: Adds module to an user
+      parameters:
+        - in: query
+          name: unique_id
+          schema:
+            type: string
+          description: Module's unique id
+      responses:
+        '201':
+          description: Sucessfully added module to an user
+        '401':
+          description: Module with that unique_id was not found
+        '409':
+          description: Module is already assigned to another user
+
+
+  /unbind_module:
+    post:
+      operationId: rpiplatesrecognition.rest_api_connexion.routes.unbind_module
+      description: Unbounds modules from current user
+      parameters:
+        - in: query
+          name: unique_id
+          schema:
+            type: string
+          description: Module's unique id
+      responses:
+        '201':
+          description: Sucessfully unbound module from user
+        '404':
+          description: Module not found on server
+        '412':
+          description: Module is not currently bound to user
+
+
+  /create_whitelist:
+    put:
+      operationId: rpiplatesrecognition.rest_api_connexion.routes.create_whitelist
+      description: Creates new whitelist for an user
+      parameters:
+        - in: query
+          name: whitelist_name
+          schema:
+            type: string
+          description: New whitelist name
+      responses:
+        '201':
+          description: Successsfully created whitelist
+        '412':
+          description: Whitelist with such name already exists
+
+
+  /add_plate_to_whitelist:
+    put:
+      operationId: rpiplatesrecognition.rest_api_connexion.routes.add_plate_to_whitelist
+      description:
+        Adds a plate to an whitelist. If such plate is already bound to a whitelist, does nothing.
+      parameters:
+        - in: query
+          name: whitelist_name
+          schema:
+            type: string
+          description: Whitelist to which assign new plate
+        - in: query
+          name: plate_text
+          schema:
+            type: string
+          description: Plate which should be added
+      responses:
+        '201':
+          description: Successfuly added a plate to whitelist
+        '409':
+          description: Whitelist with such name is not bound to current user
+        '412':
+          description: Plate text is with wrong format
+
+
+  /register:
+    post:
+      operationId: rpiplatesrecognition.rest_api_connexion.routes.register
+      description: Registers new user
+      security: []  # no security
+      requestBody:
+        description: Json object describing user
+        required: true
+        content:
+          application/json:
+            schema:
+              x-body-name: new_user
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '201':
+          description: New user was sucessfully registered
+        '409':
+          description: Username was already taken or password does not comply to policy
+          content:
+            text/plain:
+              schema:
+                type: string
+              examples:
+                username taken:
+                  value: 'Username already taken'
+                password does not comply to policy:
+                  value: 'Password does not comply to policy'

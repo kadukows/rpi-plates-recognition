@@ -2,105 +2,123 @@
 
 {% block scripts %}
     {{ super() }}
+    <script src="https://cdn.socket.io/3.1.1/socket.io.min.js"></script>
     <script src="{{ url_for('static', filename='rpi_connection.js') }}"></script>
+{% endblock %}
+
+{% block container_div %}
+    <div class="container-fluid">
 {% endblock %}
 
 {% block styles %}
     {{ super() }}
     <style>
-        /*
-        tbody { height: 250px; overflow-y: scroll; display:block;}
-        th { position: sticky; top: 0; }
-        */
-        .tableFixHead {
-            overflow-y: auto;
-            height: 200px;
+        .card {
+            transform: scale(0);
+            transition: 0.5s;
         }
 
-        .tableFixHead table {
-            border-collapse: collapse;
-            width: 100%;
+        .card.animate {
+            transform: scale(1);
         }
 
-        .tableFixHead th,
-        .tableFixHead td {
-            padding: 8px 16px;
+        .tr input {
+            max-width: 25px;
+            overflow: auto;
         }
 
-        .tableFixHead th {
-            position: sticky;
-            top: 0;
-            background: #eee;
+        .anim-jigger {
+            animation: jigger 0.4s;
+        }
+
+        @keyframes jigger {
+            0% {
+            transform: translateX(0px) rotate(0deg);
+            }
+
+            20% {
+                transform: translateX(-4px) rotate(-4deg);
+            }
+
+            40% {
+                transform: translateX(-2px) rotate(-2deg);
+            }
+
+            60% {
+                transform: translateX(4px) rotate(4deg);
+            }
+
+            80% {
+                transform: translateX(2px) rotate(2deg);
+            }
+
+            100% {
+                transform: translateX(0px) rotate(0deg);
+            }
+        }
+
+        .loading {
+            cursor: progress;
         }
     </style>
 {% endblock %}
 
 {% block app_content %}
-<div class="row equal">
-    <div class="col-md-6">
-        <div id="output" style="overflow: auto; height: 150px;"></div>
-        <form class="form-inline" id="command_form" data-unique_id="{{ module.unique_id }}">
-            <div class="form-group">
-                <label for="commandsInput">Commands</label>
-                <input type="text" class="form-control" id="commandsInput" placeholder="commands...">
+<div class="row my-4">
+    <div class="col-lg-8">
+        <div class="row">
+            <div class="col-md-8">
+                <div id="output" style="overflow: auto; height: 150px;"></div>
+                <form class="form-inline my-2" id="command_form" data-unique_id="{{ module.unique_id }}">
+                    <div class="form-group">
+                        <label for="commandsInput" class="mx-2">Commands</label>
+                        <input type="text" class="form-control mx-2" id="commandsInput" placeholder="commands...">
+                    </div>
+                    <button type="submit" class="btn btn-primary mx-2">Submit</button>
+                </form>
             </div>
-            <button type="submit" class="btn btn-default">Submit</button>
-        </form>
-    </div>
-    <div class="col-md-6">
-        <div class="tableFixHead">
-            <table class="table table-hover table-bordered" >
-                <thead style="font-weight: bold;">
-                    <tr>
-                        <th>No</th>
-                        <th>Date</th>
-                        <th>User</th>
-                        <th>unique_id</th>
-                        <th>
-                            <a href="{{ url_for('rpi_connection.upload_access_attempt', unique_id=module.unique_id) }}">
-                                <button type="button" class="btn btn-success">Upload</button>
-                            </a>
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for access_attempt in module.access_attempts | reverse %}
-                        {% include '_access_attempt.html' %}
-                    {% endfor %}
-                </tbody>
-            </table>
+        </div>
+        <hr>
+        <div class="row">
+            <div class="col-md-12">
+                <div id="accordion">
+
+                </div>
+            </div>
         </div>
     </div>
-</div>
-<hr>
-<div class="row">
-    <div class="col-md-4">
-            <h2>Source image</h2>
-            <img class="img-responsive img-rounded" id="src-image-output">
-    </div>
-    <div class="col-md-4">
-        <h4>Segmentation result</h4>
-        <table class="table table-hover table-bordered" id="segmentation-output">
-            <thead style="font-weight: bold;">
-                <td>No</td>
-                <td>Region</td>
+    <div class="col-lg-4">
+        <div class="row">
+            <a class="btn btn-primary btn-block mx-4 my-4" href="{{ url_for('rpi_connection.upload_access_attempt', unique_id=module.unique_id) }}">
+                Upload
+            </a>
+        </div>
+        <div class="row">
+            <div class="col-sm-8">
+                <input type="text" class="form-control mb-2" placeholder="Search for param..." id="table-params-output-search">
+            </div>
+            <dib class="col-sm-4">
+                <button class="btn btn-primary submit-params mx-1 mb-1">Submit changes</button>
+            </dib>
+        </div>
+
+        <table id="table-params-output" class="table table-bordered table-hover">
+            <thead>
+                <td>param key</td>
+                <td>module value</td>
             </thead>
             <tbody>
 
             </tbody>
         </table>
-    </div>
-    <div class="col-md-4">
-        <h4>Edge projection</h4>
-        <table class="table table-hover table-bordered" id="edge-projection-output">
-            <thead style="font-weight: bold;">
-                <td>No</td>
-                <td>Region</td>
-            </thead>
-            <tbody>
-
-            </tbody>
-        </table>
+        <div class="row">
+            <div class="col-lg-8">
+                <div id="submit-output"></div>
+            </div>
+            <div class="col-lg-4">
+                <button class="btn btn-primary submit-params mx-2 my-2">Submit changes</button>
+            </div>
+        </div>
     </div>
 </div>
 
