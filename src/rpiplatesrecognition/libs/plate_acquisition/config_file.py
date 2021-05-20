@@ -47,8 +47,9 @@ class ExtractionConfigParameters:
     adaptive_threshhold_C: int = 2 # constant subtracted from the mean
     connectivity: int = 4 #4 or 8 connectivity in cca algorithm
     min_len_per: float = 0.4 # the minimum percentage of the plate height that a character must occupy
-    max_len_per: float = 0.9 # the maximum percentage of the height of the plate that a character can occupy
-    max_diff_height: int = 10 # maximum number of pixels by which character height can be different
+    max_len_per: float = 1.01 # the maximum percentage of the height of the plate that a character can occupy
+    max_diff_height: int = 7 # maximum number of pixels by which character height can be different
+    min_wid_per: float = 0.025 # the minimum percentage of the plate weight that a character must occupy
     htw_ratio: float = 1.2 # the minimum ratio of the height to the width of the character
     threshold_morphology: int = 100 #below this bound image pixels are set to 0 after morphology operations
     min_number_of_ch: int = 4 # minimum number of characters found on plate
