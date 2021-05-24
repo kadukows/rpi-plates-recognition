@@ -260,6 +260,8 @@ paths:
                   type: string
                 password:
                   type: string
+                email:
+                  type: string
       responses:
         '201':
           description: New user was sucessfully registered

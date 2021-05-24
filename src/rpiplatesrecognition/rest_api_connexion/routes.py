@@ -115,7 +115,7 @@ def register(new_user):
     if not User.does_password_comply_to_policy(new_user['password']):
         return 'Password does not comply to policy', 409
 
-    user = User(username=new_user['username'])
+    user = User(username=new_user['username'], email=new_user['email'])
     user.set_password(new_user['password'])
 
     db.session.add(user)
