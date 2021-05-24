@@ -221,7 +221,7 @@ paths:
     put:
       operationId: rpiplatesrecognition.rest_api_connexion.routes.add_plate_to_whitelist
       description:
-        Adds a plate to an whitelist. If such plate is already bound to a whitelist, does nothing.
+        Adds a plate to a whitelist. If such plate is already bound to a whitelist, does nothing.
       parameters:
         - in: query
           name: whitelist_name
@@ -235,7 +235,7 @@ paths:
           description: Plate which should be added
       responses:
         '201':
-          description: Successfuly added a plate to whitelist
+          description: Successfully added a plate to whitelist
         '409':
           description: Whitelist with such name is not bound to current user
         '412':
@@ -260,6 +260,8 @@ paths:
                   type: string
                 password:
                   type: string
+                email:
+                  type: string
       responses:
         '201':
           description: New user was sucessfully registered
@@ -274,3 +276,26 @@ paths:
                   value: 'Username already taken'
                 password does not comply to policy:
                   value: 'Password does not comply to policy'
+
+  /bind_whitelist_to_module:
+    post:
+      operationId: rpiplatesrecognition.rest_api_connexion.routes.bind_modules
+      description: Binds whitelist with given name to module with given unique_id
+      parameters:
+        - in: query
+          name: whitelist_name
+          schema:
+            type: string
+          description: Whitelist name
+        - in: query
+          name: unique_id
+          schema:
+            type: string
+          description: Unique id of module
+      responses:
+        '201':
+          description: Sucessfully bound whitelist to module
+        '409':
+          description: Whitelist with such name is not bound to current user
+        '412':
+          description: Module with such unique_id is not bound to current user

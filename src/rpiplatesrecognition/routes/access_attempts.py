@@ -42,6 +42,7 @@ def index(unique_id):
 
     if form.validate_on_submit():
         module.whitelists = [Whitelist.query.get(whitelist_id) for whitelist_id in form.whitelists.data]
+        flash("Updated whitelists")
         db.session.commit()
         return redirect(url_for('access_attempts.index', unique_id=unique_id))
 
