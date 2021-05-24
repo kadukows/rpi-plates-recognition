@@ -78,6 +78,7 @@ def add():
     else:
         module = Module.query.filter_by(unique_id=form.unique_id.data).first()
         module.user = current_user
+        flash(f"Bound new module: {module.unique_id}")
         db.session.commit()
         return '', 201
 
@@ -91,6 +92,8 @@ def remove():
         return form.generate_failed_response_dict(), 409
     else:
         query = form.get_modules_query()
+        query_string = ", ".join(module.unique_id for module in query.all())
+        flash(f"Unbound modules: {query_string}")
         query.delete()
         db.session.commit()
         return '', 201

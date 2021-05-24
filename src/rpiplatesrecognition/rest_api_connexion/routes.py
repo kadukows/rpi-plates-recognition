@@ -2,7 +2,7 @@ import os
 from enum import unique
 from ..models import AccessAttempt, User, Module, Whitelist, Plate, Dirs
 from ..db import db
-from ..db.helpers import get_access_attempts_for_user_query, get_modules_for_user_query
+from ..db.helpers import get_access_attempts_for_user_query, get_modules_for_user_query, get_whitelists_for_user_query
 
 from flask import send_from_directory
 from connexion import NoContent
@@ -145,3 +145,17 @@ def get_photo_for_access_attempt(user: User, access_attempt_id: int):
 
     dirname, filename = os.path.split(possible_access_attempt.get_src_image_filepath(Dirs.Absolute))
     return send_from_directory(dirname, filename)
+
+
+def bind_modules(user: User, whitelist_name: str, unique_id: str):
+    module = get_modules_for_user_query(user).filter_by(unique_id=unique_id).first()
+    if module is None:
+        return NoContent, 412
+
+    whitelist = get_whitelists_for_user_query(user).filter_by(name=whitelist_name).first()
+    if whitelist is None:
+        return NoContent, 409
+
+    module.whitelists.append(whitelist)
+    db.session.commit()
+    return NoContent, 201
