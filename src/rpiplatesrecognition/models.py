@@ -11,7 +11,8 @@ from flask_login import UserMixin
 from sqlalchemy.orm import subqueryload
 import sqlalchemy
 from werkzeug.security import check_password_hash, generate_password_hash
-
+import keras, tensorflow
+from keras.preprocessing import image
 from .db import db
 from .helpers import files_in_dir, create_new_directory_for_photo, Dirs
 from .libs.plate_acquisition.config_file import ExtractionConfigParameters
@@ -129,11 +130,18 @@ class AccessAttempt(db.Model):
             encoded_image: bytes,
             extraction_params: ExtractionConfigParameters = None):
         self.module = module
+        self.model = keras.models.load_model('character_recognition.h5')
         self.user = self.module.user
         extraction_params_ = extraction_params or module.extraction_params
         self.extraction_params = extraction_params_
         self.photos_dir = create_new_directory_for_photo(encoded_image)
         self.init_directories() # inits dirs for segments and edge porjection results
+        self.characters = {'0': 0, '1': 1, '2': 2, '3': 3, '4': 4, \
+            '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, 'A': 10, 'B': 11, 'C': 12, \
+            'D': 13, 'E': 14, 'F': 15, 'G': 16, 'H': 17, 'I': 18, \
+            'J': 19, 'K': 20, 'L': 21, 'M': 22, 'N': 23, 'O': 24, \
+            'P': 25, 'Q': 26, 'R': 27, 'S': 28, 'T': 29, 'U': 30, 'V': 31, \
+            'W': 32, 'X': 33, 'Y': 34, 'Z': 35}
 
         from .libs.plate_acquisition import find_segments, global_edge_projection, combine_to_one
         from pytesseract import image_to_string
@@ -173,8 +181,25 @@ class AccessAttempt(db.Model):
                     assert cv.imwrite(
                         os.path.join(self.get_segments_dirpath(Dirs.Absolute), str(idx) + '.png'),
                         segment)
+                if extraction_params_.sign_recognition_choice == 0:
+                    self.recognized_plate = image_to_string(segments_one, lang='eng', config='--psm 6')
+                else:
+                    
+                    plate = ''
+                    for segment in segments:
+                        
+                        segment = np.resize(segment, (128, 128,3))
+                        img_tensor = np.expand_dims(segment, axis=0)
+                        prediction = np.argmax(self.model.predict(img_tensor))
+                        name = []
+                        for char, number in self.characters.items():
+                            if number == prediction:
+                                name = char
+                                break
+                        plate += str(name)
 
-                self.recognized_plate = image_to_string(segments_one, lang='eng', config='--psm 6')
+                    self.recognized_plate = plate + str(len(segments))
+
                 possible_plate_groups = Plate.PLATE_RE.search(self.recognized_plate)
                 if possible_plate_groups is not None:
                     self.processed_plate_string = possible_plate_groups.group(0)
