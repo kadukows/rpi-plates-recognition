@@ -52,6 +52,24 @@ def  cca(img:np.ndarray,parameters):
 
     return only_signs
 
+def clear_characters(signs):
+    connectivity=4
+    for img in signs:
+        out=cv.connectedComponentsWithStats(img, connectivity, cv.CV_32S)
+        while(out[0]>2):
+            stats=out[2]
+            if (stats[1][4]>stats[2][4]):
+                check=2
+            else:
+                check=1
+            x=stats[check][0]
+            y=stats[check][1]
+            for i in range(x,x+stats[check][2]+1):
+                for j in range(y,y+stats[check][3]+1):
+                    img[j][i]=0
+            out=cv.connectedComponentsWithStats(img, connectivity, cv.CV_32S)
+    return signs
+
 
 def flood_fill(sign):
     sign_floodfill=sign.copy()
@@ -80,9 +98,10 @@ def sign_morphology(sign, threshold_value):
 def combine_to_one(img_list):
     if len(img_list) == 0:
         return
+    img_list=[cv.bitwise_not(img) for img in img_list]
     h_max=max(img.shape[0] for img in img_list)
     img_list=[cv.resize(img,(int(img.shape[1]*h_max/img.shape[0]),h_max),interpolation=cv.INTER_CUBIC) for img in img_list]
-    img_list=[cv.copyMakeBorder(img,5,5,5,5,cv.BORDER_CONSTANT,value=255) for img in img_list]
+    #img_list=[cv.copyMakeBorder(img,5,5,5,5,cv.BORDER_CONSTANT,value=255) for img in img_list]
     return cv.hconcat(img_list)
 
 
@@ -102,10 +121,10 @@ def find_segments(possible_plates,parameters:ExtractionConfigParameters) -> List
             break
     for i in range (0,len(found_signs)):
         found_signs[i]=sign_morphology(found_signs[i],parameters.threshold_morphology)
-        found_signs[i]=cv.bitwise_not(found_signs[i])
+        found_signs[i]=cv.copyMakeBorder(found_signs[i],5,5,5,5,cv.BORDER_CONSTANT,value=0)
         #cv.imshow("test2",i)
         #cv.waitKey()
-
+    found_signs=clear_characters(found_signs)
     if len(found_signs)==0:
         return None
     return found_signs
