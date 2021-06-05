@@ -94,6 +94,6 @@ def remove():
         query = form.get_modules_query()
         query_string = ", ".join(module.unique_id for module in query.all())
         flash(f"Unbound modules: {query_string}")
-        query.delete()
+        query.update({Module.user_id: None})
         db.session.commit()
         return '', 201

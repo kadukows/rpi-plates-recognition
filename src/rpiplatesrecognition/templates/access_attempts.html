@@ -30,9 +30,9 @@
 {% endblock %}
 
 {% block app_content %}
-    <div class="row">
+    <div class="row my-2">
         <div class="col-md-12">
-            <h2>Acces attempts for module: <strong>{{ module.unique_id }}</strong></h2>
+            <h2><i class="fas fa-low-vision"></i> Access attempts for module: <strong>{{ module.unique_id }}</strong></h2>
         </div>
     </div>
     <div class="row">
@@ -58,7 +58,16 @@
             </table>
         </div>
         <div class="col-md-4">
-            {{ render_form(form) }}
+            <div class="row my-1">
+                <div class="col-md-12">
+                    {{ render_form(form) }}
+                </div>
+            </div>
+            <div class="row my-1">
+                <div class="col-md-12">
+                    <img class="img-fluid" src="{{ url_for('static', filename='undraw_Organize_photos_re_ogcy.svg') }}">
+                </div>
+            </div>
         </div>
     </div>
 {% endblock %}
