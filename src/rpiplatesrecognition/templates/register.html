@@ -4,8 +4,11 @@
 {% block app_content %}
     <h1>Register</h1>
     <div class="row">
-        <div class="col-md-4">
+        <div class="col-md-4 my-2">
             {{ render_form(form) }}
+        </div>
+        <div class="col-md-8 my-2">
+            <img class="img-fluid" src="{{ url_for('static', filename='undraw_authentication_fsn5.svg') }}">
         </div>
     </div>
 {% endblock %}

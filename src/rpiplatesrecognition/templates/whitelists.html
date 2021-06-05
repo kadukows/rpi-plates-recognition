@@ -72,7 +72,7 @@
         }
 
         function nameFormatter(value, row, index, field) {
-            return `<a class="btn btn-link" href="{{ url_for('whitelists.index') }}/edit/${row['id']}"">${value}</a>`;
+            return `<a href="{{ url_for('whitelists.index') }}/edit/${row['id']}"">${value}</a>`;
         }
     </script>
 {% endblock %}
@@ -108,20 +108,20 @@
         </div>
         <div class="modal-footer">
             <form method="POST" id="deleteFakeForm">
-                <input type="submit" class="btn btn-danger" value="Remove">
+                <input type="submit" class="btn btn-light remove-btn" value="Remove">
             </form>
 
-            <button type="button" class="btn" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-light" data-dismiss="modal">Close</button>
         </div>
     </div>
     </div>
 </div>
 
-<div class="row">
-    <h1>Whitelists</h1>
+<div class="row my-2">
+    <h1><i class="fas fa-car"></i> Whitelists</h1>
 </div>
 
-<div class="row">
+<div class="row my-2">
     <div class="col-md-8">
         <table
             id="whitelistsTable"
@@ -139,6 +139,9 @@
                 <th data-field="name" data-formatter="nameFormatter" data-sortable="true">Whitelist</th>
             </thead>
         </table>
+    </div>
+    <div class="col-md-4">
+        <img class="img-fluid" src="{{ url_for('static', filename='undraw_city_driver_re_0x5e.svg') }}">
     </div>
 </div>
 {% endblock %}
