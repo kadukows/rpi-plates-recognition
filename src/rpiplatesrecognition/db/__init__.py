@@ -58,7 +58,7 @@ def init_db_debug_command():
     whitelist = Whitelist(name='debug_whitelist_1')
     user.whitelists.append(whitelist)
 
-    for plate_text in ['WA6642E', 'WI027HJ', 'ERA75TM', 'ERA81TL', 'DBL6S01']:
+    for plate_text in ['WA6642E', 'WI027HJ', 'ERA75TM', 'ERA81TL', 'DBL6S01', 'DLU59AL', 'DLU36419']:
         whitelist.plates.append(Plate(text=plate_text))
 
     module.whitelists.append(whitelist)

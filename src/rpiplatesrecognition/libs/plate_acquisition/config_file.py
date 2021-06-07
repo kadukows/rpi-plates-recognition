@@ -73,6 +73,10 @@ class ExtractionConfigParameters:
     gatecontroller_gate_opening_time: float = 15
     gatecontroller_time_to_drive_in: float = 30
 
+    ############################################
+
+    sign_recognition_choice: int = 1
+
 
     def to_dict(self):
         from dataclasses import fields
