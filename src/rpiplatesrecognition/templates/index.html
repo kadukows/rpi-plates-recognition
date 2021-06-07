@@ -1,9 +1,94 @@
 {% extends 'base.html' %}
-
+{% block container_div %}<div class="container-fluid">{% endblock %}
 {% block app_content %}
-    <div class="row">
-        <div class="col-md-12">
-            <h3>Home page</h3>
-        </div>
+<div class="position-relative overflow-hidden p-3 p-md-5 m-md-3 text-center bg-light" style="background-image: url('{{ url_for('static', filename='img/gateb.jpg') }}');background-size: 100% 100%; min-height: 700px;">
+  <div class="col-lg-5 p-lg-5 mx-auto my-5" style="background-image: url('{{ url_for('static', filename='img/tlo2.png') }}');background-size: 100% 100%;min-height:300px">
+    <img src='{{ url_for('static', filename='img/logobeztla.png') }}' class="img-fluid" style="width: auto; height: 200px;">
+    <p class="lead display-5 text-white font-weight-normal text-center" style="text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000,1px 1px 0 #000;">Automate your gate at home, business or any other facility</p>
+  </div>
+  
+</div>
+
+<div class="d-md-flex flex-md-equal w-100 my-md-3 pl-md-3 w-100" style="height: 900px;">
+  <div class="bg-dark mr-md-3 pt-3 px-3 pt-md-5 px-md-5 text-center text-white overflow-hidden">
+    <div class="my-3 py-3">
+      <h2 class="display-5">Small compact device</h2>
+      <ul class="list-group bg-dark">
+        <li class="list-group-item bg-dark text-white">- All components in one box</li>
+        <li class="list-group-item bg-dark text-white">- The device has a built-in camera which can be easily replaced if needed</li>
+        <li class="list-group-item bg-dark text-white">- Using the easy-to-use and small Raspberry Pi</li>
+      </ul>
     </div>
+    
+      <div><img src='{{ url_for('static', filename='img/2.jpg') }}' class="img-fluid" style="border-radius: 21px 21px 21px 21px; height: 450px;"></div>
+      
+  
+  </div>
+  <div class="bg-secondary mr-md-3 pt-3 px-3 pt-md-5 px-md-5 text-center overflow-hidden text-white">
+    <div class="my-3 p-3">
+      <h2 class="display-5">History of access attempts</h2>
+      <ul class="list-group bg-secondary">
+        <li class="list-group-item bg-secondary text-white">- Check history of access attempts at any time</li>
+        <li class="list-group-item bg-secondary text-white">- Check who tried to get access to your gates</li>
+        <li class="list-group-item bg-secondary text-white">- Full history with exact date, time, and plate registration</li>
+      </ul>
+    </div>
+    <div><img src='{{ url_for('static', filename='img/history.jpg') }}' class="img-fluid bg-dark" style="border-radius: 21px 21px 21px 21px; height: 450px;"></div>
+  </div>
+</div>
+
+<div class="d-md-flex flex-md-equal w-100 my-md-3 pl-md-3" style="height: 900px;">
+  <div class="bg-secondary mr-md-3 pt-3 px-3 pt-md-5 px-md-5 text-center overflow-hidden text-white">
+    <div class="my-3 p-3">
+      <h2 class="display-5">Motion detection</h2>
+      <ul class="list-group bg-secondary">
+        <li class="list-group-item bg-secondary text-white">- Enter your area without using additional devices such as a remote control</li>
+        <li class="list-group-item bg-secondary text-white">- Just drive up to your gate and it will open itself after a while</li>
+        <li class="list-group-item bg-secondary text-white">- 24/7 monitoring of all movements at your gates</li>
+      </ul>
+    </div>
+    <div><img src='{{ url_for('static', filename='img/motions.png') }}' class="img-fluid bg-dark" style="border-radius: 21px 21px 21px 21px; height: 450px;"></div>
+  </div>
+  <div class="bg-dark mr-md-3 pt-3 px-3 pt-md-5 px-md-5 text-center text-white overflow-hidden">
+    <div class="my-3 py-3">
+      <h2 class="display-5">Whitelists</h2>
+      <ul class="list-group bg-dark">
+        <li class="list-group-item bg-dark text-white">- Create your own whitelists </li>
+        <li class="list-group-item bg-dark text-white">- Name your whitelists as you like for easier management</li>
+        <li class="list-group-item bg-dark text-white">- Add and remove car registrations from existing whitelists</li>
+      </ul>
+    </div>
+    
+      <div><img src='{{ url_for('static', filename='img/whitelists.PNG') }}' class="img-fluid" style="border-radius: 21px 21px 21px 21px; height: 450px;"></div>
+      
+  
+  </div>
+  
+</div>
+
+<div class="d-md-flex flex-md-equal w-100 my-md-3 pl-md-3" style="height: 900px;">
+  <div class="bg-dark mr-md-3 pt-3 px-3 pt-md-5 px-md-5 text-center text-white overflow-hidden">
+    <div class="my-3 py-3">
+      <h2 class="display-5">Weather doesn't mather</h2>
+      <ul class="list-group bg-dark">
+        <li class="list-group-item bg-dark text-white">- The system works properly regardless of the weather</li>
+        <li class="list-group-item bg-dark text-white">- Storm, rain, sun etc. don't have any negative effect on your device</li>
+      </ul>
+    </div>
+    
+      <div><img src='{{ url_for('static', filename='img/pogoda.png') }}' class="img-fluid" style="border-radius: 21px 21px 21px 21px; height: 450px;"></div>
+      
+  
+  </div>
+  <div class="bg-secondary mr-md-3 pt-3 px-3 pt-md-5 px-md-5 text-center overflow-hidden text-white">
+    <div class="my-3 p-3">
+      <h2 class="display-5">Module management</h2>
+      <ul class="list-group bg-secondary">
+        <li class="list-group-item bg-secondary text-white">- Manage all your modules from one account</li>
+        <li class="list-group-item bg-secondary text-white">- Assign whitelists from one module to any other</li>
+      </ul>
+    </div>
+    <div><img src='{{ url_for('static', filename='img/modules.PNG') }}' class="img-fluid bg-dark" style="border-radius: 21px 21px 21px 21px; height: 450px;"></div>
+  </div>
+</div>
 {% endblock %}
