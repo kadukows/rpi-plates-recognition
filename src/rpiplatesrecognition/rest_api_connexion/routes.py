@@ -80,7 +80,7 @@ def get_plates_in_whitelist(user: User, whitelist_name):
 
 
 def add_plate_to_whitelist(user: User, whitelist_name: str, plate_text: str):
-    plate_text = plate_text.capitalize()
+    plate_text = plate_text.upper()
 
     if Plate.is_valid_plate(plate_text) is None:
         return NoContent, 412
